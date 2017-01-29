@@ -24,3 +24,31 @@ As an example, this is a simple replacement anchor: `#SAMPLE_REPLACEMENT#`. If y
 CodeGenerator offers an API to convert a table row into a PL/SQL table indexed by varchar2. It uses the column name as the key and the converted column value (as char) as the value of the entry. It also offers a range of overloaded procedures to work with literal SQL statements or SYS_REFCURSOR. It also allows converting a template one time or multiple times if the statement returns more than one row.
 
 Replacing text anchors within a template is a two step process. You first prepare a statement by converting it to a PL/SQL table that holds the name of the columns and the replacement values. You then apply that PL/SQL table to your template. Should you want to convert many rows of a query at once, you prepare a list of PL/SQL tables (one for each row of the result) and process this list against your template.
+
+As an example, review this code snippet:
+```
+set serveroutput on
+declare
+  l_value_cur sys_refcursor;
+  l_tmpl varchar2(32767) := q'^#COLUMN_NAME# #COLUMN_TYPE##COLUMN_SIZE|(| char)##COLUMN_PRECISION|(|)#^';
+  l_row_tab code_generator.row_tab;
+  l_result varchar2(32767);
+begin
+  open l_value_cur for
+    select 'FIRST_COLUMN' column_name, 'VARCHAR2' column_type, '25' column_size, null column_precision from dual union all
+    select 'SECOND_COLUMN', 'NUMBER', null, '38,0' from dual union all
+    select 'THIRD_COLUMN', 'INTEGER', null, null from dual;
+  code_generator.generate_text(
+    p_cursor => l_value_cur,
+    p_template => l_tmpl,
+    p_result => l_result,
+    p_delimiter => ',' || chr(10));
+  dbms_output.put_line(l_result);
+end;
+/
+
+FIRST_COLUMN VARCHAR2(25 char),
+SECOND_COLUMN NUMBER(38,0),
+THIRD_COLUMN INTEGER
+
+```
