@@ -39,6 +39,13 @@ as
    * %param p_cur_desc DBMS_SQL.DESC_TAB2 mit den Details zu einem Cursor
    * %param p_key_value_tab PL/SQL-Tabelle mit dem Spaltennamen (KEY) und 
    *        einem initialen NULL-Wert fuer jede Spalte des Cursors
+   * %param p_first_column_is_template Flag, das anzeigt, ob in der ersten Spalte
+   *        das Template fuer diese Zeile uebergeben wird.
+   * %usage Wird verwendet, um die Spalten eines uebergebenen DBMS_SQL-Cursors
+   *        zu beschreiben. Der Code erfuellt folgende Aufgaben:
+   *        - Cursor analysieren
+   *        - PL/SQL-Tabelle mit Schluessel fuer jede Spalte erstellen, NULL-Wert belegen
+   *        - PL/SQL-Tabelleneintraege als Ausgabevariablen fuer Spaltenwert registrieren
    */
   procedure describe_columns(
     p_cur in integer,
@@ -108,6 +115,8 @@ as
    * %param p_cur_desc DBMS_SQL.DESC_TAB2 mit den Details zu einem Cursor
    * %param p_key_value_tab PL/SQL-Tabelle mit dem Spaltennamen (KEY) und 
    *        einem initialen NULL-Wert fuer jede Spalte des Cursors
+   * %param p_first_column_is_template Flag, das anzeigt, ob in der ersten Spalte
+   *        das Template fuer diese Zeile uebergeben wird.
    * %usage Ueberladung, wird verwendet, um einen Cursor zu analysieren und eine PL/SQL-Tabelle
    *        zur Aufnahme der jeweiligen Spaltenwerte unter dem Spaltennamen zu erzeugen.
    */
@@ -136,6 +145,8 @@ as
    * %param p_cur_desc DBMS_SQL.DESC_TAB2 mit den Details zu einem Cursor
    * %param p_key_value_tab PL/SQL-Tabelle mit dem Spaltennamen (KEY) und 
    *        einem initialen NULL-Wert fuer jede Spalte des Cursors
+   * %param p_first_column_is_template Flag, das anzeigt, ob in der ersten Spalte
+   *        das Template fuer diese Zeile uebergeben wird.
    * %usage Wird verwendet, um eine Zeile eines Cursor in die vorbereitete PL/SQL-
    *        Tabelle zu uebernehmen
    */
@@ -170,6 +181,8 @@ as
    *        einem initialen NULL-Wert fuer jede Spalte des Cursors
    * %param p_row_tab Liste von Instanzen KEY_VALUE_TAB, fuer jede Zeile der
    *        Ergebnismenge des Cursors
+   * %param p_first_column_is_template Flag, das anzeigt, ob in der ersten Spalte
+   *        das Template fuer diese Zeile uebergeben wird.
    * %usage Wird verwendet, alle Zeilen eines Cursor in eine Liste aus 
    *        vorbereiteten PL/SQL-Tabellen zu uebernehmen
    */
@@ -336,9 +349,7 @@ as
              regexp_substr(a, '[^#|]+', 1, 3) postfix, 
              regexp_substr(a, '[^#|]+', 1, 4) not_null
         from anchors;  
-    l_key_value_tab key_value_tab;
     l_value varchar2(4000);
-    l_result varchar2(32767);
     l_missing_anchors varchar2(4000);
   begin
     p_result := p_template;
@@ -446,8 +457,6 @@ as
     p_delimiter in varchar2 default null)
   as
     l_row_tab row_tab;
-    l_key_value_tab key_value_tab;
-    l_result varchar2(32767);
   begin
     copy_table_to_row_tab(
       p_cursor => p_cursor,
