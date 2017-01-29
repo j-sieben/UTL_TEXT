@@ -336,7 +336,7 @@ as
              regexp_substr(a, '[^#|]+', 1, 3) postfix, 
              regexp_substr(a, '[^#|]+', 1, 4) not_null
         from anchors;  
-    l_key_value_tab code_generator.key_value_tab;
+    l_key_value_tab key_value_tab;
     l_value varchar2(4000);
     l_result varchar2(32767);
     l_missing_anchors varchar2(4000);
@@ -410,10 +410,10 @@ as
   as
     l_row_tab row_tab;
   begin
-    code_generator.copy_table_to_row_tab(
+    copy_table_to_row_tab(
       p_stmt => p_stmt,
       p_row_tab => l_row_tab);
-    code_generator.bulk_replace(
+    bulk_replace(
       p_template => p_template,
       p_row_tab => l_row_tab,
       p_delimiter => p_delimiter,
@@ -449,7 +449,7 @@ as
     l_key_value_tab key_value_tab;
     l_result varchar2(32767);
   begin
-    code_generator.copy_table_to_row_tab(
+    copy_table_to_row_tab(
       p_cursor => p_cursor,
       p_row_tab => l_row_tab,
       p_first_column_is_template => true);
