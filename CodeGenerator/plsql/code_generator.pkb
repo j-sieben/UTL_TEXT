@@ -74,13 +74,10 @@ as
       p_key_value_tab(l_column_name) := null;
         
       -- Registriere Variable als Ausgabevariable dieser Spalte
-      dbms_sql.define_column_char(
+      dbms_sql.define_column(
         c => p_cur, 
         position => i,
-        column => p_key_value_tab(l_column_name), 
-        column_size => 4000);
-      -- COLUMN_SIZE = 4000 fuehrt dazu, dass CHAR(4000)-Werte erzeugt werden.
-      -- Daher muss beim Fuellen auf ein TRIM() geachtet werden.
+        column => p_key_value_tab(l_column_name));
     end loop;
   end describe_columns;
     
@@ -167,9 +164,7 @@ as
       end if;
       
       -- Aktuellen Spaltenwerte auslesen
-      dbms_sql.column_value_char(p_cur, i, p_key_value_tab(l_column_name));
-      -- Elementwert trimmen, um unnoetigen Weissraum zu entfernen 
-      p_key_value_tab(l_column_name) := trim(p_key_value_tab(l_column_name));
+      dbms_sql.column_value(p_cur, i, p_key_value_tab(l_column_name));
     end loop;
   end copy_values;
   
@@ -349,8 +344,8 @@ as
              regexp_substr(a, '[^#|]+', 1, 3) postfix, 
              regexp_substr(a, '[^#|]+', 1, 4) not_null
         from anchors;  
-    l_value varchar2(4000);
-    l_missing_anchors varchar2(4000);
+    l_value varchar2(32767);
+    l_missing_anchors varchar2(32767);
   begin
     p_result := p_template;
     for rep in replacement_cur(p_template) loop

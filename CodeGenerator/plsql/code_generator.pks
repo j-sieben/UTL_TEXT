@@ -1,7 +1,7 @@
 create or replace package code_generator
 as
 
-  type key_value_tab is table of varchar2(4000) index by varchar2(30);
+  type key_value_tab is table of clob index by varchar2(30);
   type row_tab is table of key_value_tab index by binary_integer;
     
     
@@ -22,9 +22,9 @@ as
 
   /* Prozedur zum Kopieren einer einzelnen Zeile der SQL-Anweisung in eine PL/SQL-Tabelle
    * %param p_stmt SQL-ANweisung, die fuer jeden Ersetzungsanker eine Spalte generiert.
-   *        Limitiert auf eine Zeile
+   *               Limitiert auf eine Zeile
    * %param p_key_value_tab PL/SQL-Tabelle, die als KEY-VALUE-Tabelle die Ergebnisse
-   *        von P_STMT als <Spaltenname> : <Spaltenwert> liefert.
+   *                        von P_STMT als <Spaltenname> : <Spaltenwert> liefert.
    * %usage Wird verwendet, um eine SQL-Anweisung in eine PL/SQL-Tabelle mit benannten
    *        Schluesselwerten zu migrieren
    */
@@ -49,9 +49,9 @@ as
    *  von KEY-VALUE-Tabellen. Jeder Eintrag der Tabelle enthaelt eine KEY-VALUE-Tabelle
    *  gem. COPY_ROW_TO_KEY_VALUE_TAB. Die ERgebnisliste ist INDEX BY BINARY_INTEGER.
    * %param p_stmt SQL-Anweisung mit einer Spalte pro Ersetzungsanker. Nicht auf eine
-   *        Zeile limitiert
+   *               Zeile limitiert
    * %param p_row_tab PL/SQL-Tabelle, die in jedem Eintrag eine PL/SQL-Tabelle mit#
-   *        KEY-VALUE-Paaren gem. COPY_ROW_TO_KEY_VALUE_TAB enthaelt
+   *                  KEY-VALUE-Paaren gem. COPY_ROW_TO_KEY_VALUE_TAB enthaelt
    * %usage Wird verwendet, um eine Liste von merhreren Ersetzungsankern in einem
    *        Durchgang in eine doppelte KEY-VALUE-Tabelle zu konvertieren.
    */
@@ -187,8 +187,8 @@ as
   
   /* Prozedur zur Generierung von Texten basierend auf einem dynamischen Template
    * %param p_cursor Geoffneter Cursor mit einer oder mehreren Ergebniszeilen,
-   *        Diese Ueberladung erwartet das Template, in das die Anker
-   *        eingefügt werden sollen, als erste Spalte
+   *                 Diese Ueberladung erwartet das Template, in das die Anker
+   *                 eingefügt werden sollen, als erste Spalte
    * %param p_result Ergebnis der Umwandlung
    * %param p_delimiter Abschlusszeichen, das zwischen die einzelnen Instanzen der
    *        aufbereiteten Templates gestellt wird
