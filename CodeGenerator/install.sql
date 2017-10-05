@@ -7,6 +7,9 @@ prompt &h3.Remove existing installation
 prompt &h3.Create CodeGenerator messages
 @sql/create_messages.sql
 
+prompt &h3.Create CodeGenerator types
+@sql/create_types.sql
+
 prompt &h3.Create packages
 prompt &s1.Create package CODE_GENERATOR
 @&plsql_dir.code_generator.pks
