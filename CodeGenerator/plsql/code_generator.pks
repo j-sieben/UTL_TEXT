@@ -1,278 +1,265 @@
-create or replace package code_generator 
-as
+CREATE OR REPLACE PACKAGE dwh_frame.code_generator AS
 
-  type key_value_tab is table of clob index by varchar2(30);
-  type row_tab is table of key_value_tab index by binary_integer;
-
-
-  /* Setter zum Einstellen, ob fehlende Ersetzungsanker zu einem Fehler fuehren sollen
-   * oder nicht.
+  /* DATENTYPEN */
+  TYPE key_value_tab IS TABLE OF CLOB INDEX BY VARCHAR2(30);
+  TYPE row_tab IS TABLE OF key_value_tab INDEX BY BINARY_INTEGER;
+  SUBTYPE clob_tab_type IS data_types.clob_table_type;
+  
+  
+  /* Set-Methode zum Einstellen, ob fehlende Ersetzungsanker zu einem Fehler 
+   * fuehren sollen oder nicht.
    * %param p_flag Flag, das steuert, ob im Fall fehlender Anker ein Fehler geworfen
    *        werden soll (FALSE) oder nicht (TRUE). Standard ist TRUE.
    */
-  procedure set_ignore_missing_anchors(
-    p_flag in boolean);
+  PROCEDURE set_ignore_missing_anchors(p_flag IN BOOLEAN);
 
-
-  /* Getter, der den aktuellen Stand des Flags IGNORE_MISSING_ANCHORS zurueckgibt.
+  /* Get-Methode, die den aktuellen Stand des Flags IGNORE_MISSING_ANCHORS zurueckgibt.
    */
-  function get_ignore_missing_anchors return boolean;
+  FUNCTION get_ignore_missing_anchors RETURN BOOLEAN;
+  
+  
+  /* Set-Methode stellt das Default-Datumsformat ein, das verwendet wird, 
+   * falls keine explizite Konvertierung vorgenommen wurde.
+   * Standardformat ist DD.MM.YYYY HH24:MI:SS
+   * %param p_format Formatmaske
+   */
+  PROCEDURE set_default_date_format(p_format in varchar2);
 
+  /* Get-Methode, die den aktuellen Wert des Standard-Datumsformats zurueckgibt
+   */
+  FUNCTION get_default_date_format RETURN VARCHAR2;
+  
+  
+  /* Set Methode stellt das Hauptersetzungszeichen ein
+   * Standardzeichen ist #
+   * %param p_char Zeichen, das als Ersetzungszeichen vewendet werdern soll
+   */
+  procedure set_main_anchor_char(p_char in varchar2);
+  
+  function get_main_anchor_char return varchar2;
+  
+  
+  /* Set Methode stellt das Nebenersetzungszeichen ein
+   * Standardzeichen ist ^
+   * %param p_char Zeichen, das als Ersetzungszeichen vewendet werdern soll
+   */
+  procedure set_secondary_anchor_char(p_char in varchar2);
+  
+  function get_secondary_anchor_char return varchar2;
 
   /* Prozedur zum Kopieren einer einzelnen Zeile der SQL-Anweisung in eine PL/SQL-Tabelle
-   * %param p_stmt SQL-ANweisung, die fuer jeden Ersetzungsanker eine Spalte generiert.
+   * %param p_stmt SQL-Anweisung, die fuer jeden Ersetzungsanker eine Spalte generiert.
    *               Limitiert auf eine Zeile
    * %param p_key_value_tab PL/SQL-Tabelle, die als KEY-VALUE-Tabelle die Ergebnisse
    *                        von P_STMT als <Spaltenname> : <Spaltenwert> liefert.
    * %usage Wird verwendet, um eine SQL-Anweisung in eine PL/SQL-Tabelle mit benannten
    *        Schluesselwerten zu migrieren
    */
-  procedure copy_row_to_key_value_tab(
-    p_stmt in clob,
-    p_key_value_tab in out nocopy key_value_tab);
-
+  PROCEDURE copy_row_to_key_value_tab(p_stmt          IN CLOB,
+                                      p_key_value_tab IN OUT NOCOPY key_value_tab);
 
   /* Ueberladung fuer Cursor mit einer Ergebniszeile 
-   * %param p_cursor Geoffneter Cursor
-   * %param p_key_value_tab PL/SQL-Tabelle, die als KEY-VALUE-Tabelle die Ergebnisse
-   *                        von P_STMT als <Spaltenname> : <Spaltenwert> liefert.
-   * %usage Wird verwendet, um einen Cursor in eine PL/SQL-Tabelle mit benannten
-   *        Schluesselwerten zu migrieren
-   */
-  procedure copy_row_to_key_value_tab(
-    p_cursor in out nocopy sys_refcursor,
-    p_key_value_tab in out nocopy key_value_tab);
-
+  * %param p_cursor Geoffneter Cursor
+  * %param p_key_value_tab PL/SQL-Tabelle, die als KEY-VALUE-Tabelle die Ergebnisse
+  *                        von P_STMT als <Spaltenname> : <Spaltenwert> liefert.
+  * %usage Wird verwendet, um einen Cursor in eine PL/SQL-Tabelle mit benannten
+  *        Schluesselwerten zu migrieren
+  */
+  PROCEDURE copy_row_to_key_value_tab(p_cursor        IN OUT NOCOPY SYS_REFCURSOR,
+                                      p_key_value_tab IN OUT NOCOPY key_value_tab);
 
   /* Prozedur zum Kopieren einer Ergebnismenge einer SQL-Anweisung in eine Liste
-   * von KEY-VALUE-Tabellen. Jeder Eintrag der Tabelle enthaelt eine KEY-VALUE-Tabelle
-   * gem. COPY_ROW_TO_KEY_VALUE_TAB. Die ERgebnisliste ist INDEX BY BINARY_INTEGER.
-   * %param p_stmt SQL-Anweisung mit einer Spalte pro Ersetzungsanker. Nicht auf eine
-   *               Zeile limitiert
-   * %param p_row_tab PL/SQL-Tabelle, die in jedem Eintrag eine PL/SQL-Tabelle mit#
-   *                  KEY-VALUE-Paaren gem. COPY_ROW_TO_KEY_VALUE_TAB enthaelt
-   * %usage Wird verwendet, um eine Liste von merhreren Ersetzungsankern in einem
-   *        Durchgang in eine doppelte KEY-VALUE-Tabelle zu konvertieren.
-   */
-  procedure copy_table_to_row_tab(
-    p_stmt in clob,
-    p_row_tab in out nocopy row_tab,
-    p_first_column_is_template boolean default false);
-
+  *  von KEY-VALUE-Tabellen. Jeder Eintrag der Tabelle enthaelt eine KEY-VALUE-Tabelle
+  *  gem. COPY_ROW_TO_KEY_VALUE_TAB. Die ERgebnisliste ist INDEX BY BINARY_INTEGER.
+  * %param p_stmt SQL-Anweisung mit einer Spalte pro Ersetzungsanker. Nicht auf eine
+  *               Zeile limitiert
+  * %param p_row_tab PL/SQL-Tabelle, die in jedem Eintrag eine PL/SQL-Tabelle mit#
+  *                  KEY-VALUE-Paaren gem. COPY_ROW_TO_KEY_VALUE_TAB enthaelt
+  * %usage Wird verwendet, um eine Liste von merhreren Ersetzungsankern in einem
+  *        Durchgang in eine doppelte KEY-VALUE-Tabelle zu konvertieren.
+  */
+  PROCEDURE copy_table_to_row_tab(p_stmt                     IN CLOB,
+                                  p_row_tab                  IN OUT NOCOPY row_tab,
+                                  p_first_column_is_template BOOLEAN DEFAULT FALSE);
 
   /* Prozedur zum Kopieren einer Ergebnismenge einer SQL-Anweisung in eine Liste
-   * von KEY-VALUE-Tabellen. Jeder Eintrag der Tabelle enthaelt eine KEY-VALUE-Tabelle
-   * gem. COPY_ROW_TO_KEY_VALUE_TAB. Die ERgebnisliste ist INDEX BY BINARY_INTEGER.
-   * %param p_cursor Geoffneter Cursor, der mehr als eine Zeile liefern kann
-   * %param p_row_tab PL/SQL-Tabelle, die in jedem Eintrag eine PL/SQL-Tabelle mit#
-   *        KEY-VALUE-Paaren gem. COPY_ROW_TO_KEY_VALUE_TAB enthaelt
-   * %param p_first_column_is_template Flag, das anzeigt, ob in der ersten Spalte
-   *        das Template fuer diese Zeile uebergeben wird.
-   * %usage Wird verwendet, um eine Liste von merhreren Ersetzungsankern in einem
-   *        Durchgang in eine doppelte KEY-VALUE-Tabelle zu konvertieren.
-   */
-  procedure copy_table_to_row_tab(
-    p_cursor in out nocopy sys_refcursor,
-    p_row_tab in out nocopy row_tab,
-    p_first_column_is_template boolean default false);
-
-
-  /* Funktion zum Ersetzen alle Ersezungsanker in einem Template
-   + %param p_template Template mit Ersetzungsankern. Syntax der Ersetzungsanker:
-   *        #<Name des Ersetzungsankers, muss Tabellenspalte entsprechen>
-   *        |<Praefix, falls Wert not null>
-   *        |<Postfix, falls Wert not null>
-   *        |<Wert, falls NULL>#
-   *        Alle PIPE-Zeichen und Klauseln sind optional, muessen aber, wenn sie 
-   *        verwendet werden, in dieser Reihenfolge eingesetzt werden.
-   *        Beispiel: #VORNAME||, |# => Falls vorhanden wird hinter dem Vornamen ein Komma eingefuegt
-   * %param p_chunks Instanz vom Typ CHAR_TABLE, uebergibt eine Liste von Ankern und Ersetzungswerten
-   *                 analog zu z.B. Funktion DECODE
-   * %param p_result Ergebnis der Umwandlung
-   * %usage Der Prozedur werden ein Template und eine Liste von Ersetzungsankern und Ersetzungszeichenfolgen
-   *        uebergeben. Alle Ersetzungsanker werden im Template ersetzt und als Zeichenkette zurueckgegeben
-   */
-  function bulk_replace(
-    p_template in varchar2,
-    p_chunks in char_table)
-    return varchar2;
-    
-  /* Ueberladung als Prozedur, Template wird nicht geaendert
-   */
-  procedure bulk_replace(
-    p_template in varchar2,
-    p_chunks in char_table,
-    p_result out varchar2);
-    
-    
-  /* Ueberladung als Prozedur, P_TEXT wird mit ersetzten Zeichenfolgen zurueckgegeben
-   */
-  procedure bulk_replace(
-    p_text in out nocopy varchar2,
-    p_chunks in char_table);
-
+  * von KEY-VALUE-Tabellen. Jeder Eintrag der Tabelle enthaelt eine KEY-VALUE-Tabelle
+  * gem. COPY_ROW_TO_KEY_VALUE_TAB. Die ERgebnisliste ist INDEX BY BINARY_INTEGER.
+  * %param p_cursor Geoffneter Cursor, der mehr als eine Zeile liefern kann
+  * %param p_row_tab PL/SQL-Tabelle, die in jedem Eintrag eine PL/SQL-Tabelle mit#
+  *        KEY-VALUE-Paaren gem. COPY_ROW_TO_KEY_VALUE_TAB enthaelt
+  * %param p_first_column_is_template Flag, das anzeigt, ob in der ersten Spalte
+  *        das Template fuer diese Zeile uebergeben wird.
+  * %usage Wird verwendet, um eine Liste von merhreren Ersetzungsankern in einem
+  *        Durchgang in eine doppelte KEY-VALUE-Tabelle zu konvertieren.
+  */
+  PROCEDURE copy_table_to_row_tab(p_cursor                   IN OUT NOCOPY SYS_REFCURSOR,
+                                  p_row_tab                  IN OUT NOCOPY row_tab,
+                                  p_first_column_is_template BOOLEAN DEFAULT FALSE);
 
   /* Prozedur zum Ersetzen aller Ersetzungsanker einer PL/SQL-Tabelle in einem Template
-   * %param p_template Template mit Ersetzungsankern. Syntax der Ersetzungsanker:
-   *        #<Name des Ersetzungsankers, muss Tabellenspalte entsprechen>
-   *        |<Praefix, falls Wert not null>
-   *        |<Postfix, falls Wert not null>
-   *        |<Wert, falls NULL>#
-   *        Alle PIPE-Zeichen und Klauseln sind optional, muessen aber, wenn sie 
-   *        verwendet werden, in dieser Reihenfolge eingesetzt werden.
-   *        Beispiel: #VORNAME||, |# => Falls vorhanden wird hinter dem Vornamen ein Komma eingefuegt
-   * %param p_key_value_tab Tabelle von KEY-VALUE-Paaren, erzeugt ueber COPY_ROW_TO_KEY_VALUE_TAB
-   * %param p_result Ergebnis der Umwandlung
-   * %usage Der Prozedur werden ein Template und eine aufbereitete Liste von Ersetzungsankern und
-   *        Ersetzungswerten uebergeben. Die Methode ersetzt alle Anker im Template durch
-   *        die Ersetzungswerte in der PL/SQL-Tabelle und analysiert dabei NULL-Werte,
-   *        um diese durch die Ersatzwerte zu ersetzen. Ist der Wert nicht NULL, werden
-   *        PRE-und POSTFIX-Werte eingefuegt, falls im Ersetzungsanker definiert.
-   */
-  procedure bulk_replace(
-    p_template in varchar2,
-    p_key_value_tab in key_value_tab,
-    p_result out varchar2);
-
+  * %param p_template Template mit Ersetzungsankern. Syntax der Ersetzungsanker:
+  *        #<Name des Ersetzungsankers, muss Tabellenspalte entsprechen>
+  *        |<Pr�fix, falls Wert not null>
+  *        |<Postfix, falls Wert not null>
+  *        |<Wert, falls NULL>#
+  *        Alle PIPE-Zeichen und Klauseln sind optional, muessen aber, wenn sie 
+  *        verwendet werden, in dieser Reihenfolge eingesetzt werden.
+  *        Beispiel: #VORNAME||, |# => Falls vorhanden wird hinter dem Vornamen ein Komma eingefuegt
+  * %param p_key_value_tab Tabelle von KEY-VALUE-Paaren, erzeugt ueber COPY_ROW_TO_KEY_VALUE_TAB
+  * %param p_result Ergebnis der Umwandlung
+  * %usage Der Prozedur werden ein Template und eine aufbereitete Liste von Ersetzungsankern und
+  *        Ersetzungswerten uebergeben. Die Methode ersetzt alle Anker im Template durch
+  *        die Ersetzungswerte in der PL/SQL-Tabelle und analysiert dabei NULL-Werte,
+  *        um diese durch die Ersatzwerte zu ersetzen. Ist der Wert nicht NULL, werden
+  *        PRE-und POSTFIX-Werte eingefuegt, falls im Ersetzungsanker definiert.
+  */
+  PROCEDURE bulk_replace(p_template      IN VARCHAR2,
+                         p_key_value_tab IN key_value_tab,
+                         p_result        OUT VARCHAR2);
+                         
+  /* Ueberladung als Funktion */
+  FUNCTION bulk_replace(p_template      IN VARCHAR2,
+                        p_key_value_tab IN key_value_tab) RETURN VARCHAR2;
 
   /* Prozedur zum Ersetzen aller Ersetzungsanker mehrer PL/SQL-Tabellen in einem Template
-   * %param p_template Template mit Ersetzungsankern. Syntax der Ersetzungsanker:
-   *        #<Name des Ersetzungsankers, muss Tabellenspalte entsprechen>
-   *        |<Praefix, falls Wert not null>
-   *        |<Postfix, falls Wert not null>
-   *        |<Wert, falls NULL>#
-   *        Alle PIPE-Zeichen und Klauseln sind optional, muessen aber, wenn sie 
-   *        verwendet werden, in dieser Reihenfolge eingesetzt werden.
-   *        Beispiel: #VORNAME||, |# => Falls vorhanden wird hinter dem Vornamen ein Komma eingefuegt
-   * %param p_row_tab Liste mit Tabelle von KEY-VALUE-Paaren, erzeugt ueber COPY_TABLE_TO_ROW_TAB
-   * %param p_delimiter Abschlusszeichen, das zwischen die einzelnen Instanzen der
-   *        aufbereiteten Templates gestellt wird
-   * %param p_result Ergebnis der Umwandlung
-   * %param p_first_column_is_template Flag, das anzeigt, ob in der ersten Spalte
-   *        das Template fuer diese Zeile uebergeben wird.
-   * %usage Der Prozedur werden ein Template und eine Liste mit aufbereiteten Ersetzungsankern und
-   *        Ersetzungswerten uebergeben. Die Methode ersetzt fuer jede Zeile der Liste
-   *        P_ROW_TAB alle Anker im Template durch die Ersetzungswerte in der PL/SQL-Tabelle 
-   *        und analysiert dabei NULL-Werte, um diese durch die Ersatzwerte zu ersetzen. 
-   *        Ist der Wert nicht NULL, werden PRE-und POSTFIX-Werte eingefuegt, falls im Ersetzungsanker definiert.
-   *        Das Ergebnis umfasst alle Ersetzungen in Templates fuer jede Zeile der Liste
-   *        P_ROW_TAB, die einzelnen Ersetzungszeichenfolgen sind durch P_DELIMITER
-   *        aneinander gekoppelt. Der letzte Eintrag endet nicht auf P_DELIMITER
-   */
-  procedure bulk_replace(
-    p_template in varchar2,
-    p_row_tab in row_tab,
-    p_delimiter in varchar2,
-    p_result out varchar2,
-    p_first_column_is_template boolean default false);
-
+  * %param p_template Template mit Ersetzungsankern. Syntax der Ersetzungsanker:
+  *        #<Name des Ersetzungsankers, muss Tabellenspalte entsprechen>
+  *        |<Pr�fix, falls Wert not null>
+  *        |<Postfix, falls Wert not null>
+  *        |<Wert, falls NULL>#
+  *        Alle PIPE-Zeichen und Klauseln sind optional, muessen aber, wenn sie 
+  *        verwendet werden, in dieser Reihenfolge eingesetzt werden.
+  *        Beispiel: #VORNAME||, |# => Falls vorhanden wird hinter dem Vornamen ein Komma eingefuegt
+  * %param p_row_tab Liste mit Tabelle von KEY-VALUE-Paaren, erzeugt ueber COPY_TABLE_TO_ROW_TAB
+  * %param p_delimiter Abschlusszeichen, das zwischen die einzelnen Instanzen der
+  *        aufbereiteten Templates gestellt wird
+  * %param p_result Ergebnis der Umwandlung
+  * %param p_first_column_is_template Flag, das anzeigt, ob in der ersten Spalte
+  *        das Template fuer diese Zeile uebergeben wird.
+  * %usage Der Prozedur werden ein Template und eine Liste mit aufbereiteten Ersetzungsankern und
+  *        Ersetzungswerten uebergeben. Die Methode ersetzt fuer jede Zeile der Liste
+  *        P_ROW_TAB alle Anker im Template durch die Ersetzungswerte in der PL/SQL-Tabelle 
+  *        und analysiert dabei NULL-Werte, um diese durch die Ersatzwerte zu ersetzen. 
+  *        Ist der Wert nicht NULL, werden PRE-und POSTFIX-Werte eingefuegt, falls im Ersetzungsanker definiert.
+  *        Das Ergebnis umfasst alle Ersetzungen in Templates fuer jede Zeile der Liste
+  *        P_ROW_TAB, die einzelnen Ersetzungszeichenfolgen sind durch P_DELIMITER
+  *        aneinander gekoppelt. Der letzte Eintrag endet nicht auf P_DELIMITER
+  */
+  PROCEDURE bulk_replace(p_template                 IN VARCHAR2,
+                         p_row_tab                  IN row_tab,
+                         p_delimiter                IN VARCHAR2,
+                         p_result                   OUT CLOB,
+                         p_first_column_is_template BOOLEAN DEFAULT FALSE);
 
   /* Prozedur zum direkten Ersetzen von Zeichenfolgen in einem Template durch die 
    * Ergebnisse der SQL-Abfrage
    * %param p_template Template mit Ersetzungsankern. Syntax der Ersetzungsanker:
    *        #<Name des Ersetzungsankers, muss Tabellenspalte entsprechen>
-   *        |<Praefix, falls Wert not null>
+   *        |<Pr�fix, falls Wert not null>
    *        |<Postfix, falls Wert not null>
-   *        |<Wert, falls NULL>#
+   *        |<Wert, falls NULL># 
    *        Alle PIPE-Zeichen und Klauseln sind optional, muessen aber, wenn sie 
    *        verwendet werden, in dieser Reihenfolge eingesetzt werden.
    *        Beispiel: #VORNAME||, |# => Falls vorhanden wird hinter dem Vornamen ein Komma eingefuegt
+   *        Soll innerhalb einer Ersetzungszeichenfolge ein Anker verwendet werden, muss dieser
+   *        abweichend durch eine Tilde (~) maskiert werden. Auf diese Weise kann ein Anker im 
+   *        auf einen weiteren Anker verweisen.
+   *        Beispiel: #NACHNAME||, |~VORNAME~# => Liefert, Vorname, falls Nachname NULL
    * %param p_stmt SQL-Anweisung mit einer Spalte pro Ersetzungsanker. Nicht auf eine
    *               Zeile limitiert
    * %param p_result Ergebnis der Umwandlung
-   * %param p_delimiter Abschlusszeichen, das zwischen die einzelnen Instanzen der
+   * %param p_delimiter Abschlusszeichen, das zwischen die einzelnen Instanzen der 
    *        aufbereiteten Templates gestellt wird
    * %usage Wird verwendet, um direkt aus einer SQL-Anweisung und einem Template
    *        einen Ergebnistext zu erzeugen. Umfasst die SQL-Anweisung mehrere Zeilen,
    *        kann optional ein Parameter P_DELIMITER als Trennzeichen zwischen den
    *        einzelnen Zeilen uebergeben werden.
    */
-  procedure generate_text(
-    p_template in varchar2,
-    p_stmt in clob,
-    p_result out varchar2,
-    p_delimiter in varchar2 default null);
-
+  PROCEDURE generate_text(p_template  IN VARCHAR2,
+                          p_stmt      IN CLOB,
+                          p_result    OUT VARCHAR2,
+                          p_delimiter IN VARCHAR2 DEFAULT NULL);
 
   /* Prozedur zum direkten Ersetzen von Zeichenfolgen in einem Template durch die 
-   * Ergebnisse der SQL-Abfrage
-   * %param p_template Template mit Ersetzungsankern. Syntax der Ersetzungsanker:
-   *        #<Name des Ersetzungsankers, muss Tabellenspalte entsprechen>
-   *        |<Praefix, falls Wert not null>
-   *        |<Postfix, falls Wert not null>
-   *        |<Wert, falls NULL>#
-   *        Alle PIPE-Zeichen und Klauseln sind optional, muessen aber, wenn sie 
-   *        verwendet werden, in dieser Reihenfolge eingesetzt werden.
-   *        Beispiel: #VORNAME||, |# => Falls vorhanden wird hinter dem Vornamen ein Komma eingefuegt
-   * %param p_cursor Geoffneter Cursor mit einer oder mehreren Ergebniszeilen
-   * %param p_result Ergebnis der Umwandlung
-   * %param p_delimiter Abschlusszeichen, das zwischen die einzelnen Instanzen der
-   *        aufbereiteten Templates gestellt wird
-   * %usage Wird verwendet, um direkt aus einer SQL-Anweisung und einem Template
-   *        einen Ergebnistext zu erzeugen. Umfasst die SQL-Anweisung mehrere Zeilen,
-   *        kann optional ein Parameter P_DELIMITER als Trennzeichen zwischen den
-   *        einzelnen Zeilen uebergeben werden.
-   */
-  procedure generate_text(
-    p_template in varchar2,
-    p_cursor in out nocopy sys_refcursor,
-    p_result out varchar2,
-    p_delimiter in varchar2 default null);
-
+  * Ergebnisse der SQL-Abfrage
+  * %param p_template Template mit Ersetzungsankern. Syntax der Ersetzungsanker:
+  *        #<Name des Ersetzungsankers, muss Tabellenspalte entsprechen>
+  *        |<Pr�fix, falls Wert not null>
+  *        |<Postfix, falls Wert not null>
+  *        |<Wert, falls NULL>#
+  *        Alle PIPE-Zeichen und Klauseln sind optional, muessen aber, wenn sie 
+  *        verwendet werden, in dieser Reihenfolge eingesetzt werden.
+  *        Beispiel: #VORNAME||, |# => Falls vorhanden wird hinter dem Vornamen ein Komma eingefuegt
+  * %param p_cursor Geoffneter Cursor mit einer oder mehreren Ergebniszeilen
+  * %param p_result Ergebnis der Umwandlung
+  * %param p_delimiter Abschlusszeichen, das zwischen die einzelnen Instanzen der
+  *        aufbereiteten Templates gestellt wird
+  * %usage Wird verwendet, um direkt aus einer SQL-Anweisung und einem Template
+  *        einen Ergebnistext zu erzeugen. Umfasst die SQL-Anweisung mehrere Zeilen,
+  *        kann optional ein Parameter P_DELIMITER als Trennzeichen zwischen den
+  *        einzelnen Zeilen uebergeben werden.
+  */
+  PROCEDURE generate_text(p_template  IN VARCHAR2,
+                          p_cursor    IN OUT NOCOPY SYS_REFCURSOR,
+                          p_result    OUT VARCHAR2,
+                          p_delimiter IN VARCHAR2 DEFAULT NULL);
 
   /* Prozedur zur Generierung von Texten basierend auf einem dynamischen Template
-   * %param p_cursor Geoffneter Cursor mit einer oder mehreren Ergebniszeilen,
-   *                 Diese Ueberladung erwartet das Template, in das die Anker
-   *                 eingefuegt werden sollen, als erste Spalte
-   * %param p_result Ergebnis der Umwandlung
-   * %param p_delimiter Abschlusszeichen, das zwischen die einzelnen Instanzen der
-   *        aufbereiteten Templates gestellt wird
-   * %usage Wird verwendet, um direkt aus einer SQL-Anweisung und einem Template
-   *        einen Ergebnistext zu erzeugen. Umfasst die SQL-Anweisung mehrere Zeilen,
-   *        kann optional ein Parameter P_DELIMITER als Trennzeichen zwischen den
-   *        einzelnen Zeilen uebergeben werden.
-   *        Da kein Template uebergeben wird, erwartet diese Ueberladung das 
-   *        Template als erste Spalte der SQL-Anweisung. Die SQL-Anweisung muss
-   *        alle Ersetzungsanker in allen uebergebenen Templates fuellen koennen.
-   */
-  procedure generate_text(
-    p_cursor in out nocopy sys_refcursor,
-    p_result out varchar2,
-    p_delimiter in varchar2 default null);
-
+  * %param p_cursor Geoffneter Cursor mit einer oder mehreren Ergebniszeilen,
+  *                 Diese Ueberladung erwartet das Template, in das die Anker
+  *                 eingef�gt werden sollen, als erste Spalte
+  * %param p_result Ergebnis der Umwandlung
+  * %param p_delimiter Abschlusszeichen, das zwischen die einzelnen Instanzen der
+  *        aufbereiteten Templates gestellt wird
+  * %usage Wird verwendet, um direkt aus einer SQL-Anweisung und einem Template
+  *        einen Ergebnistext zu erzeugen. Umfasst die SQL-Anweisung mehrere Zeilen,
+  *        kann optional ein Parameter P_DELIMITER als Trennzeichen zwischen den
+  *        einzelnen Zeilen uebergeben werden.
+  *        Da kein Template uebergeben wird, erwartet diese Ueberladung das 
+  *        Template als erste Spalte der SQL-Anweisung. Die SQL-Anweisung muss
+  *        alle Ersetzungsanker in allen uebergebenen Templates fuellen koennen.
+  */
+  PROCEDURE generate_text(p_cursor    IN OUT NOCOPY SYS_REFCURSOR,
+                          p_result    OUT VARCHAR2,
+                          p_delimiter IN VARCHAR2 DEFAULT NULL);
 
   /* Prozedur zur Generierung von Texten basierend auf einem dynamischen Template
-   * %param SQL-Anweisung mit einer Spalte pro Ersetzungsanker. Nicht auf eine Zeile limitiert.
-   *                 Diese Ueberladung erwartet das Template, in das die Anker
-   *                 eingefuegt werden sollen, als erste Spalte
-   * %param p_result Ergebnis der Umwandlung
-   * %param p_delimiter Abschlusszeichen, das zwischen die einzelnen Instanzen der
-   *        aufbereiteten Templates gestellt wird
-   * %usage Wird verwendet, um direkt aus einer SQL-Anweisung und einem Template
-   *        einen Ergebnistext zu erzeugen. Umfasst die SQL-Anweisung mehrere Zeilen,
-   *        kann optional ein Parameter P_DELIMITER als Trennzeichen zwischen den
-   *        einzelnen Zeilen uebergeben werden.
-   *        Da kein Template uebergeben wird, erwartet diese Ueberladung das 
-   *        Template als erste Spalte der SQL-Anweisung. Die SQL-Anweisung muss
-   *        alle Ersetzungsanker in allen uebergebenen Templates fuellen koennen.
-   */
-  procedure generate_text(
-    p_stmt in clob,
-    p_result out varchar2,
-    p_delimiter in varchar2 default null);
+  * %param SQL-Anweisung mit einer Spalte pro Ersetzungsanker. Nicht auf eine Zeile limitiert.
+  *                 Diese Ueberladung erwartet das Template, in das die Anker
+  *                 eingef�gt werden sollen, als erste Spalte
+  * %param p_result Ergebnis der Umwandlung
+  * %param p_delimiter Abschlusszeichen, das zwischen die einzelnen Instanzen der
+  *        aufbereiteten Templates gestellt wird
+  * %usage Wird verwendet, um direkt aus einer SQL-Anweisung und einem Template
+  *        einen Ergebnistext zu erzeugen. Umfasst die SQL-Anweisung mehrere Zeilen,
+  *        kann optional ein Parameter P_DELIMITER als Trennzeichen zwischen den
+  *        einzelnen Zeilen uebergeben werden.
+  *        Da kein Template uebergeben wird, erwartet diese Ueberladung das 
+  *        Template als erste Spalte der SQL-Anweisung. Die SQL-Anweisung muss
+  *        alle Ersetzungsanker in allen uebergebenen Templates fuellen koennen.
+  */
+  PROCEDURE generate_text(p_stmt      IN CLOB,
+                          p_result    OUT CLOB,
+                          p_delimiter IN VARCHAR2 DEFAULT NULL);
 
-  procedure generate_text(
-    p_stmt in clob,
-    p_result out dbms_sql.varchar2a,
-    p_delimiter in varchar2 default null);
+  PROCEDURE generate_text(p_stmt      IN CLOB,
+                          p_result    OUT dbms_sql.varchar2a,
+                          p_delimiter IN VARCHAR2 DEFAULT NULL);
+                          
+  PROCEDURE generate_text(p_cursor    IN OUT NOCOPY sys_refcursor,
+                          p_result    OUT dbms_sql.varchar2a,
+                          p_delimiter IN VARCHAR2 DEFAULT NULL);
 
-  function generate_text(
-    p_cursor in sys_refcursor,
-    p_delimiter in varchar2 default null) return varchar2;
+  PROCEDURE generate_text(p_cursor    IN OUT NOCOPY sys_refcursor,
+                          p_result    OUT clob_tab_type,
+                          p_delimiter IN VARCHAR2 DEFAULT NULL);
+                          
+  FUNCTION generate_text(p_cursor    IN SYS_REFCURSOR,
+                         p_delimiter IN VARCHAR2 DEFAULT NULL) RETURN CLOB;
 
-  function generate_text(
-    p_stmt in clob,
-    p_delimiter in varchar2 default null) return varchar2;
+  FUNCTION generate_text(p_stmt      IN CLOB,
+                         p_delimiter IN VARCHAR2 DEFAULT NULL) RETURN CLOB;
 
-end code_generator;
+END code_generator;
 /
