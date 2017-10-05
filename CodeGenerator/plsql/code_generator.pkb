@@ -522,7 +522,7 @@ CREATE OR REPLACE PACKAGE BODY dwh_frame.code_generator AS
   PROCEDURE bulk_replace(p_template                 IN VARCHAR2,
                          p_row_tab                  IN row_tab,
                          p_delimiter                IN VARCHAR2,
-                         p_result                   OUT clob_tab_type,
+                         p_result                   OUT clob_table,
                          p_first_column_is_template BOOLEAN DEFAULT FALSE) AS
     l_result        VARCHAR2(32767);
     l_template      VARCHAR2(4000);
@@ -656,7 +656,7 @@ CREATE OR REPLACE PACKAGE BODY dwh_frame.code_generator AS
   
   
   PROCEDURE generate_text(p_cursor    IN OUT NOCOPY sys_refcursor,
-                          p_result    OUT clob_tab_type,
+                          p_result    OUT clob_table,
                           p_delimiter IN VARCHAR2 DEFAULT NULL) AS
     l_row_tab row_tab;
   BEGIN
