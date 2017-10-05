@@ -3,7 +3,6 @@ CREATE OR REPLACE PACKAGE dwh_frame.code_generator AS
   /* DATENTYPEN */
   TYPE key_value_tab IS TABLE OF CLOB INDEX BY VARCHAR2(30);
   TYPE row_tab IS TABLE OF key_value_tab INDEX BY BINARY_INTEGER;
-  SUBTYPE clob_tab_type IS data_types.clob_table_type;
   
   
   /* Set-Methode zum Einstellen, ob fehlende Ersetzungsanker zu einem Fehler 
@@ -252,7 +251,7 @@ CREATE OR REPLACE PACKAGE dwh_frame.code_generator AS
                           p_delimiter IN VARCHAR2 DEFAULT NULL);
 
   PROCEDURE generate_text(p_cursor    IN OUT NOCOPY sys_refcursor,
-                          p_result    OUT clob_tab_type,
+                          p_result    OUT clob_table,
                           p_delimiter IN VARCHAR2 DEFAULT NULL);
                           
   FUNCTION generate_text(p_cursor    IN SYS_REFCURSOR,
