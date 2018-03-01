@@ -63,7 +63,7 @@ as
    */
   function bulk_replace(
     p_template in clob,
-    p_chunks   in varchar_4000_table,
+    p_chunks   in clob_table,
     p_indent   in number default 0)
     return clob;
 
