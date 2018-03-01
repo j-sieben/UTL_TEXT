@@ -916,7 +916,7 @@ create or replace package body dwh_frame.code_generator as
   
   function bulk_replace(
     p_template in clob,
-    p_chunks   in varchar_4000_table,
+    p_chunks   in clob_table,
     p_indent   in number default 0)
     return clob
   as
@@ -927,7 +927,7 @@ create or replace package body dwh_frame.code_generator as
     if p_chunks is not null then
       for i in p_chunks.first .. p_chunks.last loop
         if mod(i, 2) = 1 then
-          l_key_value_tab(replace(p_chunks(i), g_main_anchor_char)) := p_chunks(i + 1);
+          l_key_value_tab(replace(substr(p_chunks(i), 1, 30), g_main_anchor_char)) := p_chunks(i + 1);
         end if;
       end loop;
       bulk_replace(
