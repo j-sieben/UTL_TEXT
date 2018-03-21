@@ -1,4 +1,4 @@
-create or replace package dwh_frame.code_generator 
+create or replace package code_generator 
 as
 
   
