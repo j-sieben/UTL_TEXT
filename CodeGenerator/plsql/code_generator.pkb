@@ -1,4 +1,4 @@
-create or replace package body dwh_frame.code_generator as
+create or replace package body code_generator as
 
   c_row_template constant varchar2(30) := '$$ROW_TEMPLATE';
   c_date_type    constant binary_integer := 12;
