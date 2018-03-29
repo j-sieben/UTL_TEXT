@@ -1,7 +1,8 @@
 create or replace package body code_generator as
 
-  c_row_template constant varchar2(30) := '$$ROW_TEMPLATE';
-  c_date_type    constant binary_integer := 12;
+  c_row_template           constant varchar2(30) := '$$ROW_TEMPLATE';
+  c_date_type              constant binary_integer := 12;
+  c_anchor_delimiter       constant char(1 byte) := '|';
   g_ignore_missing_anchors boolean;
   g_default_date_format    varchar2(200);
   g_main_anchor_char       char(1 char);
@@ -75,9 +76,10 @@ create or replace package body code_generator as
     l_column_type  integer;
     l_cnt          binary_integer := 0;
   begin
-    dbms_sql.describe_columns2(c       => p_cur
-                              ,col_cnt => l_column_count
-                              ,desc_t  => p_cur_desc);
+    dbms_sql.describe_columns2(
+      c => p_cur,
+      col_cnt => l_column_count,
+      desc_t => p_cur_desc);
                               
     for i in 1 .. l_column_count loop
       if i = 1 and p_first_column_is_template then
@@ -95,13 +97,15 @@ create or replace package body code_generator as
       
       -- Registriere Variable als Ausgabevariable dieser Spalte
       if l_column_type = c_date_type then
-        dbms_sql.define_column(c        => p_cur
-                              ,position => l_cnt
-                              ,column   => l_ref_rec.r_date);
+        dbms_sql.define_column(
+          c => p_cur,
+          position => l_cnt,
+          column => l_ref_rec.r_date);
       else
-        dbms_sql.define_column(c        => p_cur
-                              ,position => l_cnt
-                              ,column   => l_ref_rec.r_clob);
+        dbms_sql.define_column(
+          c => p_cur,
+          position => l_cnt,
+          column => l_ref_rec.r_clob);
       end if;
     end loop;
   end describe_columns;
@@ -223,10 +227,11 @@ create or replace package body code_generator as
   as
   begin
     while dbms_sql.fetch_rows(p_cur) > 0 loop
-      copy_values(p_cur                      => p_cur
-                 ,p_cur_desc                 => p_cur_desc
-                 ,p_key_value_tab            => p_key_value_tab
-                 ,p_first_column_is_template => p_first_column_is_template);
+      copy_values(
+        p_cur => p_cur,
+        p_cur_desc => p_cur_desc,
+        p_key_value_tab => p_key_value_tab,
+        p_first_column_is_template => p_first_column_is_template);
     
       p_row_tab(dbms_sql.last_row_count) := p_key_value_tab;
     end loop;
@@ -263,18 +268,20 @@ create or replace package body code_generator as
     p_stmt          in clob,
     p_key_value_tab in out nocopy key_value_tab) 
   as
-    l_cur      integer;
+    l_cur integer;
     l_cur_desc dbms_sql.desc_tab2;
   begin
-    describe_cursor(p_stmt          => p_stmt
-                   ,p_cur           => l_cur
-                   ,p_cur_desc      => l_cur_desc
-                   ,p_key_value_tab => p_key_value_tab);
+    describe_cursor(
+      p_stmt => p_stmt,
+      p_cur => l_cur,
+      p_cur_desc => l_cur_desc,
+      p_key_value_tab => p_key_value_tab);
   
     if dbms_sql.fetch_rows(l_cur) > 0 then
-      copy_values(l_cur
-                 ,l_cur_desc
-                 ,p_key_value_tab);
+      copy_values(
+        p_cur => l_cur,
+        p_cur_desc => l_cur_desc
+        p_key_value_tab => p_key_value_tab);
     end if;
   
     dbms_sql.close_cursor(l_cur);
@@ -295,15 +302,17 @@ create or replace package body code_generator as
     l_cur      integer;
     l_cur_desc dbms_sql.desc_tab2;
   begin
-    describe_cursor(p_cursor        => p_cursor
-                   ,p_cur           => l_cur
-                   ,p_cur_desc      => l_cur_desc
-                   ,p_key_value_tab => p_key_value_tab);
+    describe_cursor(
+      p_cursor => p_cursor,
+      p_cur => l_cur,
+      p_cur_desc => l_cur_desc,
+      p_key_value_tab => p_key_value_tab);
   
     if dbms_sql.fetch_rows(l_cur) > 0 then
-      copy_values(l_cur
-                 ,l_cur_desc
-                 ,p_key_value_tab);
+      copy_values(
+        p_cur => l_cur,
+        p_cur_desc => l_cur_desc,
+        p_key_value_tab => p_key_value_tab);
     end if;
   
     dbms_sql.close_cursor(l_cur);
@@ -329,17 +338,19 @@ create or replace package body code_generator as
     l_cur_desc      dbms_sql.desc_tab2;
     l_key_value_tab key_value_tab;
   begin
-    describe_cursor(p_stmt                     => p_stmt
-                   ,p_cur                      => l_cur
-                   ,p_cur_desc                 => l_cur_desc
-                   ,p_key_value_tab            => l_key_value_tab
-                   ,p_first_column_is_template => p_first_column_is_template);
+    describe_cursor(
+      p_stmt => p_stmt,
+      p_cur  => l_cur,
+      p_cur_desc => l_cur_desc,
+      p_key_value_tab => l_key_value_tab,
+      p_first_column_is_template => p_first_column_is_template);
   
-    copy_values(p_cur                      => l_cur
-               ,p_cur_desc                 => l_cur_desc
-               ,p_key_value_tab            => l_key_value_tab
-               ,p_row_tab                  => p_row_tab
-               ,p_first_column_is_template => p_first_column_is_template);
+    copy_values(
+      p_cur => l_cur,
+      p_cur_desc => l_cur_desc,
+      p_key_value_tab => l_key_value_tab,
+      p_row_tab => p_row_tab,
+      p_first_column_is_template => p_first_column_is_template);
   
     dbms_sql.close_cursor(l_cur);
   end copy_table_to_row_tab;
@@ -365,17 +376,19 @@ create or replace package body code_generator as
     l_cur_desc      dbms_sql.desc_tab2;
     l_key_value_tab key_value_tab;
   begin
-    describe_cursor(p_cursor                   => p_cursor
-                   ,p_cur                      => l_cur
-                   ,p_cur_desc                 => l_cur_desc
-                   ,p_key_value_tab            => l_key_value_tab
-                   ,p_first_column_is_template => p_first_column_is_template);
+    describe_cursor(
+      p_cursor => p_cursor,
+      p_cur => l_cur,
+      p_cur_desc => l_cur_desc,
+      p_key_value_tab => l_key_value_tab,
+      p_first_column_is_template => p_first_column_is_template);
   
-    copy_values(p_cur                      => l_cur
-               ,p_cur_desc                 => l_cur_desc
-               ,p_key_value_tab            => l_key_value_tab
-               ,p_row_tab                  => p_row_tab
-               ,p_first_column_is_template => p_first_column_is_template);
+    copy_values(
+      p_cur => l_cur,
+      p_cur_desc => l_cur_desc,
+      p_key_value_tab => l_key_value_tab,
+      p_row_tab => p_row_tab,
+      p_first_column_is_template => p_first_column_is_template);
   
     dbms_sql.close_cursor(l_cur);
   end copy_table_to_row_tab;
@@ -407,6 +420,8 @@ create or replace package body code_generator as
     p_indent        in number) 
   as
     c_regex constant varchar2(20) := g_main_anchor_char || '.+?' || g_main_anchor_char;
+    c_regex_anchor constant varchar2(20) := '[^|]+';
+    c_regex_replacement constant varchar2(20) := '(.*?)(\||$)';
       
     /* SQL-Anweisung, um generisch aus einem Template alle Ersetzungsanker auszulesen und 
      * optionale Pre- und Postfixe sowie Ersatzwerte fuer NULL zu ermitteln
@@ -417,10 +432,10 @@ create or replace package body code_generator as
                   from dual
                connect by level <= regexp_count(p_template, g_main_anchor_char) / 2)
       select g_main_anchor_char || replacement_string || g_main_anchor_char as replacement_string,
-             upper(regexp_substr(replacement_string, '[^|]+', 1, 1)) anchor,
-             regexp_substr(replacement_string, '(.*?)(\||$)', 1, 2, null, 1) prefix,
-             regexp_substr(replacement_string, '(.*?)(\||$)', 1, 3, null, 1) postfix,
-             regexp_substr(replacement_string,'(.*?)(\||$)', 1, 4, null, 1) null_value
+             upper(regexp_substr(replacement_string, c_regex_anchor, 1, 1)) anchor,
+             regexp_substr(replacement_string, c_regex_replacement, 1, 2, null, 1) prefix,
+             regexp_substr(replacement_string, c_regex_replacement, 1, 3, null, 1) postfix,
+             regexp_substr(replacement_string, c_regex_replacement, 1, 4, null, 1) null_value
         from anchors;
   
     l_anchor_value    clob;
@@ -444,12 +459,12 @@ create or replace package body code_generator as
         end if;
       else
         -- Ersetzungszeichenfolge ist in Ersetzungsliste nicht enthalten
-        l_missing_anchors := l_missing_anchors || '|' || rep.anchor;
+        l_missing_anchors := l_missing_anchors || c_anchor_delimiter || rep.anchor;
       end if;
     end loop;
   
     if l_missing_anchors is not null and not g_ignore_missing_anchors then
-      l_missing_anchors := ltrim(l_missing_anchors, '|');
+      l_missing_anchors := ltrim(l_missing_anchors, c_anchor_delimiter);
       msg_log.error(
         msg_pkg.code_gen_missing_anchors,
         msg_args(l_missing_anchors));
@@ -460,10 +475,10 @@ create or replace package body code_generator as
     -- Hierfuer geschachtelte sekundaere Ersetzungstzeichen durch primaeres ersetzen
     if p_template != p_result then
       bulk_replace(
-        p_template      => replace(p_result, g_secondary_anchor_char, g_main_anchor_char),
+        p_template => replace(p_result, g_secondary_anchor_char, g_main_anchor_char),
         p_key_value_tab => p_key_value_tab,
-        p_result        => p_result,
-        p_indent        => p_indent);
+        p_result => p_result,
+        p_indent => p_indent);
     else
       -- gesamtes Ergebnis um P_INDENT Zeichen einruecken
       if p_indent > 0 then
@@ -481,10 +496,11 @@ create or replace package body code_generator as
   as
     l_result clob;
   begin
-    bulk_replace(p_template
-                ,p_key_value_tab
-                ,l_result
-                ,p_indent);
+    bulk_replace(
+      p_template => p_template,
+      p_key_value_tab => p_key_value_tab,
+      p_result => l_result,
+      p_indnet => p_indent);
     return l_result;
   end bulk_replace;
 
@@ -498,8 +514,8 @@ create or replace package body code_generator as
     p_first_column_is_template boolean default false,
     p_indent                   number) 
   as
-    l_result        clob;
-    l_template      clob;
+    l_result clob;
+    l_template clob;
     l_key_value_tab key_value_tab;
   begin
     if p_row_tab.count > 0 then
@@ -512,10 +528,11 @@ create or replace package body code_generator as
           l_template := l_key_value_tab(c_row_template);
         end if;
         
-        bulk_replace(p_template      => l_template
-                    ,p_key_value_tab => l_key_value_tab
-                    ,p_result        => l_result
-                    ,p_indent        => p_indent);
+        bulk_replace(
+          p_template => l_template,
+          p_key_value_tab => l_key_value_tab,
+          p_result => l_result,
+          p_indent => p_indent);
       
         if i < p_row_tab.last then
           l_result := l_result || p_delimiter;
@@ -536,8 +553,8 @@ create or replace package body code_generator as
     p_first_column_is_template boolean default false,
     p_indent                   number) 
   as
-    l_result        clob;
-    l_template      clob;
+    l_result clob;
+    l_template  clob;
     l_key_value_tab key_value_tab;
   begin
     msg_log.assert(
@@ -557,10 +574,11 @@ create or replace package body code_generator as
           l_template := l_key_value_tab(c_row_template);
         end if;
       
-        bulk_replace(p_template      => l_template
-                    ,p_key_value_tab => l_key_value_tab
-                    ,p_result        => l_result
-                    ,p_indent        => p_indent);
+        bulk_replace(
+          p_template => l_template,
+          p_key_value_tab => l_key_value_tab,
+          p_result => l_result,
+          p_indent => p_indent);
       
         if i < p_row_tab.last then
           l_result := l_result || p_delimiter;
@@ -584,8 +602,8 @@ create or replace package body code_generator as
     p_first_column_is_template boolean default false,
     p_indent                   number) 
   as
-    l_result        clob;
-    l_template      clob;
+    l_result clob;
+    l_template clob;
     l_key_value_tab key_value_tab;
   begin
     -- Initialisierung
@@ -604,10 +622,10 @@ create or replace package body code_generator as
       end if;
     
       bulk_replace(
-        p_template      => l_template,
+        p_template => l_template,
         p_key_value_tab => l_key_value_tab,
-        p_result        => l_result,
-        p_indent        => p_indent);
+        p_result => l_result,
+        p_indent => p_indent);
     
       if i < p_row_tab.last then
         l_result := l_result || p_delimiter;
@@ -626,9 +644,9 @@ create or replace package body code_generator as
   procedure initialize as
   begin
     g_ignore_missing_anchors := true;
-    g_default_date_format    := 'dd.mm.yyyy hh24:mi:ss';
-    g_main_anchor_char       := '#';
-    g_secondary_anchor_char  := '^';
+    g_default_date_format := 'dd.mm.yyyy hh24:mi:ss';
+    g_main_anchor_char := '#';
+    g_secondary_anchor_char := '^';
   end initialize;
 
 
@@ -690,12 +708,13 @@ create or replace package body code_generator as
       p_row_tab => l_row_tab,
       p_first_column_is_template => true);
   
-    bulk_replace(p_template                 => null
-                ,p_row_tab                  => l_row_tab
-                ,p_delimiter                => p_delimiter
-                ,p_result                   => p_result
-                ,p_first_column_is_template => true
-                ,p_indent                   => p_indent);
+    bulk_replace(
+      p_template => null,
+      p_row_tab => l_row_tab,
+      p_delimiter => p_delimiter,
+      p_result => p_result,
+      p_first_column_is_template => true,
+      p_indent => p_indent);
   end generate_text;
 
 
@@ -712,12 +731,13 @@ create or replace package body code_generator as
       p_row_tab                  => l_row_tab,
       p_first_column_is_template => true);
   
-    bulk_replace(p_template                 => null
-                ,p_row_tab                  => l_row_tab
-                ,p_delimiter                => p_delimiter
-                ,p_result                   => p_result
-                ,p_first_column_is_template => true
-                ,p_indent                   => p_indent);
+    bulk_replace(
+      p_template => null,
+      p_row_tab => l_row_tab,
+      p_delimiter => p_delimiter,
+      p_result => p_result,
+      p_first_column_is_template => true,
+      p_indent => p_indent);
   end generate_text;
 
 
@@ -731,15 +751,16 @@ create or replace package body code_generator as
     l_row_tab row_tab;
   begin
     copy_table_to_row_tab(
-      p_stmt                     => p_stmt,
-      p_row_tab                  => l_row_tab,
+      p_stmt => p_stmt,
+      p_row_tab => l_row_tab,
       p_first_column_is_template => false);
   
-    bulk_replace(p_template  => p_template
-                ,p_row_tab   => l_row_tab
-                ,p_delimiter => p_delimiter
-                ,p_result    => p_result
-                ,p_indent    => p_indent);
+    bulk_replace(
+      p_template => p_template,
+      p_row_tab => l_row_tab,
+      p_delimiter => p_delimiter,
+      p_result => p_result,
+      p_indent => p_indent);
   end generate_text;
   
 
@@ -752,10 +773,11 @@ create or replace package body code_generator as
   as
     l_clob clob;
   begin
-    generate_text(p_stmt      => p_stmt
-                 ,p_result    => l_clob
-                 ,p_delimiter => p_delimiter
-                 ,p_indent    => p_indent);
+    generate_text(
+      p_stmt => p_stmt,
+      p_result => l_clob,
+      p_delimiter => p_delimiter,
+      p_indent => p_indent);
     return l_clob;
   end generate_text;
 
@@ -770,16 +792,17 @@ create or replace package body code_generator as
     l_row_tab row_tab;
   begin
     copy_table_to_row_tab(
-      p_cursor                   => p_cursor,
-      p_row_tab                  => l_row_tab,
+      p_cursor => p_cursor,
+      p_row_tab => l_row_tab,
       p_first_column_is_template => true);
   
-    bulk_replace(p_template                 => null
-                ,p_row_tab                  => l_row_tab
-                ,p_delimiter                => p_delimiter
-                ,p_result                   => p_result
-                ,p_first_column_is_template => true
-                ,p_indent                   => p_indent);
+    bulk_replace(
+      p_template => null,
+      p_row_tab => l_row_tab,
+      p_delimiter => p_delimiter,
+      p_result => p_result,
+      p_first_column_is_template => true,
+      p_indent => p_indent);
   end generate_text;
 
 
@@ -793,20 +816,21 @@ create or replace package body code_generator as
     l_row_tab row_tab;
   begin
     msg_log.assert_not_null(
-      p_condition  => p_template,
+      p_condition => p_template,
       p_message_id => msg_pkg.no_such_template,
-      p_arg_list   => msg_args(p_template));
+      p_arg_list => msg_args(p_template));
   
     copy_table_to_row_tab(
-      p_cursor  => p_cursor,
+      p_cursor => p_cursor,
       p_row_tab => l_row_tab,
       p_first_column_is_template => false);
   
-    bulk_replace(p_template  => p_template
-                ,p_row_tab   => l_row_tab
-                ,p_delimiter => p_delimiter
-                ,p_result    => p_result
-                ,p_indent    => p_indent);
+    bulk_replace(
+      p_template => p_template,
+      p_row_tab => l_row_tab,
+      p_delimiter => p_delimiter,
+      p_result => p_result,
+      p_indent => p_indent);
   end generate_text;
 
 
@@ -820,16 +844,17 @@ create or replace package body code_generator as
     l_row_tab row_tab;
   begin
     copy_table_to_row_tab(
-      p_cursor                   => p_cursor,
-      p_row_tab                  => l_row_tab,
+      p_cursor => p_cursor,
+      p_row_tab => l_row_tab,
       p_first_column_is_template => p_template is null);
   
-    bulk_replace(p_template                 => p_template
-                ,p_row_tab                  => l_row_tab
-                ,p_delimiter                => p_delimiter
-                ,p_result                   => p_result
-                ,p_first_column_is_template => p_template is null
-                ,p_indent                   => p_indent);
+    bulk_replace(
+      p_template => p_template,
+      p_row_tab => l_row_tab,
+      p_delimiter => p_delimiter,
+      p_result => p_result,
+      p_first_column_is_template => p_template is null,
+      p_indent => p_indent);
   end generate_text;
 
 
@@ -845,16 +870,18 @@ create or replace package body code_generator as
     l_cur  sys_refcursor := p_cursor;
   begin
     if p_template is not null then
-      generate_text(p_cursor    => l_cur
-                   ,p_result    => l_clob
-                   ,p_delimiter => p_delimiter
-                   ,p_template  => p_template
-                   ,p_indent    => p_indent);
+      generate_text(
+        p_cursor => l_cur,
+        p_result  => l_clob,
+        p_delimiter => p_delimiter,
+        p_template => p_template,
+        p_indent => p_indent);
     else
-      generate_text(p_cursor    => l_cur
-                   ,p_result    => l_clob
-                   ,p_delimiter => p_delimiter
-                   ,p_indent    => p_indent);
+      generate_text(
+        p_cursor => l_cur,
+        p_result => l_clob,
+        p_delimiter => p_delimiter,
+        p_indent => p_indent);
     end if;
     return l_clob;
   end generate_text;
@@ -871,17 +898,17 @@ create or replace package body code_generator as
     l_row_tab row_tab;
   begin
     copy_table_to_row_tab(
-      p_cursor                   => p_cursor,
-      p_row_tab                  => l_row_tab,
+      p_cursor => p_cursor,
+      p_row_tab  => l_row_tab,
       p_first_column_is_template => p_template is null);
   
     bulk_replace(
-      p_template                 => p_template,
-      p_row_tab                  => l_row_tab,
-      p_delimiter                => p_delimiter,
-      p_result                   => p_result,
+      p_template => p_template,
+      p_row_tab  => l_row_tab,
+      p_delimiter => p_delimiter,
+      p_result => p_result,
       p_first_column_is_template => p_template is null,
-      p_indent                   => p_indent);
+      p_indent => p_indent);
   end generate_text_table;
   
   
@@ -894,21 +921,21 @@ create or replace package body code_generator as
     return clob_table
   as
     l_clob_table clob_table;
-    l_cur        sys_refcursor := p_cursor;
+    l_cur sys_refcursor := p_cursor;
   begin
     if p_template is not null then
       generate_text_table(
-        p_cursor    => l_cur,
-        p_result    => l_clob_table,
+        p_cursor => l_cur,
+        p_result => l_clob_table,
         p_delimiter => p_delimiter,
-        p_template  => p_template,
-        p_indent    => p_indent);
+        p_template => p_template,
+        p_indent => p_indent);
     else
       generate_text_table(
-        p_cursor    => l_cur,
-        p_result    => l_clob_table,
+        p_cursor => l_cur,
+        p_result => l_clob_table,
         p_delimiter => p_delimiter,
-        p_indent    => p_indent);
+        p_indent => p_indent);
     end if;
     return l_clob_table;
   end generate_text_table;
