@@ -137,7 +137,8 @@ as
   function generate_text(
     p_stmt      in clob,
     p_delimiter in varchar2 default null,
-    p_indent    in number default 0) return clob;
+    p_indent    in number default 0) 
+    return clob;
                           
 
   /* Prozedur zur Generierung von Texten basierend auf einem dynamischen Template
@@ -202,7 +203,8 @@ as
     p_cursor    in sys_refcursor,
     p_delimiter in varchar2 default null,
     p_template  in varchar2 default null,
-    p_indent    in number default 0) return clob;
+    p_indent    in number default 0) 
+    return clob;
                          
                         
   --Methoden zur Erzeugung von Listen von CLOBs                        
@@ -218,7 +220,8 @@ as
     p_cursor    in sys_refcursor,
     p_delimiter in varchar2 default null,
     p_template  in varchar2 default null,
-    p_indent    in number default 0) return clob_table;
+    p_indent    in number default 0) 
+    return clob_table;
 
 end code_generator;
 /
