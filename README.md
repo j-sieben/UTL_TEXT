@@ -21,9 +21,12 @@ If you intend to surround the value with brackets if the value is not `NULL` and
 
 ## Functionality
 
-CodeGenerator mainly consists of logic to analyze the given cursor and populate a PL/SQL table indexed by varchar2 from the query result. It uses the column name as the key and the converted column value (as char) as the value of the entry. Based on that PL/SQL table, all occurences of the replacement anchors are replaced with the respective replacement values and the result is returned.
-Replacing text anchors within a template is a two step process. You first prepare a statement by converting it to a PL/SQL table that holds the name of the columns and the replacement values. You then apply that PL/SQL table to your template. Should you want to convert many rows of a query at once, you prepare a list of PL/SQL tables (one for each row of the result) and process this list against your template.
-A second group of methods allows to return a table of CLOB with multiple replacements at once. So you may choose to work with a CLOB containing all replacements in one String or with a table of CLOB containing the replacements in seprate instances. This is useful if you like to reference the replacements in SQL using a `table()`-Function.
+CodeGenerator mainly consists of logic to analyze the given cursor and populate a PL/SQL table indexed by varchar2 from the query result. It uses the column name as the key and the converted column value (as char) as the value of the entry. Based on that PL/SQL table, all occurences of the replacement anchors are replaced with the respective replacement values and the result is returned. 
+
+A second group of methods allows to return a table of CLOB with multiple replacements at once. In this case CodeGenerator prepares a list of PL/SQL tables (one for each row of the result) and processes this list against the respective template, which may be one constant template or one individual template per row returned by the query. In this case, by convention the first column is expected to hold the template.
+
+So you may choose to work with a CLOB containing all replacements in one String or with a table of CLOB containing the replacements in seprate instances. This is useful if you like to reference the replacements in SQL using a `table()`-Function.
+
 All methods accept a `SYS_RECRURSOR` as the data source and additional parameters like a constant template, a delimiter sign or an indent amount to indent the result row by row. Both methods are overloaded as procedures and functions, allowing a flexible usage.
 
 As an example, review this code snippet:
