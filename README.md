@@ -69,7 +69,8 @@ begin
              from dual 
             union all
            select l_tmpl, 'SECOND_COLUMN', 'NUMBER', null, '38,0' from dual union all
-           select l_tmpl, 'THIRD_COLUMN', 'INTEGER', null, null from dual)',' || chr(10))
+           select l_tmpl, 'THIRD_COLUMN', 'INTEGER', null, null from dual),
+           ',' || chr(10))
     into l_result
     from dual;
   dbms_output.put_line(l_result);
