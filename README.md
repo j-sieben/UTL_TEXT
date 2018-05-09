@@ -52,3 +52,29 @@ SECOND_COLUMN NUMBER(38,0),
 THIRD_COLUMN INTEGER
 
 ```
+
+Alternatively, you may want to call CodeGenerator like this:
+
+```
+declare
+  l_tmpl varchar2(32767) := q'^#COLUMN_NAME# #COLUMN_TYPE##COLUMN_SIZE|(| char)##COLUMN_PRECISION|(|)#^';
+  l_result varchar2(32767);
+begin
+  select code_generator.generate_text(cursor(
+           select l_tmpl tmpl, 
+                  'FIRST_COLUMN' column_name, 
+                  'VARCHAR2' column_type, 
+                  '25' column_size, 
+                  null column_precision 
+             from dual 
+            union all
+           select l_tmpl, 'SECOND_COLUMN', 'NUMBER', null, '38,0' from dual union all
+           select l_tmpl, 'THIRD_COLUMN', 'INTEGER', null, null from dual)',' || chr(10))
+    into l_result
+    from dual;
+  dbms_output.put_line(l_result);
+end;
+/
+```
+
+In the second example, we pass in the template as the first column of our query and call it directly from SQL with a cursor expression, eliminating code even further.
