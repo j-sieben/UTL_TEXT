@@ -21,9 +21,10 @@ If you intend to surround the value with brackets if the value is not `NULL` and
 
 ## Functionality
 
-CodeGenerator offers an API to convert a table row into a PL/SQL table indexed by varchar2. It uses the column name as the key and the converted column value (as char) as the value of the entry. It also offers a range of overloaded procedures to work with literal SQL statements or SYS_REFCURSOR. It also allows converting a template one time or multiple times if the statement returns more than one row.
-
+CodeGenerator mainly consists of logic to analyze the given cursor and populate a PL/SQL table indexed by varchar2 from the query result. It uses the column name as the key and the converted column value (as char) as the value of the entry. Based on that PL/SQL table, all occurences of the replacement anchors are replaced with the respective replacement values and the result is returned.
 Replacing text anchors within a template is a two step process. You first prepare a statement by converting it to a PL/SQL table that holds the name of the columns and the replacement values. You then apply that PL/SQL table to your template. Should you want to convert many rows of a query at once, you prepare a list of PL/SQL tables (one for each row of the result) and process this list against your template.
+A second group of methods allows to return a table of CLOB with multiple replacements at once. So you may choose to work with a CLOB containing all replacements in one String or with a table of CLOB containing the replacements in seprate instances. This is useful if you like to reference the replacements in SQL using a `table()`-Function.
+All methods accept a `SYS_RECRURSOR` as the data source and additional parameters like a constant template, a delimiter sign or an indent amount to indent the result row by row. Both methods are overloaded as procedures and functions, allowing a flexible usage.
 
 As an example, review this code snippet:
 ```
@@ -53,7 +54,7 @@ THIRD_COLUMN INTEGER
 
 ```
 
-Alternatively, you may want to call CodeGenerator like this:
+This approach uses the procedure interface to invoke the CodeGenerator. Alternatively, you may want to call CodeGenerator like this:
 
 ```
 declare
@@ -78,4 +79,4 @@ end;
 /
 ```
 
-In the second example, we pass in the template as the first column of our query and call the CodeGenerator directly from SQL with a cursor expression, reducing code even further. A further improvement would be to offer the templates via a table, then you could eliminate a PL/SQL-block all together and call the CodeGenerator as part of your normal SQL.
+In the second example, you utilize the function overload and pass in the template as the first column of the query. Tis allows to call the CodeGenerator directly from SQL with a cursor expression, reducing code even further. A further improvement would be to offer the templates via a table, then you could eliminate a PL/SQL-block all together and call the CodeGenerator as part of your normal SQL.
