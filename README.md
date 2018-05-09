@@ -10,14 +10,14 @@ To reduce the amount of constants used in the code and to remove the burdon of w
 
 Main idea is that a SQL query is provided that offers the replacement values under the column name of the replacement anchor. Therefore, it there is a replacement anchor #MY_REPLACEMENT# this requires the SQL query to offer the replacement value in a row under column name MY_REPLACEMENT. Plus, the replacement anchor allows for an internal syntax that enables the user to handle the most common replacement scenarios without any conditional logic.
 
-As of now, a replacement anchor in a template must be surrounded by #-signs. It may consist of up to four internal blocks, separated by a pipe »|«. The meaning of the internal blocks is as follows:
+The replacement anchor in a template must be surrounded by #-signs, although this is parameterizable. It may consist of up to four internal blocks, separated by a pipe »|« as in this example: ```#COLUMN_SIZE|(| char)|#```. The meaning of the internal blocks are as follows:
 
 1. Name of the replacement anchor
 2. Optional prefix put in front of the replacement value if the value exists
 3. Optional postfix put after the replacement value if the value exists
 4. Optional NULL replacement value if the replacement value is NULL
 
-As an example, this is a simple replacement anchor: `#SAMPLE_REPLACEMENT#`. If you intend to surround the value with brackets and pass the information NULL if the value is NULL, you may write `#SAMPLE_REPLACEMENT|(|), |NULL#` to achieve this.
+If you intend to surround the value with brackets if the value is not `NULL` and pass the string `NULL` if the value is `NULL`, you may write `#SAMPLE_REPLACEMENT|(|), |NULL#` to achieve this.
 
 ## Functionality
 
@@ -78,4 +78,4 @@ end;
 /
 ```
 
-In the second example, we pass in the template as the first column of our query and call it directly from SQL with a cursor expression, eliminating code even further.
+In the second example, we pass in the template as the first column of our query and call the CodeGenerator directly from SQL with a cursor expression, reducing code even further. A further improvement would be to offer the templates via a table, then you could eliminate a PL/SQL-block all together and call the CodeGenerator as part of your normal SQL.
