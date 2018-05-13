@@ -429,7 +429,7 @@ as
   end generate_text_table;
 
 
-  -- Ueberladung als Funktion
+  -- Overload as function
   function generate_text_table(
     p_cursor in sys_refcursor,
     p_indent in number default 0)
