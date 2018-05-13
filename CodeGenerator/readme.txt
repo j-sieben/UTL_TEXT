@@ -1,0 +1,2 @@
+Ton install the CodeGenerator, call code_generator_install.sql with the name of the owner of the tool wihtin your database.
+To avoid problems with Umlauts, set NLS_LANG to GERMAN_GERMANY.AL32UTF8 before calling the install script.

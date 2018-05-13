@@ -11,11 +11,11 @@ declare
           select object_name name, object_type type
             from all_objects
            where object_name in (
-                 '', -- Typen
+                 'CLOB_TABLE', 'KEY_VALUE_TYPE', 'KEY_VALUE_TAB', -- Typen
                  'CODE_GENERATOR', -- Packages
                  '', -- Views
-                 '',   -- Tabellen
-                 '',  -- Synonyme
+                 '', -- Tabellen
+                 '', -- Synonyme
                  '' -- Sequenzen
                  )
              and object_type not like '%BODY'

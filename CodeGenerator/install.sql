@@ -4,6 +4,9 @@ define plsql_dir=plsql/
 prompt &h3.Remove existing installation
 @clean_up_install.sql
 
+prompt &h3.Create CodeGenerator parameters
+@sql/create_parameters.sql
+
 prompt &h3.Create CodeGenerator messages
 @sql/create_messages.sql
 
