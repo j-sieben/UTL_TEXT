@@ -8,16 +8,16 @@ CodeGenerator is a helper package to support creating text based on templates wi
 
 To reduce the amount of constants used in the code and to remove the burdon of writing the same kind of code over and over again, CodeGenerator helps in putting together the results easily.
 
-Main idea is that a SQL query is provided that offers the replacement values under the column name of the replacement anchor. Therefore, it there is a replacement anchor #MY_REPLACEMENT# this requires the SQL query to offer the replacement value in a row under column name MY_REPLACEMENT. Plus, the replacement anchor allows for an internal syntax that enables the user to handle the most common replacement scenarios without any conditional logic.
+Main idea is that a SQL query is provided that offers the replacement values under the column name of the replacement anchor. Therefore, it there is a replacement anchor `#MY_REPLACEMENT#` this requires the SQL query to offer the replacement value in a row under column name `MY_REPLACEMENT`. Plus, the replacement anchor allows for an internal syntax that enables the user to handle the most common replacement scenarios without any conditional logic.
 
-As a standard, a replacement anchor in a template must be surrounded by #-signs. It may consist of up to four internal blocks, separated by a pipe »|«. The meaning of the internal blocks is as follows:
+As a standard, a replacement anchor in a template must be surrounded by `#`-signs. It may consist of up to four internal blocks, separated by a pipe `|`. The meaning of the internal blocks is as follows:
 
 1. Name of the replacement anchor
 2. Optional prefix put in front of the replacement value if the value exists
 3. Optional postfix put after the replacement value if the value exists
 4. Optional NULL replacement value if the replacement value is NULL
 
-As an example, this is a simple replacement anchor: `#SAMPLE_REPLACEMENT#`. If you intend to surround the value with brackets and pass the information NULL if the value is NULL, you may write `#SAMPLE_REPLACEMENT|(|), |NULL#` to achieve this.
+As an example, this is a simple replacement anchor: `#SAMPLE_REPLACEMENT#`. If you intend to surround the value with brackets and pass the information NULL if the value is `NULL`, you may write `#SAMPLE_REPLACEMENT|(|), |NULL#` to achieve this.
 
 Should it be necessary, the replacement characters can be changed either on a case by case basis by calling setter methods or generally by adjusting initialization parameters. CodeGenerator relies on the existence of PIT to work.
 
@@ -25,9 +25,9 @@ Should it be necessary, the replacement characters can be changed either on a ca
 
 CodeGenerator has three methods, each designed as a procedure and a function:
 
-- BULK_REPLACE, a convenient method to replace many occurences of a text in one go
-- GENERATE_TEXT, a method to incorporate column values of a select query into a template passed in as the first column
-- GENERATE_TEXT_TABLE, as GENERATE_TEXT but it delivers a table of CLOB instead of a single CLOB
+- `BULK_REPLACE`, a convenient method to replace many occurences of a text in one go
+- `GENERATE_TEXT`, a method to incorporate column values of a select query into a template passed in as the first column
+- `GENERATE_TEXT_TABLE`, as GENERATE_TEXT but it delivers a table of CLOB instead of a single CLOB
 
 ### BULK_REPLACE
 
