@@ -14,7 +14,7 @@ declare
                  'KEY_VALUE_TAB', 'KEY_VALUE_TYPE', -- Typen
                  'CODE_GENERATOR', -- Packages
                  '', -- Views
-                 'TEMPLATES',   -- Tabellen
+                 'CODE_GENERATOR_TEMPLATES',   -- Tabellen
                  '',  -- Synonyme
                  '' -- Sequenzen
                  )

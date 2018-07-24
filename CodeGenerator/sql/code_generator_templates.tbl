@@ -1,0 +1,20 @@
+create table code_generator_templates(
+  cgtm_name varchar2(30 char), 
+	cgtm_type varchar2(12 char), 
+	cgtm_mode varchar2(127 char) default 'DEFAULT', 
+	cgtm_text varchar2(4000 char), 
+	cgtm_log_text varchar2(1000 char), 
+	cgtm_log_severity number(2,0) default 70,
+  constraint pk_code_generator_templates primary key (cgtm_name, cgtm_type, cgtm_mode),
+  constraint chk_cgtm_text_nn check(cgtm_text is not null),
+  constraint chk_cgtm_log_severity check(cgtm_log_severity in (20,30,40,50,60,70))
+);
+
+
+comment on table code_generator_templates is 'Central storage of CodeGenerator Templates';
+comment on column code_generator_templates.cgtm_name is 'Unique name, part of PK';
+comment on column code_generator_templates.cgtm_type is 'Type (group) of template, part of PK, defaults to DEFAULT';
+comment on column code_generator_templates.cgtm_mode is 'Execution mode, alows for different template flavours, part of PK';
+comment on column code_generator_templates.cgtm_text is 'Template text with replacement anchors';
+comment on column code_generator_templates.cgtm_log_text is 'Optional logging template, creates log messages if present';
+comment on column code_generator_templates.cgtm_log_severity is 'PIT severity that sets the output severity, defaults to PIT.LEVEL_VERBOSE';

@@ -143,30 +143,19 @@ as
     p_indent in number default 0
   ) return clob_table;
     
-  
-  /* Listet die Ersetzungsanker in V_TEMPLATES_TMPLT
-   * %param p_tmplt_name  Template Name (tmplt_name)
-   * %param p_modus       Modus
-   * %param p_anchor_list OUT-Parameter char_table mit Ankern
-   * %usage Wird verwendet, um die Ersetungsanker aus einem Template zu lesen und als Varchar2-Tabelle zurückzuliefern
-   */                               
-  procedure get_anchors(
-    p_tmplt_name in varchar2,
-    p_modus in varchar2,
-    p_with_replacements in boolean default false,
-    p_anchor_list out nocopy char_table
-  );
-    
                                
-  /* Listet die Ersetzungsanker in V_TEMPLATES_TMPLT
-   * %param p_tmplt_name Template Name (tmplt_name)
-   * %param p_modus      Modus
+  /* Listet die Ersetzungsanker in Templates aus CODE_GENERATOR_TEMPLATES auf
+   * %param  p_tmplate_name       Name des Templates
+   * %param  p_tmplate_name       Typ des Templates
+   * %param  p_template_mode      Ausfuehrungsodus des Templates
+   * %param [p_with_replacements] Flag, das anzeigt, ob alle Ersetzungszeichenfolgen angezeigt werden sollen (1) oder nicht (0)
    * %return char_table mit Ankern
-   * %usage Wird verwendet, um die Ersetungsanker aus einem Template zu lesen und als Varchar2-Tabelle zurückzuliefern
+   * %usage  Wird verwendet, um die Ersetungsanker aus einem Template zu lesen und als Varchar2-Tabelle zurückzuliefern
    */                               
   function get_anchors(
-    p_tmplt_name in varchar2,
-    p_modus in varchar2,
+    p_tmplate_name in varchar2,
+    p_template_type in varchar2,
+    p_template_mode in varchar2,
     p_with_replacements in number default 0
   ) return char_table
     pipelined;

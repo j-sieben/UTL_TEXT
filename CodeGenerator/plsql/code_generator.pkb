@@ -665,29 +665,33 @@ as
     return l_clob_table;
   end generate_text_table;
   
-              
-  procedure get_anchors(
-    p_tmplt_name in  varchar2,
-    p_modus in varchar2,
-    p_with_replacements in boolean default false,
-    p_anchor_list out nocopy char_table)
+                  
+  function get_anchors(
+    p_tmplate_name in varchar2,
+    p_template_type in varchar2,
+    p_template_mode in varchar2,
+    p_with_replacements in number default 0
+  ) return char_table
+    pipelined
   as
-    l_cnt pls_integer := 1;
-    l_str varchar2(512);
-    l_tmplate templates.tmpl_text%type;
     c_regex_anchor_complete constant varchar2(100) := '\#A#[A-Z].*?(\#S#|\#A#)';
     c_regex_anchor_only constant varchar2(100) := '\#A#[A-Z].*?\#A#';
-    l_regex varchar2(100);
+    
+    l_regex varchar2(200);
+    l_retval char_table;
+    l_template code_generator_templates.cgtm_text%type;
+    l_str varchar2(50 char);
+    l_cnt pls_integer;
   begin
-    select tmpl_text
-      into l_tmplate
-      from templates
-     where tmpl_id = upper(p_tmplt_name)
-       and tmpl_mode = upper(p_modus);
+    select cgtm_text
+      into l_template
+      from code_generator_templates
+     where cgtm_name = upper(p_tmplate_name)
+       and cgtm_type = upper(p_template_type)
+       and cgtm_mode = upper(p_template_mode);
        
     -- Template gefunden, initialisieren
-    p_anchor_list := char_table();
-    case when p_with_replacements then
+    case when p_with_replacements = 1 then
       l_regex := replace(replace(c_regex_anchor_complete, '#A#', g_main_anchor_char), '#S#', g_main_separator_char);
     else
       l_regex := replace(c_regex_anchor_only, '#A#', g_main_anchor_char);
@@ -695,37 +699,20 @@ as
     
     -- Anker finden und aufbereiten
     loop
-      l_str := regexp_substr(l_tmplate, l_regex, 1, l_cnt);
+      l_str := regexp_substr(l_template, l_regex, 1, l_cnt);
       if l_str is not null then
-        p_anchor_list.extend;
         l_str := replace(l_str, g_main_anchor_char);
-        if not p_with_replacements then
-          l_str := replace(l_str, '|');
+        if p_with_replacements = 0 then
+          l_str := replace(l_str, g_main_separator_char);
         end if;
-        p_anchor_list(l_cnt) := l_str;
         l_cnt := l_cnt + 1;
+        
+        pipe row (l_str);
       else
         exit;
       end if;
     end loop;
-  end get_anchors;
-  
-
-  function get_anchors(
-    p_tmplt_name in varchar2,
-    p_modus in varchar2,
-    p_with_replacements in number default 0) 
-    return char_table
-    pipelined
-  as
-    l_retval char_table;
-  begin
-    get_anchors(p_tmplt_name, p_modus, p_with_replacements = 1, l_retval);
-    if l_retval is not null then
-      for i in l_retval.first .. l_retval.last loop
-        pipe row (l_retval(i));
-      end loop;
-    end if;
+    
     return;
   end get_anchors;
 
