@@ -250,9 +250,9 @@ CodeGenerator is parameterizable by setting initializiation parameters which are
 
 Any parameter that is preset is changeable during operation using getter and setter methods. Calling them before a conversion takes place will set the conversion accordingly, initializing the package afterwards will reset it to its initial state. Here's a list of the parameters provided with CodeGenerator:
 
-- `IGNORE_MISSING_ANCHORS`, flag to indicate whether a anchor that has no matching replacement information throws an error instead of silently ignoring it. Initial value: `TRUE`
+- `IGNORE_MISSING_ANCHORS`, flag to indicate whether a anchor that has no matching replacement information throws an error instead of silently ignoring it. Initial value: `TRUE`, meaning that no errors are thrown (missing anchors are ignored)
 - `DEFAULT_DATE_FORMAT`, sets the default conversion format for `DATE`-Columns. Initial value: `YYYY-MM-DD HH24:MI:SS`
-- 'MAIN_ANCHOR_CHAR', character that is used to mark an anchor. Initial value: `#`
+- `MAIN_ANCHOR_CHAR`, character that is used to mark an anchor. Initial value: `#`
 - `MAIN_SEPARATOR_CHAR`, character that is used to separate the four optional building blocks within an anchor. Initial value: `|`
 - `SECONDARY_ANCHOR_CHAR`, character that is used to mark a nested anchor within another anchor. Initial value: `^`
 - `SECONDARY_SEPARATOR_CHAR`, character that is used to separate the four optional building blocks within a nested anchor. Initial value: `~`
