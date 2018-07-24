@@ -11,10 +11,10 @@ declare
           select object_name name, object_type type
             from all_objects
            where object_name in (
-                 '', -- Typen
+                 'KEY_VALUE_TAB', 'KEY_VALUE_TYPE', -- Typen
                  'CODE_GENERATOR', -- Packages
                  '', -- Views
-                 '',   -- Tabellen
+                 'TEMPLATES',   -- Tabellen
                  '',  -- Synonyme
                  '' -- Sequenzen
                  )
