@@ -254,7 +254,7 @@ Any parameter that is preset is changeable during operation using getter and set
 - `DEFAULT_DATE_FORMAT`, sets the default conversion format for `DATE`-Columns. Initial value: `YYYY-MM-DD HH24:MI:SS`
 - 'MAIN_ANCHOR_CHAR', character that is used to mark an anchor. Initial value: `#`
 - `MAIN_SEPARATOR_CHAR`, character that is used to separate the four optional building blocks within an anchor. Initial value: `|`
-- 'SECONDARY_ANCHOR_CHAR', character that is used to mark a nested anchor within another anchor. Initial value: `^`
+- `SECONDARY_ANCHOR_CHAR`, character that is used to mark a nested anchor within another anchor. Initial value: `^`
 - `SECONDARY_SEPARATOR_CHAR`, character that is used to separate the four optional building blocks within a nested anchor. Initial value: `~`
 
 
