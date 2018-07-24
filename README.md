@@ -15,9 +15,9 @@ As a standard, a replacement anchor in a template must be surrounded by `#`-sign
 1. Name of the replacement anchor
 2. Optional prefix put in front of the replacement value if the value exists
 3. Optional postfix put after the replacement value if the value exists
-4. Optional NULL replacement value if the replacement value is NULL
+4. Optional `NULL` replacement value if the replacement value is `NULL`
 
-As an example, this is a simple replacement anchor: `#SAMPLE_REPLACEMENT#`. If you intend to surround the value with brackets and pass the information NULL if the value is `NULL`, you may write `#SAMPLE_REPLACEMENT|(|), |NULL#` to achieve this.
+As an example, this is a simple replacement anchor: `#SAMPLE_REPLACEMENT#`. If you intend to surround the value with brackets and pass the information `NULL` if the value is `NULL`, you may write `#SAMPLE_REPLACEMENT|(|), |NULL#` to achieve this.
 
 Should it be necessary, the replacement characters can be changed either on a case by case basis by calling setter methods or generally by adjusting initialization parameters. CodeGenerator relies on the existence of PIT to work.
 
@@ -27,7 +27,7 @@ CodeGenerator has three methods, each designed as a procedure and a function:
 
 - `BULK_REPLACE`, a convenient method to replace many occurences of a text in one go
 - `GENERATE_TEXT`, a method to incorporate column values of a select query into a template passed in as the first column
-- `GENERATE_TEXT_TABLE`, as GENERATE_TEXT but it delivers a table of CLOB instead of a single CLOB
+- `GENERATE_TEXT_TABLE`, as `GENERATE_TEXT` but it delivers a table of `CLOB` instead of a single `CLOB`
 
 ### BULK_REPLACE
 
@@ -46,7 +46,7 @@ RESULT
 My first replacement
 ```
 
-In this example, #1# is replaced with `replacement`, which could have been achieved with a simple replace method as well. But you're free to put whatever amount of replacement anchors into the text, as `char_table` is a nested table of type `varchar2(4000)`. You may reference the anchors by any valid Oracle name or by number, as in the example above.
+In this example, `#1#` is replaced with `replacement`, which could have been achieved with a simple replace method as well. But you're free to put whatever amount of replacement anchors into the text, as `char_table` is a nested table of type `varchar2(4000)`. You may reference the anchors by any valid Oracle name or by number, as in the example above.
 
 
 #### Recursion
@@ -66,9 +66,9 @@ A simple replacement with recursive replacements
 
 This example also shows how to include more than one replacement key-value-pair.
 
-#### NULL value treatment
+#### `NULL` value treatment
 
-To make things a bit more fun, you may extend the anchors syntax to support NULL-value treatment. In the following example, we want to inlude a PRE and POST before and after a non null-value and a NULL for any null value:
+To make things a bit more funny, you may extend the anchors syntax to support `NULL`-value treatment. In the following example, we want to inlude a `PRE` and `POST` before and after a non `NULL`-value and a `NULL` for any `NULL` value:
 
 ```
 SQL> select code_generator.bulk_replace(
@@ -83,9 +83,9 @@ RESULT
 Null treatment for PRE value 1 POST and NULL
 ```
 
-#### Recursion with NULL value treatment
+#### Recursion with `NULL` value treatment
 
-This is the basis for powerful replacements in string. The last example shows an elaborated example, where we want to include a second value with NULL treatment, but only, if the first value is NULL. Then, we need a different syntax for the anchors which are referenced as `secondary anchor` and `secondoray replacement` chars. They allow to include a conditional anchor into another anchor:
+This is the foundation for powerful string replacements as in the next example where we want to include a second value with `NULL` treatment, but only, if the first value is `NULL`. If we do this, we need a different syntax for the embedded anchor to distinguish it from the surrounding anchor. We will be using different characters which are referenced as `secondary anchor` and `secondoray replacement` chars. They allow to nest an anchor into a surrounding anchors conditional replacements:
 
 ```
 SQL> select code_generator.bulk_replace(
@@ -100,6 +100,8 @@ RESULT
 Null treatment for PRE value 2 POST
 ```
 
+Of course this does not have to be as complex as shown above. It's perfectly ok to just pass in a second replacement anchor such as in `#OUTER|PRE|POST|^INNER^#`. Here anchor `INNER` is replaced only if anchor `OUTER` is `NULL`.
+
 All these options are available not only with `BULK_REPLACE`, but with `GENERATE_TEXT` and `GENEREATE_TEXT_TABLE` as well, as all of them reuse the same `BULK_REPLACE`engine underneath.
 
 ### GENERATE_TEXT
@@ -110,10 +112,11 @@ All these options are available not only with `BULK_REPLACE`, but with `GENERATE
 
 To work properly, CodeGenerator assumes several conventions:
 
-- the first column of the cursor passed into the method has to contain the template with the replacement anchors. 
-- the names of the replacement anchors must match the column names of the second to last column
+- the first column of the cursor passed into the method has to contain the template with the replacement anchors. Ideally, it's named `TEMPLATE` but that's not necessary.
+- the names of the replacement anchors must match the column names of the second to last column. We strongly advise not to include umlauts or other specific character in the names but rather keep it simple stupid. All column names will be converted to uppercase.
+- If you want to log conversions, you need to provide a log template as a column named `LOG_TEMPLATE`
 
-If a column of type `DATE` is detected, the date value will be converted to char by a parameter that ist called `DEFAULT_DATE_FORMAT`. You may also choose to convert any date or number column upfront and deliver those values as varchar2 to keep full control over the process.
+If a column of type `DATE` is detected, this value will be converted to `VARCHAR2` by a calling a format mask stored at a parameter called `DEFAULT_DATE_FORMAT`. You may also choose to convert any date or number column upfront and deliver those values as varchar2 to keep full control over the process.
 
 #### Basic Usage
 
@@ -234,3 +237,27 @@ ROWNUM RESULT
      2 SECOND_COLUMN NUMBER(38,0)
      3 THIRD_COLUMN INTEGER
 ```
+
+## Parameterization
+
+As stated already, CodeGenerator assumes that PIT is installed. CodeGenerator uses PIT for the following tasks:
+
+- Parameters are maintained using PITs built in parameter package
+- Code errors are raised using `PIT.ERROR` methods
+- Logging of CodeGenerator conversions are done with PIT, so any output module may benefit from the logging
+
+CodeGenerator is parameterizable by setting initializiation parameters which are called upon initialization of the package. To reset the package to its initial status, simply call method `CODE_GENERATOR.INITIALIZE`.
+
+Any parameter that is preset is changeable during operation using getter and setter methods. Calling them before a conversion takes place will set the conversion accordingly, initializing the package afterwards will reset it to its initial state. Here's a list of the parameters provided with CodeGenerator:
+
+- `IGNORE_MISSING_ANCHORS`, flag to indicate whether a anchor that has no matching replacement information throws an error instead of silently ignoring it. Initial value: `TRUE`
+- `DEFAULT_DATE_FORMAT`, sets the default conversion format for `DATE`-Columns. Initial value: `YYYY-MM-DD HH24:MI:SS`
+- 'MAIN_ANCHOR_CHAR', character that is used to mark an anchor. Initial value: `#`
+- `MAIN_SEPARATOR_CHAR`, character that is used to separate the four optional building blocks within an anchor. Initial value: `|`
+- 'SECONDARY_ANCHOR_CHAR', character that is used to mark a nested anchor within another anchor. Initial value: `^`
+- `SECONDARY_SEPARATOR_CHAR`, character that is used to separate the four optional building blocks within a nested anchor. Initial value: `~`
+
+
+## Internationalization
+
+As CodeGenerator is based on PIT, all messages can be easily translated using PITs built in translation mechanism. Simply export the default language and translate the XLIFF-file to the target language. Then re-import this file into PIT using `PIT_ADMIN.TRANSLATE_MESSAGES` and you're done.
