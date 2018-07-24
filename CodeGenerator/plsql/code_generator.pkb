@@ -7,6 +7,8 @@ as
   c_date_type constant binary_integer := 12;
   c_param_group constant varchar2(30) := 'CODE_GEN';
   
+  c_regex_anchor_name constant varchar2(50) := q'^(^[0-9]+$|^[A-Z][A-Z0-9_\$#]+$)^';
+  
   g_ignore_missing_anchors boolean;
   g_default_date_format varchar2(200);
   g_main_anchor_char char(1 char);
@@ -300,17 +302,22 @@ as
         with anchors as (
                 select trim(g_main_anchor_char from regexp_substr(p_template, c_regex, 1, level)) replacement_string
                   from dual
-               connect by level <= regexp_count(p_template, '\' || g_main_anchor_char) / 2)
-      select g_main_anchor_char || replacement_string || g_main_anchor_char as replacement_string,
-             upper(regexp_substr(replacement_string, c_regex_anchor, 1, 1)) anchor,
-             regexp_substr(replacement_string, c_regex_separator, 1, 2, null, 1) prefix,
-             regexp_substr(replacement_string, c_regex_separator, 1, 3, null, 1) postfix,
-             regexp_substr(replacement_string, c_regex_separator, 1, 4, null, 1) null_value
-        from anchors
-       where upper(regexp_substr(replacement_string, c_regex_anchor, 1, 1)) is not null;
+               connect by level <= regexp_count(p_template, '\' || g_main_anchor_char) / 2),
+             parts as(
+             select g_main_anchor_char || replacement_string || g_main_anchor_char as replacement_string,
+                    upper(regexp_substr(replacement_string, c_regex_anchor, 1, 1)) anchor,
+                    regexp_substr(replacement_string, c_regex_separator, 1, 2, null, 1) prefix,
+                    regexp_substr(replacement_string, c_regex_separator, 1, 3, null, 1) postfix,
+                    regexp_substr(replacement_string, c_regex_separator, 1, 4, null, 1) null_value
+               from anchors)
+      select replacement_string, anchor, prefix, postfix, null_value, 
+             case when regexp_instr(anchor, c_regex_anchor_name) > 0 then 1 else 0 end valid_anchor_name
+        from parts
+       where anchor is not null;
   
     l_anchor_value clob;
-    l_missing_anchors clob;
+    l_missing_anchors varchar2(32767);
+    l_invalid_anchors varchar2(32767);
   begin
     pit.assert_not_null(
       p_condition => p_template,
@@ -321,7 +328,10 @@ as
   
     -- Zeichenfolgen ersetzen. Ersetzungen koennen wiederum Ersetzungsanker enthalten
     for rep in replacement_cur(p_template) loop
-      if p_clob_tab.exists(rep.anchor) then
+      case
+      when rep.valid_anchor_name = 0 then
+        l_invalid_anchors := l_invalid_anchors || g_main_separator_char || rep.anchor;
+      when p_clob_tab.exists(rep.anchor) then
         l_anchor_value := p_clob_tab(rep.anchor);
         if l_anchor_value is not null then
           p_result := replace(p_result, rep.replacement_string, rep.prefix || l_anchor_value || rep.postfix);
@@ -332,9 +342,15 @@ as
         -- Ersetzungszeichenfolge ist in Ersetzungsliste nicht enthalten
         l_missing_anchors := l_missing_anchors || g_main_separator_char || rep.anchor;
         null;
-      end if;
+      end case;
     end loop;
   
+    if l_invalid_anchors is not null then
+      pit.error(
+        msg.INVALID_ANCHOR_NAMES,
+        msg_args(l_invalid_anchors));
+    end if;
+    
     if l_missing_anchors is not null and not g_ignore_missing_anchors then
       l_missing_anchors := ltrim(l_missing_anchors, g_main_separator_char);
       pit.error(
@@ -636,14 +652,14 @@ as
     l_row_tab row_tab;
   begin
     copy_table_to_row_tab(
-      p_cursor                   => p_cursor,
-      p_row_tab                  => l_row_tab);
+      p_cursor => p_cursor,
+      p_row_tab => l_row_tab);
   
     bulk_replace(
-      p_row_tab                  => l_row_tab,
-      p_delimiter                => p_delimiter,
-      p_result                   => p_result,
-      p_indent                   => p_indent);
+      p_row_tab => l_row_tab,
+      p_delimiter => p_delimiter,
+      p_result => p_result,
+      p_indent => p_indent);
   end generate_text_table;
   
   
@@ -653,16 +669,23 @@ as
     p_delimiter in varchar2 default null,
     p_indent in number default 0) 
     return clob_table
+    pipelined
   as
     l_clob_table clob_table;
-    l_cur        sys_refcursor := p_cursor;
+    l_cur sys_refcursor := p_cursor;
   begin
     generate_text_table(
         p_cursor    => l_cur,
         p_result    => l_clob_table,
         p_delimiter => p_delimiter,
         p_indent    => p_indent);
-    return l_clob_table;
+        
+    for i in 1 .. l_clob_table.count loop
+      if dbms_lob.getlength(l_clob_table(i)) > 0 then
+        pipe row (l_clob_table(i));
+      end if;
+    end loop;
+    return;
   end generate_text_table;
   
                   

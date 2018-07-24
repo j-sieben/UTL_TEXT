@@ -141,7 +141,8 @@ as
     p_cursor in sys_refcursor,
     p_delimiter in varchar2 default null,
     p_indent in number default 0
-  ) return clob_table;
+  ) return clob_table
+    pipelined;
     
                                
   /* Listet die Ersetzungsanker in Templates aus CODE_GENERATOR_TEMPLATES auf

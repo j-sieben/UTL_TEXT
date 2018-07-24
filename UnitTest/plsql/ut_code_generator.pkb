@@ -134,6 +134,15 @@ as
       to_char(code_generator.bulk_replace('Das ist ein #1# mit #2#', char_table('1', 'Test')))
       ).to_equal('Das ist ein Test mit #2#');
   end simple_bulk_too_many_anchors;
+
+
+  procedure simple_bulk_invalid_anchor
+  as
+    l_result varchar2(32767);
+  begin
+    code_generator.set_ignore_missing_anchors(false);
+    l_result := to_char(code_generator.bulk_replace('Das ist ein #1_COL#', char_table('1_COL', 'Test')));
+  end simple_bulk_invalid_anchor;
   
   
   procedure complex_bulk_null_handling

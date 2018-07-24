@@ -5,6 +5,15 @@ begin
     
     
   pit_admin.merge_message(
+    p_pms_name => 'INVALID_ANCHOR_NAMES',
+    p_pms_text => q'^Bei Ausführung des CodeGenerators entsprachen folgende Ersetzungsanker nicht den Namenskonventionen: #1#^',
+    p_pms_pse_id => 20,
+    p_pms_pmg_name => 'CODE_GEN',
+    p_pms_pml_name => 'GERMAN',
+    p_error_number => null);
+    
+    
+  pit_admin.merge_message(
     p_pms_name => 'MISSING_ANCHORS',
     p_pms_text => q'^Bei Ausführung des CodeGenerators fehlten folgende Ersetzungsanker: #1#^',
     p_pms_pse_id => 20,

@@ -58,6 +58,10 @@ as
   -- %test(Converts simple BULK string, provides less replacements than requested)
   -- %throws(msg.MISSING_ANCHORS_ERR)
   procedure simple_bulk_too_many_anchors;
+
+  -- %test(Converts simple BULK string, anchor names do not comply to naming rules)
+  -- %throws(msg.INVALID_ANCHOR_NAMES_ERR)
+  procedure simple_bulk_invalid_anchor;
   
   -- %test(Converts complex BULK string with NULL replacement)
   procedure complex_bulk_null_handling;
