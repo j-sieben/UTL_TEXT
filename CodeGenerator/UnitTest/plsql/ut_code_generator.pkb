@@ -359,6 +359,18 @@ as
   end simple_text_with_indent;
   
   
+  procedure simple_text_invalid_params
+  as
+    l_result varchar2(32767);
+  begin
+    select code_generator.generate_text(cursor(
+             select '#FOO#' template
+               from dual), code_generator.c_no_delimiter, 5)
+      into l_result
+      from dual;
+  end simple_text_invalid_params;
+  
+  
   procedure complex_text_with_indent
   as
     l_result varchar2(32767);

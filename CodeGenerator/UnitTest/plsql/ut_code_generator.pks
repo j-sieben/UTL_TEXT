@@ -113,6 +113,10 @@ as
   -- %test(Converts single line SQL, indenting is used)
   procedure simple_text_with_indent;
 
+  -- %test(Calls GENERATE_TEXT with an invalid combination of parameters)
+  -- %throws(msg.INVALID_PARAMETER_COMBI_ERR)
+  procedure simple_text_invalid_params;
+
   -- %test(Converts single line SQL, multiple rows, indenting is used)
   procedure complex_text_with_indent;
 
