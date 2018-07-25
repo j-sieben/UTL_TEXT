@@ -220,6 +220,29 @@ as
   
     dbms_sql.close_cursor(l_cur);
   end copy_table_to_row_tab;
+  
+  
+  /* Hilfsfunktion zur Ermittlung des aktuellen Trennzeichens
+   * %param  p_delimiter  Uebergebenes Trennzeichen
+   * %return Trennzeichen, das aktuell verwendet werden soll
+   */
+  function get_delimiter(
+    p_delimiter in varchar2)
+    return varchar2
+  as
+    l_delimiter varchar2(100);
+  begin
+    case 
+    when p_delimiter = c_no_delimiter then
+      l_delimiter := null;
+    when p_delimiter is null then
+      l_delimiter := g_default_delimiter_char;
+    else
+      l_delimiter := p_delimiter;
+    end case;
+    
+    return l_delimiter;
+  end get_delimiter;
 
 
   /* Prozedur zum Ersetzen aller Ersetzungsanker einer PL/SQL-Tabelle in einem Template
@@ -234,7 +257,6 @@ as
    *                          Beispiel: #VORNAME||, |# => Falls vorhanden wird hinter dem Vornamen ein Komma eingefuegt
    * %param  p_clob_tab  Tabelle von KEY-VALUE-Paaren, erzeugt ueber COPY_ROW_TO_clob_tab
    * %param  p_result         Ergebnis der Umwandlung
-   * %param  p_indent         Code wird um P_INDENT Leerzeichen eingerueckt
    * %usage  Der Prozedur werden ein Template und eine aufbereitete Liste von Ersetzungsankern und
    *         Ersetzungswerten uebergeben. Die Methode ersetzt alle Anker im Template durch
    *         die Ersetzungswerte in der PL/SQL-Tabelle und analysiert dabei NULL-Werte,
@@ -244,8 +266,7 @@ as
   procedure bulk_replace(
     p_template in clob default null,
     p_clob_tab in clob_tab,
-    p_result out nocopy clob,
-    p_indent in number) 
+    p_result out nocopy clob) 
   as
     c_regex varchar2(20) := replace('\#A#[A-Z0-9].*?\#A#', '#A#', g_main_anchor_char);
     c_regex_anchor varchar2(20) := '[^\' || g_main_separator_char || ']+';
@@ -274,7 +295,6 @@ as
     l_anchor_value clob;
     l_missing_anchors varchar2(32767);
     l_invalid_anchors varchar2(32767);
-    l_indent varchar2(1000);
   begin
     pit.assert_not_null(
       p_condition => p_template,
@@ -324,14 +344,7 @@ as
                         g_secondary_anchor_char, g_main_anchor_char), 
                         g_secondary_separator_char, g_main_separator_char),
         p_clob_tab => p_clob_tab,
-        p_result => p_result,
-        p_indent => p_indent);
-    else
-      -- gesamtes Ergebnis um P_INDENT Zeichen einruecken
-      if p_indent > 0 then
-        l_indent := g_default_delimiter_char || rpad(' ', p_indent, ' ');
-        p_result := replace(p_result, g_default_delimiter_char, l_indent);
-      end if;
+        p_result => p_result);
     end if;
   end bulk_replace;
 
@@ -348,11 +361,9 @@ as
     l_log_message clob;
     l_clob_tab clob_tab;
     l_delimiter g_default_delimiter_char%type;
+    l_indent varchar2(1000);
   begin
-    l_delimiter := coalesce(p_delimiter, g_default_delimiter_char);
-    if l_delimiter = 'NONE' then 
-      l_delimiter := null;
-    end if;
+    l_delimiter := get_delimiter(p_delimiter);
     
     if p_row_tab.count > 0 then
       dbms_lob.createtemporary(p_result, false, dbms_lob.call);
@@ -363,7 +374,6 @@ as
         
         bulk_replace(
           p_template => l_template,
-          p_indent => p_indent,
           p_clob_tab => l_clob_tab,
           p_result => l_result);
       
@@ -372,8 +382,7 @@ as
           bulk_replace(
             p_template => l_clob_tab(c_log_template),
             p_clob_tab => l_clob_tab,
-            p_result => l_log_message,
-            p_indent => null);   
+            p_result => l_log_message);   
           
           pit.log(msg.LOG_CONVERSION, msg_args(l_log_message));
         end if;
@@ -385,6 +394,13 @@ as
         dbms_lob.append(p_result, l_result);
       end loop;
     end if;
+    
+    -- gesamtes Ergebnis um P_INDENT Zeichen einruecken
+    if p_indent > 0 then
+      l_indent := l_delimiter || rpad(' ', p_indent, ' ');
+      p_result := replace(p_result, l_delimiter, l_indent);
+    end if;
+    
   end bulk_replace;
 
 
@@ -392,16 +408,17 @@ as
   procedure bulk_replace(
     p_row_tab in row_tab,
     p_delimiter in varchar2,
-    p_result out nocopy clob_table,
-    p_indent in number) 
+    p_result out nocopy clob_table) 
   as
     l_result clob;
     l_template clob;
     l_log_message clob;
     l_clob_tab clob_tab;
+    l_delimiter g_default_delimiter_char%type;
   begin
     -- Initialisierung
     p_result := clob_table();
+    l_delimiter := get_delimiter(p_delimiter);
     
     for i in 1 .. p_row_tab.count loop
       l_clob_tab := p_row_tab(i);
@@ -411,21 +428,19 @@ as
       bulk_replace(
         p_template => l_template,
         p_clob_tab => l_clob_tab,
-        p_result => l_result,
-        p_indent => p_indent);
+        p_result => l_result);
     
       if l_clob_tab.exists(c_log_template) and l_clob_tab(c_log_template) is not null then
         bulk_replace(
           p_template => l_clob_tab(c_log_template),
           p_clob_tab => l_clob_tab,
-          p_result => l_log_message,
-          p_indent => null);
+          p_result => l_log_message);
                   
         pit.log(msg.LOG_CONVERSION, msg_args(l_log_message));
       end if;
       
       if i < p_row_tab.last then
-        l_result := l_result || p_delimiter;
+        l_result := l_result || l_delimiter;
       end if;
     
       p_result.extend;
@@ -575,8 +590,7 @@ as
     bulk_replace(
       p_template => p_template,
       p_clob_tab => l_clob_tab,
-      p_result => l_result,
-      p_indent => 0);
+      p_result => l_result);
       
     return l_result;
   end bulk_replace;
@@ -591,6 +605,10 @@ as
   as
     l_row_tab row_tab;
   begin
+    pit.assert(
+      p_condition => (p_delimiter = c_no_delimiter and p_indent = 0) or (p_delimiter != c_no_delimiter),
+      p_message_name => msg.INVALID_PARAMETER_COMBI);
+    
     copy_table_to_row_tab(
       p_cursor => p_cursor,
       p_row_tab => l_row_tab);
@@ -638,16 +656,14 @@ as
     bulk_replace(
       p_row_tab => l_row_tab,
       p_delimiter => p_delimiter,
-      p_result => p_result,
-      p_indent => p_indent);
+      p_result => p_result);
   end generate_text_table;
   
   
   -- Ueberladung als Funktion
   function generate_text_table(
     p_cursor in sys_refcursor,
-    p_delimiter in varchar2 default null,
-    p_indent in number default 0) 
+    p_delimiter in varchar2 default null) 
     return clob_table
     pipelined
   as
@@ -657,8 +673,7 @@ as
     generate_text_table(
         p_cursor    => l_cur,
         p_result    => l_clob_table,
-        p_delimiter => p_delimiter,
-        p_indent    => p_indent);
+        p_delimiter => p_delimiter);
         
     for i in 1 .. l_clob_table.count loop
       if dbms_lob.getlength(l_clob_table(i)) > 0 then

@@ -151,8 +151,7 @@ as
   -- Ueberladung als Funktion
   function generate_text_table(
     p_cursor in sys_refcursor,
-    p_delimiter in varchar2 default null,
-    p_indent in number default 0
+    p_delimiter in varchar2 default null
   ) return clob_table
     pipelined;
     

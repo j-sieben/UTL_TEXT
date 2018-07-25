@@ -39,6 +39,15 @@ begin
     p_pms_pml_name => 'GERMAN',
     p_error_number => null);
     
+    
+  pit_admin.merge_message(
+    p_pms_name => 'INVALID_PARAMETER_COMBI',
+    p_pms_text => q'^Einrückungen sind nur erlaubt, wenn auch ein Trennzeichen definiert wurde.^',
+    p_pms_pse_id => 30,
+    p_pms_pmg_name => 'CODE_GEN',
+    p_pms_pml_name => 'GERMAN',
+    p_error_number => null);
+    
 
   pit_admin.create_message_package;
 end;

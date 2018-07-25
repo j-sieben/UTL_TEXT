@@ -383,7 +383,7 @@ as
              ), null, 5) result
       into l_result
       from dual;
-    ut.expect(l_result).to_equal('     Das ist ein Test' || code_generator.get_default_delimiter_char || '     Das ist ein Test');
+    ut.expect(l_result).to_equal('Das ist ein Test' || code_generator.get_default_delimiter_char || '     Das ist ein Test');
   end complex_text_with_default_indent;
   
   
@@ -397,8 +397,8 @@ as
                       select '<A>#VAL#</A>' template, '1' val from dual union all
                       select '<B>#VAL#</B>' template, '2' val from dual union all
                       select '<C>#VAL#</C>' template, '3' val from dual
-                    )) inner_text
-               from dual), 'NONE')
+                    ), code_generator.c_no_delimiter) inner_text
+               from dual))
       into l_result
       from dual;
     ut.expect(l_result).to_equal('<Result><A>1</A><B>2</B><C>3</C></Result>');
@@ -410,13 +410,14 @@ as
     l_result varchar2(32767);
   begin
     select code_generator.generate_text(cursor(
-             select '<Result>#INNER_TEXT#</Result>' template,
+             select '<Result>#CR#  #INNER_TEXT##CR#</Result>' template,
+                    code_generator.get_default_delimiter_char cr,
                     code_generator.generate_text(cursor(
                       select '<A>#VAL#</A>' template, '1' val from dual union all
                       select '<B>#VAL#</B>' template, '2' val from dual union all
                       select '<C>#VAL#</C>' template, '3' val from dual
-                    )) inner_text
-               from dual), null, 2)
+                    ), null, 2) inner_text
+               from dual))
       into l_result
       from dual;
     ut.expect(l_result).to_equal(q'^<Result>
