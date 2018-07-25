@@ -2,6 +2,8 @@ create or replace package code_generator
   authid definer
 as
 
+  c_no_delimiter constant varchar2(4) := 'NONE';
+
   /* Set-Methode zum Einstellen, ob fehlende Ersetzungsanker zu einem Fehler 
    * fuehren sollen oder nicht.
    * %param p_flag Flag, das steuert, ob im Fall fehlender Anker ein Fehler geworfen
@@ -24,6 +26,17 @@ as
     p_format in varchar2);
 
   function get_default_date_format
+    return varchar2;
+    
+
+  /* Set-Methode stellt das Standard-Trennzeichen bei mehrzeiligen Ergebnissen ein
+   * %param p_delimiter Definiert das Trennzeichen fuer mehrzeilige Ersetzungen
+   *        Standard ist definiert durch Parameter DEFAULT_DELIMITER_CHAR
+   */
+  procedure set_default_delimiter_char(
+    p_delimiter in varchar2);
+
+  function get_default_delimiter_char
     return varchar2;
   
   
@@ -90,8 +103,7 @@ as
    */
   function bulk_replace(
     p_template in clob,
-    p_chunks in char_table,
-    p_indent in number default 0
+    p_chunks in char_table
   ) return clob;
                           
 

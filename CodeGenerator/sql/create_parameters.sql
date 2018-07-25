@@ -12,6 +12,13 @@ begin
     );
    
   param_admin.edit_parameter(
+    p_par_id => 'DEFAULT_DELIMITER_CHAR',
+    p_par_pgr_id => 'CODE_GEN',
+	  p_par_description => 'Char that is used to delimit several rows',
+    p_par_string_value => chr(10)
+    );
+   
+  param_admin.edit_parameter(
     p_par_id => 'MAIN_ANCHOR_CHAR',
     p_par_pgr_id => 'CODE_GEN',
 	  p_par_description => 'Char that is used to detect beginning and end of a replacmente anchor',

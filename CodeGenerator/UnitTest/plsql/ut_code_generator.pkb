@@ -41,6 +41,13 @@ as
   begin
     ut.expect(code_generator.get_secondary_separator_char).to_equal(param.get_string('SECONDARY_SEPARATOR_CHAR', 'CODE_GEN'));
   end test_second_seaparator;
+
+
+  procedure test_delimiter_char
+  as
+  begin
+    ut.expect(code_generator.get_default_delimiter_char).to_equal(param.get_string('DEFAULT_DELIMITER_CHAR', 'CODE_GEN'));
+  end test_delimiter_char;
   
   
   procedure set_date_format
@@ -86,6 +93,15 @@ as
     code_generator.set_secondary_separator_char(l_anchor);
     ut.expect(code_generator.get_secondary_separator_char).to_equal(l_anchor);
   end set_second_seaparator;
+
+
+  procedure set_delimiter_char
+  as
+    l_anchor char(1 char) := '|';
+  begin
+    code_generator.set_default_delimiter_char(l_anchor);
+    ut.expect(code_generator.get_default_delimiter_char).to_equal(l_anchor);
+  end set_delimiter_char;
 
 
   procedure test_ignore_flag
@@ -293,6 +309,84 @@ as
   end simple_text_too_many_anchors;
   
   
+  procedure simple_text_date_column
+  as
+    l_result varchar2(32767);
+    l_reference varchar2(50 char);
+    l_now date;
+  begin
+    l_now := sysdate;
+    select code_generator.generate_text(cursor(
+             select '#DATE_COL#' template,
+                    sysdate date_col
+               from dual))
+      into l_result
+      from dual;
+    l_reference := to_char(l_now, code_generator.get_default_date_format);
+    ut.expect(l_result).to_equal(l_reference);
+  end simple_text_date_column;
+  
+  
+  procedure simple_text_formatted_date_column
+  as
+    l_result varchar2(32767);
+    l_reference varchar2(50 char);
+    l_now date;
+  begin
+    l_now := sysdate;
+    code_generator.set_default_date_format('dd.mm.yyyy');
+    select code_generator.generate_text(cursor(
+             select '#DATE_COL#' template,
+                    sysdate date_col
+               from dual))
+      into l_result
+      from dual;
+    l_reference := to_char(l_now, code_generator.get_default_date_format);
+    ut.expect(l_result).to_equal(l_reference);
+  end simple_text_formatted_date_column;
+  
+  
+  procedure simple_text_with_indent
+  as
+    l_result varchar2(32767);
+  begin
+    select code_generator.generate_text(cursor(
+             select 'Das ist ein #COL#' template, 'Test' col
+               from dual), null, 5) result
+      into l_result
+      from dual;
+    ut.expect(l_result).to_equal('Das ist ein Test');
+  end simple_text_with_indent;
+  
+  
+  procedure complex_text_with_indent
+  as
+    l_result varchar2(32767);
+  begin
+    select code_generator.generate_text(cursor(
+             select 'Das ist ein #COL#' template, 'Test' col from dual union all
+             select 'Das ist ein #COL#' template, 'Test' col from dual
+             ), '|', 5) result
+      into l_result
+      from dual;
+    ut.expect(l_result).to_equal('Das ist ein Test|     Das ist ein Test');
+  end complex_text_with_indent;
+  
+  
+  procedure complex_text_with_default_indent
+  as
+    l_result varchar2(32767);
+  begin
+    select code_generator.generate_text(cursor(
+             select 'Das ist ein #COL#' template, 'Test' col from dual union all
+             select 'Das ist ein #COL#' template, 'Test' col from dual
+             ), null, 5) result
+      into l_result
+      from dual;
+    ut.expect(l_result).to_equal('     Das ist ein Test' || code_generator.get_default_delimiter_char || '     Das ist ein Test');
+  end complex_text_with_default_indent;
+  
+  
   procedure complex_text
   as
     l_result varchar2(32767);
@@ -304,11 +398,33 @@ as
                       select '<B>#VAL#</B>' template, '2' val from dual union all
                       select '<C>#VAL#</C>' template, '3' val from dual
                     )) inner_text
-               from dual))
+               from dual), 'NONE')
       into l_result
       from dual;
     ut.expect(l_result).to_equal('<Result><A>1</A><B>2</B><C>3</C></Result>');
   end complex_text;
+  
+  
+  procedure complex_text_with_indent_and_format
+  as
+    l_result varchar2(32767);
+  begin
+    select code_generator.generate_text(cursor(
+             select '<Result>#INNER_TEXT#</Result>' template,
+                    code_generator.generate_text(cursor(
+                      select '<A>#VAL#</A>' template, '1' val from dual union all
+                      select '<B>#VAL#</B>' template, '2' val from dual union all
+                      select '<C>#VAL#</C>' template, '3' val from dual
+                    )) inner_text
+               from dual), null, 2)
+      into l_result
+      from dual;
+    ut.expect(l_result).to_equal(q'^<Result>
+  <A>1</A>
+  <B>2</B>
+  <C>3</C>
+</Result>^');
+  end complex_text_with_indent_and_format;
 
 end ut_code_generator;
 /

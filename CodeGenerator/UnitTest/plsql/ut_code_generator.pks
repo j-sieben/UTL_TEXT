@@ -24,6 +24,9 @@ as
   -- %test(Has correct second replacement char)
   procedure test_second_seaparator;
 
+  -- %test(Has correct default delimiter char)
+  procedure test_delimiter_char;
+
   -- %test(Date format is changeable)
   procedure set_date_format;
 
@@ -38,6 +41,9 @@ as
 
   -- %test(Second replacement char is changeable)
   procedure set_second_seaparator;
+
+  -- %test(Delimiter char is changeable)
+  procedure set_delimiter_char;
 
   -- %endcontext
 
@@ -98,8 +104,26 @@ as
   -- %test(Converts single line SQL with a missing replacement)
   procedure simple_text_too_many_anchors;
   
+  -- %test(Converts single line SQL with a date column)
+  procedure simple_text_date_column;
+  
+  -- %test(Converts single line SQL with a date column and changed date format)
+  procedure simple_text_formatted_date_column;
+
+  -- %test(Converts single line SQL, indenting is used)
+  procedure simple_text_with_indent;
+
+  -- %test(Converts single line SQL, multiple rows, indenting is used)
+  procedure complex_text_with_indent;
+
+  -- %test(Converts single line SQL, multiple rows, indenting is used, standard delimiter)
+  procedure complex_text_with_default_indent;
+  
   -- %test(Converts multiple line SQLinto a surrounding template)
   procedure complex_text;
+  
+  -- %test(Converts multiple line SQLinto a surrounding template)
+  procedure complex_text_with_indent_and_format;
   
   -- %endcontext
 

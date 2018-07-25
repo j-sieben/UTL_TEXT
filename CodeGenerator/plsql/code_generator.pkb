@@ -11,6 +11,7 @@ as
   
   g_ignore_missing_anchors boolean;
   g_default_date_format varchar2(200);
+  g_default_delimiter_char varchar2(100);
   g_main_anchor_char char(1 char);
   g_secondary_anchor_char char(1 char);
   g_main_separator_char char(1 char);
@@ -29,27 +30,11 @@ as
 
 
   /* Hilfsfunktionen */
-
-  /* Prozedur zum Oeffnen eines Cursors
-   * %param  p_cur  ID des Cursors
-   * %usage  Oeffnet einen neuen Cursor fuer eine uebergebene SQL-Anweisung
-   */
-  procedure open_cursor(
-    p_cur out nocopy integer) 
-  as
-  begin
-    if not dbms_sql.is_open(c => p_cur) then
-      p_cur := dbms_sql.open_cursor;
-    end if;
-  end open_cursor;
-  
-
   /* Prozedur zum Oeffnen eines Cursors
    * %param  p_cur     ID des Cursors
    * %param  p_cursor  SYS_REFCURSOR, Ueberladung fuer einen bereits geoffneten Cursor
-   * %usage  Wird verwendet, wenn im aufrufenden Code bereits ein Cursor existiert
-   *         und nicht nur eine SQL-Anweisung. Konvertiert diesen Cursor in einen
-   *         DBMS_SQL-Cursor, der anschliessend analysiert werden kann.
+   * %usage  Wird verwendet, um den uebergebenen Cursor in einen DBMS_SQL-Cursor 
+   *         zu konvertieren, der anschliessend analysiert werden kann.
    */
   procedure open_cursor(
     p_cur out nocopy integer,
@@ -114,35 +99,6 @@ as
       end if;
     end loop;
   end describe_columns;
-
-
-  /* Prozedur zum Beschreiben eines Cursors
-   * %param  p_stmt      SQL-Anweisung, die analysiert werden soll
-   * %param  p_cur       ID des Cursors
-   * %param  p_cur_desc  DBMS_SQL.DESC_TAB2 mit den Details zu einem Cursor
-   * %param  p_clob_tab  PL/SQL-Tabelle mit dem Spaltennamen (KEY) und 
-   *                     einem initialen NULL-Wert fuer jede Spalte des Cursors
-   * %usage  Wird verwendet, um eine SQL-Anweisung zu analysieren und eine PL/SQL-Tabelle
-   *         zur Aufnahme der jeweiligen Spaltenwerte unter dem Spaltennamen zu erzeugen.
-   */
-  procedure describe_cursor(
-    p_stmt in clob,
-    p_cur in out nocopy integer,
-    p_cur_desc in out nocopy dbms_sql.desc_tab2,
-    p_clob_tab in out nocopy clob_tab) 
-  as
-    l_ignore integer;
-  begin
-    open_cursor(p_cur);
-    
-    dbms_sql.parse(p_cur, 'select * from (' || p_stmt || ')', dbms_sql.native);
-    l_ignore := dbms_sql.execute(p_cur);
-    
-    describe_columns(
-      p_cur => p_cur,
-      p_cur_desc => p_cur_desc,
-      p_clob_tab => p_clob_tab);
-  end describe_cursor;
 
 
   /* Prozedur zum Beschreiben eines Cursors
@@ -318,6 +274,7 @@ as
     l_anchor_value clob;
     l_missing_anchors varchar2(32767);
     l_invalid_anchors varchar2(32767);
+    l_indent varchar2(1000);
   begin
     pit.assert_not_null(
       p_condition => p_template,
@@ -372,7 +329,8 @@ as
     else
       -- gesamtes Ergebnis um P_INDENT Zeichen einruecken
       if p_indent > 0 then
-        p_result := replace(p_result, chr(10), chr(10) || rpad(' ', p_indent, ' '));
+        l_indent := g_default_delimiter_char || rpad(' ', p_indent, ' ');
+        p_result := replace(p_result, g_default_delimiter_char, l_indent);
       end if;
     end if;
   end bulk_replace;
@@ -380,29 +338,34 @@ as
 
   -- %param p_row_tab Liste mit Tabelle von KEY-VALUE-Paaren, erzeugt ueber COPY_TABLE_TO_ROW_TAB
   procedure bulk_replace(
-    p_template in clob default null,
     p_row_tab in row_tab,
     p_delimiter in varchar2,
-    p_result out nocopy clob,
-    p_indent in number) 
+    p_indent in number,
+    p_result out nocopy clob) 
   as
     l_result clob;
     l_template clob;
     l_log_message clob;
     l_clob_tab clob_tab;
+    l_delimiter g_default_delimiter_char%type;
   begin
+    l_delimiter := coalesce(p_delimiter, g_default_delimiter_char);
+    if l_delimiter = 'NONE' then 
+      l_delimiter := null;
+    end if;
+    
     if p_row_tab.count > 0 then
       dbms_lob.createtemporary(p_result, false, dbms_lob.call);
       
       for i in 1 .. p_row_tab.count loop
         l_clob_tab := p_row_tab(i);
-        l_template := coalesce(l_clob_tab(c_row_template), p_template);
+        l_template := l_clob_tab(c_row_template);
         
         bulk_replace(
           p_template => l_template,
+          p_indent => p_indent,
           p_clob_tab => l_clob_tab,
-          p_result => l_result,
-          p_indent => p_indent);
+          p_result => l_result);
       
         -- Falls vorhanden, Logging durchfuehren
         if l_clob_tab.exists(c_log_template) and l_clob_tab(c_log_template) is not null then
@@ -416,7 +379,7 @@ as
         end if;
         
         if i < p_row_tab.last then
-          l_result := l_result || p_delimiter;
+          l_result := l_result || l_delimiter;
         end if;
       
         dbms_lob.append(p_result, l_result);
@@ -477,6 +440,9 @@ as
     g_ignore_missing_anchors := param.get_boolean(
                                   p_par_id => 'IGNORE_MISSING_ANCHORS',
                                   p_pgr_id => c_param_group);
+    g_default_delimiter_char := param.get_string(
+                                  p_par_id => 'DEFAULT_DELIMITER_CHAR',
+                                  p_pgr_id => c_param_group);
     g_default_date_format := param.get_string(
                                p_par_id => 'DEFAULT_DATE_FORMAT',
                                p_pgr_id => c_param_group);
@@ -510,6 +476,22 @@ as
   begin
     return g_ignore_missing_anchors;
   end get_ignore_missing_anchors;
+  
+  
+  procedure set_default_delimiter_char(
+    p_delimiter in varchar2)
+  as
+  begin
+    g_default_delimiter_char := p_delimiter;
+  end set_default_delimiter_char;
+
+  function get_default_delimiter_char
+    return varchar2
+  as
+  begin
+    return g_default_delimiter_char;
+  end get_default_delimiter_char;
+  
   
   
   procedure set_main_anchor_char(p_char in varchar2) as
@@ -578,8 +560,7 @@ as
   /* BULK_REPLACE */
   function bulk_replace(
     p_template in clob,
-    p_chunks in char_table,
-    p_indent in number default 0
+    p_chunks in char_table
   ) return clob
   as
     l_clob_tab clob_tab;
@@ -595,7 +576,7 @@ as
       p_template => p_template,
       p_clob_tab => l_clob_tab,
       p_result => l_result,
-      p_indent => p_indent);
+      p_indent => 0);
       
     return l_result;
   end bulk_replace;
@@ -615,7 +596,6 @@ as
       p_row_tab => l_row_tab);
   
     bulk_replace(
-      p_template => null,
       p_row_tab => l_row_tab,
       p_delimiter => p_delimiter,
       p_result => p_result,
