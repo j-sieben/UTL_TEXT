@@ -3,6 +3,11 @@ create or replace package code_generator
 as
 
   c_no_delimiter constant varchar2(4) := 'NONE';
+  $IF $$PIT_INSTALLED $THEN
+  c_with_pit constant boolean := true;
+  $ELSE
+  c_with_pit constant boolean := false;
+  $END
 
   /* Set-Methode zum Einstellen, ob fehlende Ersetzungsanker zu einem Fehler 
    * fuehren sollen oder nicht.

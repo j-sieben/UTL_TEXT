@@ -296,9 +296,15 @@ as
     l_missing_anchors varchar2(32767);
     l_invalid_anchors varchar2(32767);
   begin
+    $IF CODE_GENERATOR.C_WITH_PIT $THEN
     pit.assert_not_null(
       p_condition => p_template,
       p_message_name => msg.NO_TEMPLATE);
+    $ELSE
+    if p_template is null then
+      raise_application_error(-20000, 'Template must not be null');
+    end if;
+    $END
       
     -- Template auf Ergebnis umkopieren, um Rekursion durchfuehren zu koennen
     p_result := p_template;
@@ -323,16 +329,24 @@ as
     end loop;
   
     if l_invalid_anchors is not null then
+      $IF CODE_GENERATOR.C_WITH_PIT $THEN
       pit.error(
         msg.INVALID_ANCHOR_NAMES,
         msg_args(l_invalid_anchors));
+      $ELSE
+      raise_application_error(-20001, 'The following anchors are not conforming to the naming rules: ' || l_invalid_anchors); 
+      $END
     end if;
     
     if l_missing_anchors is not null and not g_ignore_missing_anchors then
       l_missing_anchors := ltrim(l_missing_anchors, g_main_separator_char);
+      $IF CODE_GENERATOR.C_WITH_PIT $THEN
       pit.error(
         msg.MISSING_ANCHORS,
         msg_args(l_missing_anchors));
+      $ELSE
+      raise_application_error(-20002, 'The following anchors are missing: ' || l_missing_anchors); 
+      $END
     end if;
   
     -- Rekursiver Aufruf, falls Ersetzungen wiederum Anker beinhalten,
@@ -384,7 +398,11 @@ as
             p_clob_tab => l_clob_tab,
             p_result => l_log_message);   
           
+          $IF CODE_GENERATOR.C_WITH_PIT $THEN
           pit.log(msg.LOG_CONVERSION, msg_args(l_log_message));
+          $ELSE
+          dbms_output.put_line(l_log_message);
+          $END
         end if;
         
         if i < p_row_tab.last then
@@ -436,7 +454,12 @@ as
           p_clob_tab => l_clob_tab,
           p_result => l_log_message);
                   
+          
+        $IF CODE_GENERATOR.C_WITH_PIT $THEN
         pit.log(msg.LOG_CONVERSION, msg_args(l_log_message));
+        $ELSE
+        dbms_output.put_line(l_log_message);
+        $END
       end if;
       
       if i < p_row_tab.last then
@@ -605,9 +628,15 @@ as
   as
     l_row_tab row_tab;
   begin
+    $IF CODE_GENERATOR.C_WITH_PIT $THEN
     pit.assert(
       p_condition => (p_delimiter = c_no_delimiter and p_indent = 0) or (p_delimiter != c_no_delimiter),
       p_message_name => msg.INVALID_PARAMETER_COMBI);
+    $ELSE
+    if not((p_delimiter = c_no_delimiter and p_indent = 0) or (p_delimiter != c_no_delimiter)) then
+      raise_application_error(-20003, 'Indenting is allowed only if a delimiter is present.');
+    end if;
+    $END
     
     copy_table_to_row_tab(
       p_cursor => p_cursor,

@@ -62,11 +62,11 @@ as
   procedure simple_bulk_missing_anchor;
 
   -- %test(Converts simple BULK string, provides less replacements than requested)
-  -- %throws(msg.MISSING_ANCHORS_ERR)
+  -- %throws(msg.MISSING_ANCHORS_ERR, -20002)
   procedure simple_bulk_too_many_anchors;
 
   -- %test(Converts simple BULK string, anchor names do not comply to naming rules)
-  -- %throws(msg.INVALID_ANCHOR_NAMES_ERR)
+  -- %throws(msg.INVALID_ANCHOR_NAMES_ERR, -20001)
   procedure simple_bulk_invalid_anchor;
   
   -- %test(Converts complex BULK string with NULL replacement)
@@ -98,7 +98,7 @@ as
   procedure simple_text_two_anchors;
   
   -- %test(Converts single line SQL with a missing replacement)
-  -- %throws(msg.MISSING_ANCHORS_ERR)
+  -- %throws(msg.MISSING_ANCHORS_ERR, -20002)
   procedure simple_text_missing_anchor;
   
   -- %test(Converts single line SQL with a missing replacement)
@@ -114,7 +114,7 @@ as
   procedure simple_text_with_indent;
 
   -- %test(Calls GENERATE_TEXT with an invalid combination of parameters)
-  -- %throws(msg.INVALID_PARAMETER_COMBI_ERR)
+  -- %throws(msg.INVALID_PARAMETER_COMBI_ERR, -20003)
   procedure simple_text_invalid_params;
 
   -- %test(Converts single line SQL, multiple rows, indenting is used)
