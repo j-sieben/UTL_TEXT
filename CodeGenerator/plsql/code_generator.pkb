@@ -683,7 +683,7 @@ as
   /* GENERATE_TEXT_TABLE */
   procedure generate_text_table(
     p_cursor in out nocopy sys_refcursor,
-    p_result out nocopy clob_table) 
+    p_result out nocopy clob_table)
   as
     l_row_tab row_tab;
   begin
@@ -728,14 +728,14 @@ as
   ) return char_table
     pipelined
   as
-    c_regex_anchor_complete constant varchar2(100) := '\#A#[A-Z].*?(\#S#|\#A#)';
-    c_regex_anchor_only constant varchar2(100) := '\#A#[A-Z].*?\#A#';
+    c_regex_anchor_complete constant varchar2(100) := '\#A#[A-Z0-9_\$\#S#].*?\#A#';
+    c_regex_anchor_only constant varchar2(100) := '\#A#[A-Z0-9_\$].*?(\#S#|\#A#)';
     
     l_regex varchar2(200);
     l_retval char_table;
     l_template code_generator_templates.cgtm_text%type;
     l_str varchar2(50 char);
-    l_cnt pls_integer;
+    l_cnt pls_integer := 1;
   begin
     select cgtm_text
       into l_template
@@ -746,18 +746,18 @@ as
        
     -- Template gefunden, initialisieren
     case when p_with_replacements = 1 then
-      l_regex := replace(replace(c_regex_anchor_complete, '#A#', g_main_anchor_char), '#S#', g_main_separator_char);
+      l_regex := c_regex_anchor_complete;
     else
-      l_regex := replace(c_regex_anchor_only, '#A#', g_main_anchor_char);
+      l_regex := c_regex_anchor_only;
     end case;
+    l_regex := replace(replace(l_regex, '#A#', g_main_anchor_char), '#S#', g_main_separator_char);
     
     -- Anker finden und aufbereiten
     loop
       l_str := regexp_substr(l_template, l_regex, 1, l_cnt);
       if l_str is not null then
-        l_str := replace(l_str, g_main_anchor_char);
         if p_with_replacements = 0 then
-          l_str := replace(l_str, g_main_separator_char);
+          l_str := replace(replace(l_str, g_main_anchor_char), g_main_separator_char);
         end if;
         l_cnt := l_cnt + 1;
         

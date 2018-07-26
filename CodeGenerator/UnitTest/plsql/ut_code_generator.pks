@@ -71,6 +71,10 @@ as
   -- %test(Converts simple BULK string, anchor names do not comply to naming rules)
   -- %throws(msg.INVALID_ANCHOR_NAMES_ERR, -20001)
   procedure simple_bulk_invalid_anchor;
+
+  -- %test(Converts simple BULK string but does not offer a template)
+  -- %throws(msg.NO_TEMPLATE_ERR, -20000)
+  procedure simple_bulk_no_template;
   
   -- %test(Converts complex BULK string with NULL replacement)
   procedure complex_bulk_null_handling;
@@ -104,6 +108,10 @@ as
   -- %test(Converts single line SQL with a missing replacement)
   -- %throws(msg.MISSING_ANCHORS_ERR, -20002)
   procedure simple_text_missing_anchor;
+  
+  -- %test(Converts single line SQL without providing a template)
+  -- %throws(msg.NO_TEMPLATE_ERR, -20000)
+  procedure simple_text_no_template;
   
   -- %test(Converts single line SQL with a missing replacement)
   procedure simple_text_too_many_anchors;
@@ -142,6 +150,19 @@ as
   
   -- %test(Converts multi line SQL into a list of results)
   procedure simple_text_table;
+  
+  -- %test(Converts multi line SQL into a list of results with logging)
+  procedure simple_text_table_with_logging;
+  
+  -- %endcontext
+  
+  -- %context(GET_ANCHORS tests)
+  
+  -- %test(Reads anchors from a predefined template)
+  procedure read_anchors_from_template;
+  
+  -- %test(Reads anchors with replacement strings from a predefined template)
+  procedure read_complete_anchors_from_template;
   
   -- %endcontext
 

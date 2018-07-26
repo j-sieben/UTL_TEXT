@@ -167,6 +167,14 @@ as
     code_generator.set_ignore_missing_anchors(false);
     l_result := to_char(code_generator.bulk_replace('Das ist ein #1_COL#', char_table('1_COL', 'Test')));
   end simple_bulk_invalid_anchor;
+
+
+  procedure simple_bulk_no_template
+  as
+    l_result varchar2(32767);
+  begin
+    l_result := to_char(code_generator.bulk_replace(null, char_table('1_COL', 'Test')));
+  end simple_bulk_no_template;
   
   
   procedure complex_bulk_null_handling
@@ -300,6 +308,20 @@ as
       into l_result
       from dual;
   end simple_text_missing_anchor;
+  
+  
+  procedure simple_text_no_template
+  as
+    l_result varchar2(32767);
+  begin
+    code_generator.set_ignore_missing_anchors(false);
+    select code_generator.generate_text(cursor(
+             select null template,
+                    'Test' foo
+               from dual))
+      into l_result
+      from dual;
+  end simple_text_no_template;
   
   
   procedure simple_text_too_many_anchors
@@ -480,18 +502,85 @@ as
     l_cur sys_refcursor;
     l_cnt pls_integer;
   begin
-    open l_cur for q'^select '#VAL#' template, '1' val from dual union all
-                    select '#VAL#' template, '2' val from dual union all
-                    select '#VAL#' template, '3' val from dual^';
-    code_generator.generate_text_table(
-      p_cursor => l_cur,
-      p_result => l_result);
-    
     select count(*)
       into l_cnt
-      from table(l_result);
+      from table(
+             select code_generator.generate_text_table(cursor(
+                      select '#VAL#' template, '1' val from dual union all
+                      select '#VAL#' template, '2' val from dual union all
+                      select '#VAL#' template, '3' val from dual))
+               from dual);
+               
     ut.expect(l_cnt).to_equal(3);
   end simple_text_table;
+  
+  
+  procedure simple_text_table_with_logging
+  as
+    l_result clob_table;
+    l_cur sys_refcursor;
+    l_cnt pls_integer;
+  begin
+    pit.set_context(70,10,false,'PIT_CONSOLE');
+    select count(*)
+      into l_cnt
+      from table(
+             select code_generator.generate_text_table(cursor(
+                        with p as(
+                             select '#VAL#' template, 
+                                    'Text #VAL# generated' log_template
+                               from dual),
+                             v as (
+                             select level val
+                               from dual
+                            connect by level <=3)
+                      select template, log_template, val 
+                        from p cross join v))
+               from dual);
+    pit.reset_context;
+               
+    ut.expect(l_cnt).to_equal(3);
+  end simple_text_table_with_logging;
+  
+  
+  procedure read_anchors_from_template
+  as
+    l_anchor_list varchar2(300);
+  begin
+    insert into code_generator_templates(cgtm_name, cgtm_type, cgtm_text)
+    values ('TEST', 'TEST', 'Template with replacement anchors #ONE|PRE|POST|NULL#, #TWO# and #THREE#');
+    
+    select listagg(column_value, ':') within group (order by column_value)
+      into l_anchor_list
+      from table(code_generator.get_anchors('TEST', 'TEST', 'DEFAULT'));
+    
+    delete from code_generator_templates
+     where cgtm_name = 'TEST'
+       and cgtm_type = 'TEST'
+       and cgtm_mode = 'DEFAULT';
+       
+    ut.expect(l_anchor_list).to_equal('ONE:THREE:TWO');
+  end read_anchors_from_template;
+  
+  
+  procedure read_complete_anchors_from_template
+  as
+    l_anchor_list varchar2(300);
+  begin
+    insert into code_generator_templates(cgtm_name, cgtm_type, cgtm_text)
+    values ('TEST', 'TEST', 'Template with replacement anchors #ONE|PRE|POST|NULL#, #TWO# and #THREE#');
+    
+    select listagg(column_value, ':') within group (order by column_value)
+      into l_anchor_list
+      from table(code_generator.get_anchors('TEST', 'TEST', 'DEFAULT', 1));
+    
+    delete from code_generator_templates
+     where cgtm_name = 'TEST'
+       and cgtm_type = 'TEST'
+       and cgtm_mode = 'DEFAULT';
+       
+    ut.expect(l_anchor_list).to_equal('#ONE|PRE|POST|NULL#:#THREE#:#TWO#');
+  end read_complete_anchors_from_template;
 
 end ut_code_generator;
 /
