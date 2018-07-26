@@ -8,10 +8,10 @@ prompt &h3.Create CodeGenerator types
 @&sql_dir.create_types.sql
 
 prompt &h3.Create CodeGenerator parameters
-@&sql_dir.create_parameters.sql
+@check_pit_exists.sql "&sql_dir.create_parameters.sql"
 
 prompt &h3.Create CodeGenerator messages
-@&sql_dir.create_messages.sql
+@check_pit_exists.sql "&sql_dir.create_messages.sql"
 
 prompt &h3.Create table CODE_GENERATOR_TEMPLATES
 @&sql_dir.code_generator_templates.tbl

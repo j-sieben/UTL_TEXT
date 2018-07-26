@@ -473,8 +473,10 @@ as
   
 
   /* Initialisierungsprozedur des Packages */
-  procedure initialize as
+  procedure initialize 
+  as
   begin
+    $IF CODE_GENERATOR.C_WITH_PIT $THEN
     g_ignore_missing_anchors := param.get_boolean(
                                   p_par_id => 'IGNORE_MISSING_ANCHORS',
                                   p_pgr_id => c_param_group);
@@ -496,6 +498,15 @@ as
     g_secondary_separator_char := param.get_string(
                                     p_par_id => 'SECONDARY_SEPARATOR_CHAR',
                                     p_pgr_id => c_param_group);
+    $ELSE
+    g_ignore_missing_anchors := true;
+    g_default_delimiter_char := chr(10);
+    g_default_date_format := 'yyyy-mm-dd hh24:mi:ss';
+    g_main_anchor_char := '#';
+    g_secondary_anchor_char := '^';
+    g_main_separator_char := '|';
+    g_secondary_separator_char := '~';
+    $END
   end initialize;
 
 
