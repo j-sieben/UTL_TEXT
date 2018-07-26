@@ -683,9 +683,7 @@ as
   /* GENERATE_TEXT_TABLE */
   procedure generate_text_table(
     p_cursor in out nocopy sys_refcursor,
-    p_result out nocopy clob_table,
-    p_delimiter in varchar2 default null,
-    p_indent in number default 0) 
+    p_result out nocopy clob_table) 
   as
     l_row_tab row_tab;
   begin
@@ -695,15 +693,14 @@ as
   
     bulk_replace(
       p_row_tab => l_row_tab,
-      p_delimiter => p_delimiter,
+      p_delimiter => null,
       p_result => p_result);
   end generate_text_table;
   
   
   -- Ueberladung als Funktion
   function generate_text_table(
-    p_cursor in sys_refcursor,
-    p_delimiter in varchar2 default null) 
+    p_cursor in sys_refcursor) 
     return clob_table
     pipelined
   as
@@ -712,8 +709,7 @@ as
   begin
     generate_text_table(
         p_cursor    => l_cur,
-        p_result    => l_clob_table,
-        p_delimiter => p_delimiter);
+        p_result    => l_clob_table);
         
     for i in 1 .. l_clob_table.count loop
       if dbms_lob.getlength(l_clob_table(i)) > 0 then

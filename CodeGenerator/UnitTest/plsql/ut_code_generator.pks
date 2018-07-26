@@ -44,6 +44,9 @@ as
 
   -- %test(Delimiter char is changeable)
   procedure set_delimiter_char;
+  
+  -- %test(Test whether reset of any changed information works)
+  procedure test_initialize;
 
   -- %endcontext
 
@@ -87,6 +90,7 @@ as
   -- %test(Converts complex BULK string with recursion, changed marker signs abd NULL handling)
   procedure complex_bulk_switch_marker_and_null;
 
+
   -- %endcontext
   
   -- %context(GENERATE_TEXT tests)
@@ -123,11 +127,21 @@ as
   -- %test(Converts single line SQL, multiple rows, indenting is used, standard delimiter)
   procedure complex_text_with_default_indent;
   
-  -- %test(Converts multiple line SQLinto a surrounding template)
+  -- %test(Converts multiple line SQL into a surrounding template)
   procedure complex_text;
   
-  -- %test(Converts multiple line SQLinto a surrounding template)
+  -- %test(Converts multiple line SQL into a surrounding template)
   procedure complex_text_with_indent_and_format;
+  
+  -- %test(Converts multiple line SQL into a surrounding template and logs the surrounding step)
+  procedure complex_text_with_logging;
+  
+  -- %endcontext
+  
+  -- %context(GENERATE_TEXT_TABLE tests)
+  
+  -- %test(Converts multi line SQL into a list of results)
+  procedure simple_text_table;
   
   -- %endcontext
 

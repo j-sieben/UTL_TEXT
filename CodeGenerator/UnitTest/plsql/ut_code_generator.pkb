@@ -102,7 +102,15 @@ as
     code_generator.set_default_delimiter_char(l_anchor);
     ut.expect(code_generator.get_default_delimiter_char).to_equal(l_anchor);
   end set_delimiter_char;
-
+  
+  
+  procedure test_initialize
+  as
+  begin
+    code_generator.set_default_delimiter_char('-');
+    code_generator.initialize;
+    ut.expect(code_generator.get_default_delimiter_char).to_equal(param.get_string('DEFAULT_DELIMITER_CHAR', 'CODE_GEN'));
+  end test_initialize;
 
   procedure test_ignore_flag
   as
@@ -438,6 +446,52 @@ as
   <C>3</C>
 </Result>^');
   end complex_text_with_indent_and_format;
+  
+  
+  procedure complex_text_with_logging
+  as
+    l_result varchar2(32767);
+  begin
+    pit.set_context(70,10,false,'PIT_CONSOLE');
+    select code_generator.generate_text(cursor(
+             select '<Result>#CR#  #INNER_TEXT##CR#</Result>' template,
+                    'XML created: <Result>#CR#  #INNER_TEXT##CR#</Result>' log_template,
+                    code_generator.get_default_delimiter_char cr,
+                    code_generator.generate_text(cursor(
+                      select '<A>#VAL#</A>' template, '1' val from dual union all
+                      select '<B>#VAL#</B>' template, '2' val from dual union all
+                      select '<C>#VAL#</C>' template, '3' val from dual
+                    ), null, 2) inner_text
+               from dual))
+      into l_result
+      from dual;
+    pit.reset_context;
+    ut.expect(l_result).to_equal(q'^<Result>
+  <A>1</A>
+  <B>2</B>
+  <C>3</C>
+</Result>^');
+  end complex_text_with_logging;
+  
+  
+  procedure simple_text_table
+  as
+    l_result clob_table;
+    l_cur sys_refcursor;
+    l_cnt pls_integer;
+  begin
+    open l_cur for q'^select '#VAL#' template, '1' val from dual union all
+                    select '#VAL#' template, '2' val from dual union all
+                    select '#VAL#' template, '3' val from dual^';
+    code_generator.generate_text_table(
+      p_cursor => l_cur,
+      p_result => l_result);
+    
+    select count(*)
+      into l_cnt
+      from table(l_result);
+    ut.expect(l_cnt).to_equal(3);
+  end simple_text_table;
 
 end ut_code_generator;
 /
