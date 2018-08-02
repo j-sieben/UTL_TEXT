@@ -11,7 +11,7 @@ prompt &h3.Create CodeGenerator parameters
 @check_pit_exists.sql "&sql_dir.create_parameters.sql"
 
 prompt &h3.Create CodeGenerator messages
-@check_pit_exists.sql "&sql_dir.create_messages.sql"
+@check_pit_exists.sql "messages/&DEFAULT_LANGUAGE./create_messages.sql"
 
 prompt &h3.Create table CODE_GENERATOR_TEMPLATES
 @&sql_dir.code_generator_templates.tbl

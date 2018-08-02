@@ -9,9 +9,15 @@ clear screen
 
 set termout off
 col install_user new_val INSTALL_USER format a30
+col default_language new_val DEFAULT_LANGUAGE format a30
 
-select upper('&1.') install_user
-  from dual;
+
+select user sys_user,
+       upper('&1.') install_user,
+       upper('&2.') default_language
+  from V$NLS_VALID_VALUES
+ where parameter = 'LANGUAGE'
+   and value = upper('&2.');
   
 -- Check whether PIT is installed at the installation user
 col pit_installed new_val PIT_INSTALLED format a30

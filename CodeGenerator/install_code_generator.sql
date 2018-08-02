@@ -1,5 +1,6 @@
 -- Parameters:
 -- 1: Owner of SCT, package into which SCT will be installed
+-- 2: Default language all messages are generated at, if PIT is present
 
 @init.sql &1.
 
