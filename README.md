@@ -19,16 +19,7 @@ As a standard, a replacement anchor in a template must be surrounded by `#`-sign
 
 As an example, this is a simple replacement anchor: `#SAMPLE_REPLACEMENT#`. If you intend to surround the value with brackets and pass the information `NULL` if the value is `NULL`, you may write `#SAMPLE_REPLACEMENT|(|), |NULL#` to achieve this.
 
-Should it be necessary, the replacement characters can be changed either on a case by case basis by calling setter methods or generally by adjusting initialization parameters. 
-CodeGenerator will utilize PIT for messaging, if it is installed. If this is the case ...
-- CodeGenerator raises meaningful and translatable messages on errors
-- Loggig is possible to any PIT output module, including tables, trace files, console and so on
-- Initial value of setter methods are controlled by parameters
-
-If PIT is not present...
-- if falls back to a more basic version raising simple errors 
-- logging is made to the console only and
-- Initial status of setter methods are not maintained by parameters but hard coded into the package
+Should it be necessary, the replacement characters can be changed either on a case by case basis by calling setter methods or generally by adjusting initialization parameters. CodeGenerator relies on the existence of PIT to work.
 
 ## Functionality
 
