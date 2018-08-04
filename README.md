@@ -162,7 +162,6 @@ As a more complex example, you may want to nest calls of `GENERATE_TEXT`. This w
 SQL>   with templ as (
   2         select q'^CREATE TABLE #TABLE_NAME#(#CR##COLUMN_LIST#);^' table_template,
   3                q'^#COLUMN_NAME# #COLUMN_TYPE##COLUMN_SIZE|(| char)##COLUMN_PRECISION|(|)#^' col_template,
-  4                ',' || chr(10) || '  ' delimiter,
   5                chr(10) || '  ' cr
   6           from dual),
   7         vals as (
@@ -180,7 +179,7 @@ SQL>   with templ as (
  19                code_generator.generate_text(cursor(
  20                  select col_template, column_name, column_type, column_size, column_precision
  21                    from templ
- 22                   cross join vals), delimiter, 2) column_list
+ 22                   cross join vals), cr, 2) column_list
  23           from templ)) result
  24    from dual;
 
@@ -191,6 +190,8 @@ CREATE TABLE MY_TABLE(
   SECOND_COLUMN NUMBER(38, 0),
   THIRD_COLUMN INTEGER);
 ```
+
+Here you see the usage of parameter `p_indent` which is set to `2` in the example. This then means that any row, delimited by `p_delimiter` which in our case is `chr(10)`. The outcome is indented by 2 blanks at the beginning of each line. This is useful when putting together complex DML or DDL statements.
 
 To make it easy to maintain different templates, CodeGenerator ships with a table called `CODE_GENERATOR_TEMPLATES` you may use as a repository for your templates. You may use any existing or newly created table for this purpose as well or provide the template by any others means. 
 
