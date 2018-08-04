@@ -301,3 +301,9 @@ Any parameter that is preset is changeable during operation using getter and set
 ## Internationalization
 
 As CodeGenerator is based on PIT, all messages can be easily translated using PITs built in translation mechanism. Simply export the default language and translate the XLIFF-file to the target language. Then re-import this file into PIT using `PIT_ADMIN.TRANSLATE_MESSAGES` and you're done.
+
+## Installing without PIT being present
+If you decide not to install PIT and still want to use CodeGenerator, this is possible as well, but with somewhat limited functionality:
+
+- All parameters are constants in the `code_generator`package specification
+- Any logging will happen to the console using `dbms_output`only.
