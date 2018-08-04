@@ -307,3 +307,4 @@ If you decide not to install PIT and still want to use CodeGenerator, this is po
 
 - All parameters are constants in the `code_generator`package specification
 - Any logging will happen to the console using `dbms_output`only.
+- Exceptions are thrown using `raise_application_error`
