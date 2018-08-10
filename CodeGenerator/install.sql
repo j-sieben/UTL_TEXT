@@ -23,4 +23,7 @@ show errors
 
 prompt &s1.Create package Body CODE_GENERATOR
 @&plsql_dir.code_generator.pkb
+
+prompt &h3.Create CodeGenerator templates
+@&sql_dir.create_templates.sql
 show errors

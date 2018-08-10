@@ -1,6 +1,6 @@
 create table code_generator_templates(
   cgtm_name varchar2(30 char), 
-	cgtm_type varchar2(12 char), 
+	cgtm_type varchar2(30 char), 
 	cgtm_mode varchar2(127 char) default 'DEFAULT', 
 	cgtm_text varchar2(4000 char), 
 	cgtm_log_text varchar2(1000 char), 

@@ -88,6 +88,20 @@ as
   function get_secondary_separator_char 
     return varchar2;
                                
+                               
+  /* Funktion zum Aufteilen eines Strings mit Zeilenumbruechen auf einzelne Zeilen mit Konkatenatoren
+   * %param  p_string   Zeichenkette mit Zeilenumbruechen
+   * %param [p_prefix]  Optionales Startzeichen der Einzelzeile
+   * %param [p_postfix] Optionales Endzeichen der Einzelzeile
+   * %param [p_newline] Optionals Zeilentrennzeichen. Default: CHR(10)
+   * %return Zeichenkette, deren einzelne Zeilen ueber Konkatenatoren verbunden sind
+   */
+  function wrap_string(
+    p_string in varchar2,
+    p_prefix in varchar2 default q'^q'°^',
+    p_postfix in varchar2 default q'^°'^',
+    return varchar2;
+    
   
   /* BULK_REPLACE-Methode mit den gleichen Moeglichkeiten der Ersetzung wie GENERATE_TEXT
    * %param  p_template  Template mit Ersetzungsankern. Syntax der Ersetzungsanker:
