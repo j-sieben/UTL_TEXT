@@ -608,6 +608,24 @@ as
   end get_default_date_format;
   
   
+  /* WRAP_STRING */
+  function wrap_string(
+    p_string in varchar2,
+    p_prefix in varchar2 default q'^q'°^',
+    p_postfix in varchar2 default q'^°'^',
+    p_newline in varchar2 default null)
+    return varchar2
+  as
+    c_regex_newline constant varchar2(30) := '(' || chr(13) || chr(10) || '|' || chr(10) || '|' || chr(13) || ' |' || chr(21) || ')';
+    c_replacement constant varchar2(100) := p_postfix || ' ||#CR#' || p_prefix;
+    l_replacement varchar2(100);
+  begin
+    -- TODO: Standardzeichen aus Betriebsystem ableiten
+    l_replacement := coalesce(p_newline, chr(10));
+    return p_prefix || regexp_replace(p_string, c_regex_newline, c_replacement) || p_postfix;
+  end wrap_string;
+  
+  
   /* BULK_REPLACE */
   function bulk_replace(
     p_template in clob,
@@ -830,7 +848,10 @@ as
                     c_cr cr,
                     code_generator.generate_text(cursor(
                       select t.cgtm_text template,
-                             d.*
+                             d.cgtm_name, d.cgtm_type, d.cgtm_mode,
+                             code_generator.wrap_string(d.cgtm_text) cgtm_text,
+                             code_generator.wrap_string(d.cgtm_log_text) cgtm_log_text,
+                             d.cgtm_log_severity
                         from code_generator_templates d
                        cross join (
                              select cgtm_text

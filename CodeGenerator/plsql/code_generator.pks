@@ -100,6 +100,7 @@ as
     p_string in varchar2,
     p_prefix in varchar2 default q'^q'°^',
     p_postfix in varchar2 default q'^°'^',
+    p_newline in varchar2 default null)
     return varchar2;
     
   
