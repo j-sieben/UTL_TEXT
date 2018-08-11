@@ -329,7 +329,7 @@ as
       end case;
     end loop;
   
-    if l_invalid_anchors is not null then
+    if l_invalid_anchors is not null and not g_ignore_missing_anchors then
       $IF CODE_GENERATOR.C_WITH_PIT $THEN
       pit.error(
         msg.INVALID_ANCHOR_NAMES,
@@ -865,7 +865,8 @@ as
               where cgtm_name = c_cgtm_name
                 and cgtm_type = c_cgtm_type
                 and cgtm_mode = 'FRAME'
-           )) resultat
+             )
+           ) resultat
       into l_script
       from dual;
       
