@@ -113,10 +113,10 @@ All these options are available not only with `BULK_REPLACE`, but with `GENERATE
 To work properly, CodeGenerator assumes several conventions:
 
 - the first column of the cursor passed into the method has to contain the template with the replacement anchors. Ideally, it's named `TEMPLATE` but that's not necessary.
-- the names of the replacement anchors must match the column names of the second to last column. We strongly advise not to include umlauts or other specific character in the names but rather keep it simple stupid. All column names will be converted to uppercase.
+- the names of the replacement anchors must match the column names of the second to last column. We strongly advise not to include umlauts or other specific character in the names but rather KISS. All column names will be converted to uppercase.
 - If you want to log conversions, you need to provide a log template as a column named `LOG_TEMPLATE`
 
-If a column of type `DATE` is detected, this value will be converted to `VARCHAR2` by a calling a format mask stored at a parameter called `DEFAULT_DATE_FORMAT`. You may also choose to convert any date or number column upfront and deliver those values as varchar2 to keep full control over the process.
+If a column of type `DATE` is detected, this value will be converted to `VARCHAR2` using a format mask derived from a parameter called `DEFAULT_DATE_FORMAT`. You may also choose to convert any `date` or `number` column upfront and deliver those values as `varchar2` to keep full control over the process.
 
 #### Basic Usage
 
@@ -162,7 +162,6 @@ As a more complex example, you may want to nest calls of `GENERATE_TEXT`. This w
 SQL>   with templ as (
   2         select q'^CREATE TABLE #TABLE_NAME#(#CR##COLUMN_LIST#);^' table_template,
   3                q'^#COLUMN_NAME# #COLUMN_TYPE##COLUMN_SIZE|(| char)##COLUMN_PRECISION|(|)#^' col_template,
-  4                ',' || chr(10) || '  ' delimiter,
   5                chr(10) || '  ' cr
   6           from dual),
   7         vals as (
@@ -180,7 +179,7 @@ SQL>   with templ as (
  19                code_generator.generate_text(cursor(
  20                  select col_template, column_name, column_type, column_size, column_precision
  21                    from templ
- 22                   cross join vals), delimiter, 2) column_list
+ 22                   cross join vals), cr, 2) column_list
  23           from templ)) result
  24    from dual;
 
@@ -192,17 +191,59 @@ CREATE TABLE MY_TABLE(
   THIRD_COLUMN INTEGER);
 ```
 
+Here you see the usage of parameter `p_indent` which is set to `2` in the example. This then means that any row, delimited by `p_delimiter` which in our case is `chr(10)`. The outcome is indented by 2 blanks at the beginning of each line. This is useful when putting together complex DML or DDL statements.
+
 To make it easy to maintain different templates, CodeGenerator ships with a table called `CODE_GENERATOR_TEMPLATES` you may use as a repository for your templates. You may use any existing or newly created table for this purpose as well or provide the template by any others means. 
 
-It's not difficult to see what could happen if the replacement values and the templates are derived from tables. The logic to select the proper table per row is delegated to the join condition, the data controls how much and what information is generated. In the supplied table, three columns are provided to store templates. The first column, `CGTM_NAME` contains the name of the template. You can group together templates using column `CGTM_TYPE`. Additionally, it has proven to be very useful to be able to store different template versions by `CGTM_MODE`. This column defaults to `DEFAULT` but we used it to distinguish different column type templates fi. In this case, we stored the template to cater for `DATE` columns as name `COLUMN_TEMPLATE`, type `DDL` with mode `DATE`. Doing this, we could easily join the respective template to different column types, falling back to a `DEFAULT` template if no specific template was present.
+It's not difficult to see what could happen if the replacement values and the templates are derived from tables. The logic to select the proper table per row is delegated to the join condition, the data controls how much and what information is generated. In the supplied table, three columns are provided to store templates. The first column, `CGTM_NAME` contains the name of the template. You can group together templates using column `CGTM_TYPE`. Additionally, it has proven to be very useful to be able to store different template versions by `CGTM_MODE`. This column defaults to `DEFAULT` but you may use it to distinguish different column type templates fi. As an example, you may want to store the template to cater for `DATE` columns as name `COLUMN_TEMPLATE`, type `DDL` with mode `DATE`. Doing this, you could easily join the respective template to different column types, falling back to a `DEFAULT` template if no specific template was present.
 
 #### Log Conversion
 
-Another nice feature we built into CodeGenerator is its ability to log conversion processes. Problem here is that only the template may know what exactly was created. Imagine a set of meta data to create tables, indexes, views etc. They all share the same meta data such as core table_name, table_suffix, column list etc. but based on the template the create different data objects with a naming convention that is built into the template. So calling a template and passing the meta data will not tell you which object exactly was created, because only the template really knows.
+Another nice feature of CodeGenerator is its ability to log conversion processes. Problem here is that only the template may know what exactly was created. Imagine a set of meta data to create tables, indexes, views etc. They all share the same meta data such as core table_name, table_suffix, column list etc. but based on the template the create different data objects with a naming convention that is built into the template. So calling a template and passing the meta data will not tell you which object exactly was created, because only the template really knows.
 
 Therefore, a second template, called `LOG_TEMPLATE` may be passed into `GENERATE_TEXT`. The way it is passed into the method is by means of a column name convention. So if you provide the method with a column named `LOG_TEMPLATE`, it will try and find content wihtin that column. The log template is expected to be a template with replacement anchors (if any) that create the message that should be logged. If CodeGenerator finds a template, it replaces the anchors with just the same information available for the main template and logs the message using `PIT.LOG`.
 
-If no template is found, no logging takes place. This way you can easily control which templates log without any intervention into the logic to create the text blocks. You simply pass in the template (ideally located in a column of table CODE_GENERATOR_TEMPLATES) and off you go.
+If no template is found, no logging takes place. This way you can easily control which templates log without any changes to the logic that creates the text blocks. You simply pass in the template (ideally located in a column of table CODE_GENERATOR_TEMPLATES) and off you go. As an example on how to use this, review this code:
+
+```
+declare
+  l_result clob;
+begin
+  pit.set_context(70, 10, false,'PIT_CONSOLE');
+  
+  with templ as (
+       select q'^CREATE TABLE #TABLE_NAME#(#CR##COLUMN_LIST#);^' table_template,
+              q'^#COLUMN_NAME# #COLUMN_TYPE##COLUMN_SIZE|(| char)##COLUMN_PRECISION|(|)#^' col_template,
+              q'^Table #TABLE_NAME# created^' log_template,
+              ',' || chr(10) || '  ' delimiter,
+              chr(10) || '  ' cr
+         from dual),
+       vals as (
+       select 'FIRST_COLUMN' column_name,
+              'VARCHAR2' column_type,
+              '25' column_size,
+              null column_precision
+         from dual
+        union all
+       select 'SECOND_COLUMN', 'NUMBER', null, '38,0' from dual union all
+       select 'THIRD_COLUMN', 'INTEGER', null, null from dual)
+select code_generator.generate_text(cursor(
+       select table_template, log_template, cr,
+              'MY_TABLE' table_name,
+              code_generator.generate_text(cursor(
+                select col_template, column_name, column_type, column_size, column_precision
+                  from templ
+                 cross join vals), delimiter, 2) column_list
+         from templ)) result
+  into l_result
+  from dual;
+  
+  pit.reset_context;
+end;
+/
+```
+
+This code will not only create the DDL statement seen earlier, but also log the the console `--> Table MY_TABLE created`. Off course, any output module of PIT set active will receive this log information.
 
 ### GENERATE_TEXT_TABLE
 
@@ -261,3 +302,10 @@ Any parameter that is preset is changeable during operation using getter and set
 ## Internationalization
 
 As CodeGenerator is based on PIT, all messages can be easily translated using PITs built in translation mechanism. Simply export the default language and translate the XLIFF-file to the target language. Then re-import this file into PIT using `PIT_ADMIN.TRANSLATE_MESSAGES` and you're done.
+
+## Installing without PIT being present
+If you decide not to install PIT and still want to use CodeGenerator, this is possible as well, but with somewhat limited functionality:
+
+- All parameters are constants in the `code_generator`package specification
+- Any logging will happen to the console using `dbms_output`only.
+- Exceptions are thrown using `raise_application_error`

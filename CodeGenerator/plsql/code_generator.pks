@@ -88,6 +88,21 @@ as
   function get_secondary_separator_char 
     return varchar2;
                                
+                               
+  /* Funktion zum Aufteilen eines Strings mit Zeilenumbruechen auf einzelne Zeilen mit Konkatenatoren
+   * %param  p_string   Zeichenkette mit Zeilenumbruechen
+   * %param [p_prefix]  Optionales Startzeichen der Einzelzeile
+   * %param [p_postfix] Optionales Endzeichen der Einzelzeile
+   * %param [p_newline] Optionals Zeilentrennzeichen. Default: CHR(10)
+   * %return Zeichenkette, deren einzelne Zeilen ueber Konkatenatoren verbunden sind
+   */
+  function wrap_string(
+    p_string in varchar2,
+    p_prefix in varchar2 default q'^q'°^',
+    p_postfix in varchar2 default q'^°'^',
+    p_newline in varchar2 default null)
+    return varchar2;
+    
   
   /* BULK_REPLACE-Methode mit den gleichen Moeglichkeiten der Ersetzung wie GENERATE_TEXT
    * %param  p_template  Template mit Ersetzungsankern. Syntax der Ersetzungsanker:
@@ -159,21 +174,54 @@ as
     
                                
   /* Listet die Ersetzungsanker in Templates aus CODE_GENERATOR_TEMPLATES auf
-   * %param  p_tmplate_name       Name des Templates
-   * %param  p_tmplate_name       Typ des Templates
-   * %param  p_template_mode      Ausfuehrungsodus des Templates
+   * %param  p_cgtm_name          Name des Templates
+   * %param  p_cgtm_type          Typ des Templates
+   * %param  p_cgtm_mode          Ausfuehrungsodus des Templates
    * %param [p_with_replacements] Flag, das anzeigt, ob alle Ersetzungszeichenfolgen angezeigt werden sollen (1) oder nicht (0)
    * %return char_table mit Ankern
    * %usage  Wird verwendet, um die Ersetungsanker aus einem Template zu lesen und als Varchar2-Tabelle zurückzuliefern
    */                               
   function get_anchors(
-    p_tmplate_name in varchar2,
-    p_template_type in varchar2,
-    p_template_mode in varchar2,
+    p_cgtm_name in varchar2,
+    p_cgtm_type in varchar2,
+    p_cgtm_mode in varchar2,
     p_with_replacements in number default 0
   ) return char_table
     pipelined;
     
+    
+  /* Administrationsfunktionen */
+  
+  /* Methode zur Erzeugung eines Templates
+   * %param  p_cgtm_name       Name des Templates
+   * %param  p_cgtm_type       Typ des Templates
+   * %param  p_cgtm_mode       Ausfuehrungsmodus des Templates
+   * %param  cgtm_text         Template mit Ersetzungsankern
+   * %param [cgtm_log_text]    Optionales Template mit Ersetzungsankern für Loggingaufgaben
+   * %param [cgtm_logseverity] Schweregrad der Logmeldung zur Steuerung der Logmenge
+   * %usage  Wird verwendet, um ein Template zu erzeugen
+   */
+  procedure merge_template(
+    p_cgtm_name in varchar2,
+    p_cgtm_type in varchar2,
+    p_cgtm_mode in varchar2,
+    p_cgtm_text in varchar2,
+    p_cgtm_log_text in varchar2,
+    p_cgtm_log_severity in number);
+    
+    
+  /* Methode exportiert alle Templates
+   * %param [p_directory] Directory-Objekt, in das die Exportdatei geschrieben werden soll
+   */
+  procedure write_template_file(
+    p_directory in varchar2 := 'DATA_DIR');
+    
+  
+  /* Methode, um alle Templates als Export ausgeben zu lassen
+   * %return SQL-Anweisung mit Pacakgeaufrufen zur Generierung der Templates
+   */
+  function get_templates
+    return clob;
     
   /* Initialisierungmethode
    * %usage  Stellt Package auf Grundwerte zurueck

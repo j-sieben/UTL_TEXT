@@ -8,6 +8,7 @@ as
   c_param_group constant varchar2(30) := 'CODE_GEN';
   
   c_regex_anchor_name constant varchar2(50) := q'^(^[0-9]+$|^[A-Z][A-Z0-9_\$#]+$)^';
+  c_regex_internal_anchors constant varchar2(100) := '(#CGTM_NAME#|#CGTM_TYPE#|#CGTM_MODE#|#CGTM_TEXT#|#CGTM_LOG_TEXT#|#CGTM_LOG_SEVERITY#)';
   
   g_ignore_missing_anchors boolean;
   g_default_date_format varchar2(200);
@@ -353,6 +354,7 @@ as
     -- bisheriges Ergebnis dient als Template fuer den rekursiven Aufruf
     -- Hierfuer geschachtelte sekundaere Ersetzungstzeichen durch primaeres ersetzen
     if p_template != p_result then
+      -- Intern verwendete Anker entfernen, um inifinte loops zu vermeiden
       bulk_replace(
         p_template => replace(replace(p_result, 
                         g_secondary_anchor_char, g_main_anchor_char), 
@@ -606,6 +608,24 @@ as
   end get_default_date_format;
   
   
+  /* WRAP_STRING */
+  function wrap_string(
+    p_string in varchar2,
+    p_prefix in varchar2 default q'^q'°^',
+    p_postfix in varchar2 default q'^°'^',
+    p_newline in varchar2 default null)
+    return varchar2
+  as
+    c_regex_newline constant varchar2(30) := '(' || chr(13) || chr(10) || '|' || chr(10) || '|' || chr(13) || ' |' || chr(21) || ')';
+    c_replacement constant varchar2(100) := p_postfix || ' ||#CR#' || p_prefix;
+    l_replacement varchar2(100);
+  begin
+    -- TODO: Standardzeichen aus Betriebsystem ableiten
+    l_replacement := coalesce(p_newline, chr(10));
+    return p_prefix || regexp_replace(p_string, c_regex_newline, c_replacement) || p_postfix;
+  end wrap_string;
+  
+  
   /* BULK_REPLACE */
   function bulk_replace(
     p_template in clob,
@@ -721,9 +741,9 @@ as
   
                   
   function get_anchors(
-    p_tmplate_name in varchar2,
-    p_template_type in varchar2,
-    p_template_mode in varchar2,
+    p_cgtm_name in varchar2,
+    p_cgtm_type in varchar2,
+    p_cgtm_mode in varchar2,
     p_with_replacements in number default 0
   ) return char_table
     pipelined
@@ -740,9 +760,9 @@ as
     select cgtm_text
       into l_template
       from code_generator_templates
-     where cgtm_name = upper(p_tmplate_name)
-       and cgtm_type = upper(p_template_type)
-       and cgtm_mode = upper(p_template_mode);
+     where cgtm_name = upper(p_cgtm_name)
+       and cgtm_type = upper(p_cgtm_type)
+       and cgtm_mode = upper(p_cgtm_mode);
        
     -- Template gefunden, initialisieren
     case when p_with_replacements = 1 then
@@ -769,7 +789,89 @@ as
     
     return;
   end get_anchors;
+    
+  procedure merge_template(
+    p_cgtm_name in varchar2,
+    p_cgtm_type in varchar2,
+    p_cgtm_mode in varchar2,
+    p_cgtm_text in varchar2,
+    p_cgtm_log_text in varchar2,
+    p_cgtm_log_severity in number) 
+  as
+  begin
+    merge into code_generator_templates t
+    using (select p_cgtm_name cgtm_name,
+                  p_cgtm_type cgtm_type,
+                  p_cgtm_mode cgtm_mode,
+                  p_cgtm_text cgtm_text,
+                  p_cgtm_log_text cgtm_log_text,
+                  p_cgtm_log_severity cgtm_log_severity
+             from dual) s
+       on (t.cgtm_name = s.cgtm_name
+       and t.cgtm_type = s.cgtm_type
+       and t.cgtm_mode = s.cgtm_mode)
+     when matched then update set
+            t.cgtm_text = s.cgtm_text,
+            t.cgtm_log_text = s.cgtm_log_text,
+            t.cgtm_log_severity = s.cgtm_log_severity
+     when not matched then insert(
+            t.cgtm_name, t.cgtm_type, t.cgtm_mode, t.cgtm_text, t.cgtm_log_text, t.cgtm_log_severity)
+          values(
+            s.cgtm_name, s.cgtm_type, s.cgtm_mode, s.cgtm_text, s.cgtm_log_text, s.cgtm_log_severity);
+    
+  end merge_template;
 
+
+  procedure write_template_file(
+    p_directory in varchar2 := 'DATA_DIR')
+  as
+    c_file_name constant varchar2(30) := 'templates.sql';
+  begin
+    $IF dbms_db_version.ver_le_12_1 $THEN
+    dbms_xslprocessor.clob2file(get_templates, p_directory, c_file_name);
+    $ELSE
+    dbms_lob.clob2file(get_templates, p_directory, c_file_name);
+    $END
+  end write_template_file;
+    
+  
+  function get_templates
+    return clob
+  as
+    c_cr constant char(1 byte) := chr(10);
+    c_cgtm_name constant varchar2(30) := 'EXPORT';
+    c_cgtm_type constant varchar2(30) := 'INTERNAL';
+    l_script clob;
+  begin
+    select code_generator.generate_text(cursor(
+             select cgtm_text template,
+                    c_cr cr,
+                    code_generator.generate_text(cursor(
+                      select t.cgtm_text template,
+                             d.cgtm_name, d.cgtm_type, d.cgtm_mode,
+                             code_generator.wrap_string(d.cgtm_text) cgtm_text,
+                             code_generator.wrap_string(d.cgtm_log_text) cgtm_log_text,
+                             d.cgtm_log_severity
+                        from code_generator_templates d
+                       cross join (
+                             select cgtm_text
+                               from code_generator_templates
+                              where cgtm_name = c_cgtm_name
+                                and cgtm_type = c_cgtm_type
+                                and cgtm_mode = 'METHODS') t
+                       where cgtm_type != c_cgtm_type
+                    ), c_cr || c_cr) methods
+               from code_generator_templates d
+              where cgtm_name = c_cgtm_name
+                and cgtm_type = c_cgtm_type
+                and cgtm_mode = 'FRAME'
+           )) resultat
+      into l_script
+      from dual;
+      
+    return l_script;
+  end get_templates;
+  
 begin
   initialize;
 end code_generator;
