@@ -32,6 +32,18 @@ as
 
   function get_default_date_format
     return varchar2;
+  
+  
+  /* Set-Methode stellt das Default-Datumsformat ein, das verwendet wird, 
+   * falls keine explizite Konvertierung vorgenommen wurde.
+   * Standardformat ist definiert durch Parameter DEFAULT_DATE_FORMAT
+   * %param p_format Formatmaske
+   */
+  procedure set_newline_char(
+    p_char in varchar2);
+
+  function get_newline_char
+    return varchar2;
     
 
   /* Set-Methode stellt das Standard-Trennzeichen bei mehrzeiligen Ergebnissen ein
@@ -99,8 +111,7 @@ as
   function wrap_string(
     p_string in varchar2,
     p_prefix in varchar2 default q'^q'°^',
-    p_postfix in varchar2 default q'^°'^',
-    p_newline in varchar2 default null)
+    p_postfix in varchar2 default q'^°'^')
     return varchar2;
     
   

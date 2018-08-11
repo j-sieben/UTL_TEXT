@@ -6,6 +6,8 @@ as
   c_log_template constant varchar2(30) := 'LOG_TEMPLATE';
   c_date_type constant binary_integer := 12;
   c_param_group constant varchar2(30) := 'CODE_GEN';
+  -- Ersetzungszeichen beim Ex- und Import zum Maskieren von Zeilenspruengen
+  c_cr_char constant varchar2(10) := '\CR\';
   
   c_regex_anchor_name constant varchar2(50) := q'^(^[0-9]+$|^[A-Z][A-Z0-9_\$#]+$)^';
   c_regex_internal_anchors constant varchar2(100) := '(#CGTM_NAME#|#CGTM_TYPE#|#CGTM_MODE#|#CGTM_TEXT#|#CGTM_LOG_TEXT#|#CGTM_LOG_SEVERITY#)';
@@ -17,6 +19,7 @@ as
   g_secondary_anchor_char char(1 char);
   g_main_separator_char char(1 char);
   g_secondary_separator_char char(1 char);
+  g_newline_char varchar2(2 byte);
 
   /* DATENTYPEN */
   type clob_tab is table of clob index by varchar2(30);
@@ -509,6 +512,16 @@ as
     g_main_separator_char := '|';
     g_secondary_separator_char := '~';
     $END
+    
+    -- Absatzzeichen aus OS ableiten
+    case when regexp_like(dbms_utility.port_string, '(WIN|Windows)') then
+      g_newline_char := chr(13) || chr(10);
+    when false then
+      -- TODO: Find out EBCDIC-based OS version
+      g_newline_char := chr(21);
+    else
+      g_newline_char := chr(10);
+    end case;
   end initialize;
 
 
@@ -608,20 +621,32 @@ as
   end get_default_date_format;
   
   
+  procedure set_newline_char(
+    p_char in varchar2)
+  as
+  begin
+    g_newline_char := p_char;
+  end set_newline_char;
+  
+
+  function get_newline_char
+    return varchar2
+  as
+  begin
+    return g_newline_char;
+  end get_newline_char;
+    
+  
   /* WRAP_STRING */
   function wrap_string(
     p_string in varchar2,
     p_prefix in varchar2 default q'^q'°^',
-    p_postfix in varchar2 default q'^°'^',
-    p_newline in varchar2 default null)
+    p_postfix in varchar2 default q'^°'^')
     return varchar2
   as
     c_regex_newline constant varchar2(30) := '(' || chr(13) || chr(10) || '|' || chr(10) || '|' || chr(13) || ' |' || chr(21) || ')';
-    c_replacement constant varchar2(100) := p_postfix || ' ||#CR#' || p_prefix;
-    l_replacement varchar2(100);
+    c_replacement constant varchar2(100) := c_cr_char || p_postfix || ' || ' || g_newline_char || p_prefix;
   begin
-    -- TODO: Standardzeichen aus Betriebsystem ableiten
-    l_replacement := coalesce(p_newline, chr(10));
     return p_prefix || regexp_replace(p_string, c_regex_newline, c_replacement) || p_postfix;
   end wrap_string;
   
@@ -803,7 +828,7 @@ as
     using (select p_cgtm_name cgtm_name,
                   p_cgtm_type cgtm_type,
                   p_cgtm_mode cgtm_mode,
-                  p_cgtm_text cgtm_text,
+                  replace(p_cgtm_text, c_cr_char, g_newline_char) cgtm_text,
                   p_cgtm_log_text cgtm_log_text,
                   p_cgtm_log_severity cgtm_log_severity
              from dual) s
@@ -838,14 +863,13 @@ as
   function get_templates
     return clob
   as
-    c_cr constant char(1 byte) := chr(10);
     c_cgtm_name constant varchar2(30) := 'EXPORT';
     c_cgtm_type constant varchar2(30) := 'INTERNAL';
     l_script clob;
   begin
     select code_generator.generate_text(cursor(
              select cgtm_text template,
-                    c_cr cr,
+                    g_newline_char cr,
                     code_generator.generate_text(cursor(
                       select t.cgtm_text template,
                              d.cgtm_name, d.cgtm_type, d.cgtm_mode,
@@ -860,7 +884,7 @@ as
                                 and cgtm_type = c_cgtm_type
                                 and cgtm_mode = 'METHODS') t
                        where cgtm_type != c_cgtm_type
-                    ), c_cr || c_cr) methods
+                    ), g_newline_char || g_newline_char) methods
                from code_generator_templates d
               where cgtm_name = c_cgtm_name
                 and cgtm_type = c_cgtm_type
