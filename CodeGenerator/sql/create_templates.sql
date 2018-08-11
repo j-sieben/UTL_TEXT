@@ -7,7 +7,7 @@ begin
     p_cgtm_name => 'EXPORT',
     p_cgtm_type => 'INTERNAL',
     p_cgtm_mode => 'FRAME',
-    p_cgtm_text => q'°set define off#CR##CR#begin#CR##METHODS##CR#  commit;#CR#end;#CR#/#CR#set define on°',
+    p_cgtm_text => q'°set define off#CR#set sqlprefix off#CR##CR#begin#CR##METHODS##CR#  commit;#CR#end;#CR#/#CR#set define on#CR#set sqlprefix on°',
     p_cgtm_log_text => q'°°',
     p_cgtm_log_severity => 70
   );
