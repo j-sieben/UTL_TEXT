@@ -1,33 +1,36 @@
 create or replace package body code_generator 
 as
-
-  c_pkg constant varchar2(30) := $$PLSQL_UNIT;
-  c_row_template constant varchar2(30) := 'TEMPLATE';
-  c_log_template constant varchar2(30) := 'LOG_TEMPLATE';
-  c_date_type constant binary_integer := 12;
-  c_param_group constant varchar2(30) := 'CODE_GEN';
-  -- Ersetzungszeichen beim Ex- und Import zum Maskieren von Zeilenspruengen
-  c_cr_char constant varchar2(10) := '\CR\';
+  subtype ora_name_type is &ORA_NAME_TYPE.;
+  subtype flag_type is char(1 char);
+  subtype max_char is varchar2(32767 byte);
   
-  c_regex_anchor_name constant varchar2(50) := q'^(^[0-9]+$|^[A-Z][A-Z0-9_\$#]+$)^';
-  c_regex_internal_anchors constant varchar2(100) := '(#CGTM_NAME#|#CGTM_TYPE#|#CGTM_MODE#|#CGTM_TEXT#|#CGTM_LOG_TEXT#|#CGTM_LOG_SEVERITY#)';
+  C_PKG constant ora_name_type := $$PLSQL_UNIT;
+  C_ROW_TEMPLATE constant ora_name_type := 'TEMPLATE';
+  C_LOG_TEMPLATE constant ora_name_type := 'LOG_TEMPLATE';
+  C_DATE_TYPE constant binary_integer := 12;
+  C_PARAM_GROUP constant ora_name_type := 'CODE_GEN';
+  -- Ersetzungszeichen beim Ex- und Import zum Maskieren von Zeilenspruengen
+  C_CR_CHAR constant varchar2(10) := '\CR\';
+  
+  C_REGEX_ANCHOR_NAME constant varchar2(50) := q'^(^[0-9]+$|^[A-Z][A-Z0-9_\$#]+$)^';
+  C_REGEX_INTERNAL_ANCHORS constant varchar2(100) := '(#CGTM_NAME#|#CGTM_TYPE#|#CGTM_MODE#|#CGTM_TEXT#|#CGTM_LOG_TEXT#|#CGTM_LOG_SEVERITY#)';
   
   g_ignore_missing_anchors boolean;
   g_default_date_format varchar2(200);
   g_default_delimiter_char varchar2(100);
-  g_main_anchor_char char(1 char);
-  g_secondary_anchor_char char(1 char);
-  g_main_separator_char char(1 char);
-  g_secondary_separator_char char(1 char);
+  g_main_anchor_char flag_type;
+  g_secondary_anchor_char flag_type;
+  g_main_separator_char flag_type;
+  g_secondary_separator_char flag_type;
   g_newline_char varchar2(2 byte);
 
   /* DATENTYPEN */
-  type clob_tab is table of clob index by varchar2(30);
+  type clob_tab is table of clob index by ora_name_type;
   type row_tab is table of clob_tab index by binary_integer;
   
   -- Record mit Variablen fuer Ergebnisspaltenwerte
   type ref_rec_type is record(
-    r_string varchar2(32767),
+    r_string max_char,
     r_date date,
     r_clob clob);
   l_ref_rec ref_rec_type;
@@ -41,7 +44,7 @@ as
    *         zu konvertieren, der anschliessend analysiert werden kann.
    */
   procedure open_cursor(
-    p_cur out nocopy integer,
+    p_cur out nocopy binary_integer,
     p_cursor in out nocopy sys_refcursor) 
   as
   begin
@@ -61,13 +64,13 @@ as
    *         - PL/SQL-Tabelleneintraege als Ausgabevariablen fuer Spaltenwert registrieren
    */
   procedure describe_columns(
-    p_cur in integer,
+    p_cur in binary_integer,
     p_cur_desc in out nocopy dbms_sql.desc_tab2,
     p_clob_tab in out nocopy clob_tab) 
   as
-    l_column_name varchar2(30);
-    l_column_count integer := 1;
-    l_column_type integer;
+    l_column_name ora_name_type;
+    l_column_count binary_integer := 1;
+    l_column_type binary_integer;
     l_cnt binary_integer := 0;
   begin
     dbms_sql.describe_columns2(
@@ -77,7 +80,7 @@ as
                               
     for i in 1 .. l_column_count loop
       if i = 1 then
-        l_column_name := c_row_template;
+        l_column_name := C_ROW_TEMPLATE;
       else
         l_column_name := p_cur_desc(i).col_name;
       end if;
@@ -90,7 +93,7 @@ as
       p_clob_tab(l_column_name) := null;
       
       -- Registriere Variable als Ausgabevariable dieser Spalte
-      if l_column_type = c_date_type then
+      if l_column_type = C_DATE_TYPE then
         dbms_sql.define_column(
           c => p_cur,
           position => l_cnt,
@@ -116,7 +119,7 @@ as
    */
   procedure describe_cursor(
     p_cursor in out nocopy sys_refcursor,
-    p_cur in out nocopy integer,
+    p_cur in out nocopy binary_integer,
     p_cur_desc in out nocopy dbms_sql.desc_tab2,
     p_clob_tab in out nocopy clob_tab) 
   as
@@ -141,21 +144,21 @@ as
    *         Tabelle zu uebernehmen
    */
   procedure copy_values(
-    p_cur in integer,
+    p_cur in binary_integer,
     p_cur_desc in dbms_sql.desc_tab2,
     p_clob_tab in out nocopy clob_tab) 
   as
-    l_column_name varchar2(30);
+    l_column_name ora_name_type;
   begin
     for i in 1 .. p_cur_desc.count loop
       if i = 1 then
-        l_column_name := c_row_template;
+        l_column_name := C_ROW_TEMPLATE;
       else
         l_column_name := p_cur_desc(i).col_name;
       end if;
       
       -- Aktuellen Spaltenwerte auslesen
-      if p_cur_desc(i).col_type = c_date_type then
+      if p_cur_desc(i).col_type = C_DATE_TYPE then
         dbms_sql.column_value(p_cur, i, l_ref_rec.r_date);
         p_clob_tab(l_column_name) := to_char(l_ref_rec.r_date, g_default_date_format);
       else
@@ -206,7 +209,7 @@ as
     p_cursor in out nocopy sys_refcursor,
     p_row_tab in out nocopy row_tab) 
   as
-    l_cur integer;
+    l_cur binary_integer;
     l_cur_desc dbms_sql.desc_tab2;
     l_clob_tab clob_tab;
   begin
@@ -234,7 +237,7 @@ as
     p_delimiter in varchar2)
     return varchar2
   as
-    l_delimiter varchar2(100);
+    l_delimiter g_default_delimiter_char%type;
   begin
     case 
     when p_delimiter = c_no_delimiter then
@@ -272,33 +275,33 @@ as
     p_clob_tab in clob_tab,
     p_result out nocopy clob) 
   as
-    c_regex varchar2(20) := replace('\#A#[A-Z0-9].*?\#A#', '#A#', g_main_anchor_char);
-    c_regex_anchor varchar2(20) := '[^\' || g_main_separator_char || ']+';
-    c_regex_separator varchar2(20) := '(.*?)(\' || g_main_separator_char || '|$)';
+    C_REGEX varchar2(20) := replace('\#A#[A-Z0-9].*?\#A#', '#A#', g_main_anchor_char);
+    C_REGEX_ANCHOR varchar2(20) := '[^\' || g_main_separator_char || ']+';
+    C_REGEX_SEPARATOR varchar2(20) := '(.*?)(\' || g_main_separator_char || '|$)';
       
     /* SQL-Anweisung, um generisch aus einem Template alle Ersetzungsanker auszulesen und 
      * optionale Pre- und Postfixe sowie Ersatzwerte fuer NULL zu ermitteln
      */
     cursor replacement_cur(p_template in varchar2) is
         with anchors as (
-                select trim(g_main_anchor_char from regexp_substr(p_template, c_regex, 1, level)) replacement_string
+                select trim(g_main_anchor_char from regexp_substr(p_template, C_REGEX, 1, level)) replacement_string
                   from dual
                connect by level <= regexp_count(p_template, '\' || g_main_anchor_char) / 2),
              parts as(
              select g_main_anchor_char || replacement_string || g_main_anchor_char as replacement_string,
-                    upper(regexp_substr(replacement_string, c_regex_anchor, 1, 1)) anchor,
-                    regexp_substr(replacement_string, c_regex_separator, 1, 2, null, 1) prefix,
-                    regexp_substr(replacement_string, c_regex_separator, 1, 3, null, 1) postfix,
-                    regexp_substr(replacement_string, c_regex_separator, 1, 4, null, 1) null_value
+                    upper(regexp_substr(replacement_string, C_REGEX_ANCHOR, 1, 1)) anchor,
+                    regexp_substr(replacement_string, C_REGEX_SEPARATOR, 1, 2, null, 1) prefix,
+                    regexp_substr(replacement_string, C_REGEX_SEPARATOR, 1, 3, null, 1) postfix,
+                    regexp_substr(replacement_string, C_REGEX_SEPARATOR, 1, 4, null, 1) null_value
                from anchors)
       select replacement_string, anchor, prefix, postfix, null_value, 
-             case when regexp_instr(anchor, c_regex_anchor_name) > 0 then 1 else 0 end valid_anchor_name
+             case when regexp_instr(anchor, C_REGEX_ANCHOR_NAME) > 0 then 1 else 0 end valid_anchor_name
         from parts
        where anchor is not null;
   
     l_anchor_value clob;
-    l_missing_anchors varchar2(32767);
-    l_invalid_anchors varchar2(32767);
+    l_missing_anchors max_char;
+    l_invalid_anchors max_char;
   begin
     $IF CODE_GENERATOR.C_WITH_PIT $THEN
     pit.assert_not_null(
@@ -389,7 +392,7 @@ as
       
       for i in 1 .. p_row_tab.count loop
         l_clob_tab := p_row_tab(i);
-        l_template := l_clob_tab(c_row_template);
+        l_template := l_clob_tab(C_ROW_TEMPLATE);
         
         bulk_replace(
           p_template => l_template,
@@ -397,9 +400,9 @@ as
           p_result => l_result);
       
         -- Falls vorhanden, Logging durchfuehren
-        if l_clob_tab.exists(c_log_template) and l_clob_tab(c_log_template) is not null then
+        if l_clob_tab.exists(C_LOG_TEMPLATE) and l_clob_tab(C_LOG_TEMPLATE) is not null then
           bulk_replace(
-            p_template => l_clob_tab(c_log_template),
+            p_template => l_clob_tab(C_LOG_TEMPLATE),
             p_clob_tab => l_clob_tab,
             p_result => l_log_message);   
           
@@ -446,16 +449,16 @@ as
     for i in 1 .. p_row_tab.count loop
       l_clob_tab := p_row_tab(i);
     
-      l_template := l_clob_tab(c_row_template); 
+      l_template := l_clob_tab(C_ROW_TEMPLATE); 
     
       bulk_replace(
         p_template => l_template,
         p_clob_tab => l_clob_tab,
         p_result => l_result);
     
-      if l_clob_tab.exists(c_log_template) and l_clob_tab(c_log_template) is not null then
+      if l_clob_tab.exists(C_LOG_TEMPLATE) and l_clob_tab(C_LOG_TEMPLATE) is not null then
         bulk_replace(
-          p_template => l_clob_tab(c_log_template),
+          p_template => l_clob_tab(C_LOG_TEMPLATE),
           p_clob_tab => l_clob_tab,
           p_result => l_log_message);
                   
@@ -484,25 +487,25 @@ as
     $IF CODE_GENERATOR.C_WITH_PIT $THEN
     g_ignore_missing_anchors := param.get_boolean(
                                   p_par_id => 'IGNORE_MISSING_ANCHORS',
-                                  p_pgr_id => c_param_group);
+                                  p_pgr_id => C_PARAM_GROUP);
     g_default_delimiter_char := param.get_string(
                                   p_par_id => 'DEFAULT_DELIMITER_CHAR',
-                                  p_pgr_id => c_param_group);
+                                  p_pgr_id => C_PARAM_GROUP);
     g_default_date_format := param.get_string(
                                p_par_id => 'DEFAULT_DATE_FORMAT',
-                               p_pgr_id => c_param_group);
+                               p_pgr_id => C_PARAM_GROUP);
     g_main_anchor_char := param.get_string(
                             p_par_id => 'MAIN_ANCHOR_CHAR',
-                            p_pgr_id => c_param_group);
+                            p_pgr_id => C_PARAM_GROUP);
     g_secondary_anchor_char := param.get_string(
                                  p_par_id => 'SECONDARY_ANCHOR_CHAR',
-                                 p_pgr_id => c_param_group);
+                                 p_pgr_id => C_PARAM_GROUP);
     g_main_separator_char := param.get_string(
                                p_par_id => 'MAIN_SEPARATOR_CHAR',
-                               p_pgr_id => c_param_group);
+                               p_pgr_id => C_PARAM_GROUP);
     g_secondary_separator_char := param.get_string(
                                     p_par_id => 'SECONDARY_SEPARATOR_CHAR',
-                                    p_pgr_id => c_param_group);
+                                    p_pgr_id => C_PARAM_GROUP);
     $ELSE
     g_ignore_missing_anchors := true;
     g_default_delimiter_char := chr(10);
@@ -516,8 +519,7 @@ as
     -- Absatzzeichen aus OS ableiten
     case when regexp_like(dbms_utility.port_string, '(WIN|Windows)') then
       g_newline_char := chr(13) || chr(10);
-    when false then
-      -- TODO: Find out EBCDIC-based OS version
+    when regexp_like(dbms_utility.port_string, '(AIX)') then
       g_newline_char := chr(21);
     else
       g_newline_char := chr(10);
@@ -644,10 +646,10 @@ as
     p_postfix in varchar2 default q'^°'^')
     return varchar2
   as
-    c_regex_newline constant varchar2(30) := '(' || chr(13) || chr(10) || '|' || chr(10) || '|' || chr(13) || ' |' || chr(21) || ')';
-    c_replacement constant varchar2(100) := c_cr_char || p_postfix || ' || ' || g_newline_char || p_prefix;
+    C_REGEX_newline constant varchar2(30) := '(' || chr(13) || chr(10) || '|' || chr(10) || '|' || chr(13) || ' |' || chr(21) || ')';
+    c_replacement constant varchar2(100) := C_CR_CHAR || p_postfix || ' || ' || g_newline_char || p_prefix;
   begin
-    return p_prefix || regexp_replace(p_string, c_regex_newline, c_replacement) || p_postfix;
+    return p_prefix || regexp_replace(p_string, C_REGEX_newline, c_replacement) || p_postfix;
   end wrap_string;
   
   
@@ -773,8 +775,8 @@ as
   ) return char_table
     pipelined
   as
-    c_regex_anchor_complete constant varchar2(100) := '\#A#[A-Z0-9_\$\#S#].*?\#A#';
-    c_regex_anchor_only constant varchar2(100) := '\#A#[A-Z0-9_\$].*?(\#S#|\#A#)';
+    C_REGEX_ANCHOR_complete constant varchar2(100) := '\#A#[A-Z0-9_\$\#S#].*?\#A#';
+    C_REGEX_ANCHOR_only constant varchar2(100) := '\#A#[A-Z0-9_\$].*?(\#S#|\#A#)';
     
     l_regex varchar2(200);
     l_retval char_table;
@@ -791,9 +793,9 @@ as
        
     -- Template gefunden, initialisieren
     case when p_with_replacements = 1 then
-      l_regex := c_regex_anchor_complete;
+      l_regex := C_REGEX_ANCHOR_complete;
     else
-      l_regex := c_regex_anchor_only;
+      l_regex := C_REGEX_ANCHOR_only;
     end case;
     l_regex := replace(replace(l_regex, '#A#', g_main_anchor_char), '#S#', g_main_separator_char);
     
@@ -828,7 +830,7 @@ as
     using (select p_cgtm_name cgtm_name,
                   p_cgtm_type cgtm_type,
                   p_cgtm_mode cgtm_mode,
-                  replace(p_cgtm_text, c_cr_char, g_newline_char) cgtm_text,
+                  replace(p_cgtm_text, C_CR_CHAR, g_newline_char) cgtm_text,
                   p_cgtm_log_text cgtm_log_text,
                   p_cgtm_log_severity cgtm_log_severity
              from dual) s

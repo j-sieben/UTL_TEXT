@@ -33,6 +33,13 @@ select count(distinct object_name) pit_installed
          where '&INSTALL_USER.' in (grantee)
            and table_name = 'PIT_ADMIN');
 
+col ora_name_type new_val ORA_NAME_TYPE format a30
+
+select 'varchar2(' || data_length || ' byte)' ORA_NAME_TYPE
+  from all_tab_columns
+ where table_name = 'USER_TABLES'
+   and column_name = 'TABLE_NAME';
+           
 define section="********************************************************************************"
 define h1="*** "
 define h2="**  "
