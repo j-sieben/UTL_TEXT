@@ -225,13 +225,15 @@ as
    * %param [p_directory] Directory-Objekt, in das die Exportdatei geschrieben werden soll
    */
   procedure write_template_file(
+    p_cgtm_type in char_table default null,
     p_directory in varchar2 := 'DATA_DIR');
     
   
   /* Methode, um alle Templates als Export ausgeben zu lassen
    * %return SQL-Anweisung mit Pacakgeaufrufen zur Generierung der Templates
    */
-  function get_templates
+  function get_templates(
+    p_cgtm_type in char_table default null)
     return clob;
     
   /* Initialisierungmethode

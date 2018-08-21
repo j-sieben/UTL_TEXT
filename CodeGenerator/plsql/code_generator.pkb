@@ -850,19 +850,21 @@ as
 
 
   procedure write_template_file(
+    p_cgtm_type in char_table default null,
     p_directory in varchar2 := 'DATA_DIR')
   as
     c_file_name constant varchar2(30) := 'templates.sql';
   begin
     $IF dbms_db_version.ver_le_12_1 $THEN
-    dbms_xslprocessor.clob2file(get_templates, p_directory, c_file_name);
+    dbms_xslprocessor.clob2file(get_templates(p_cgtm_type), p_directory, c_file_name);
     $ELSE
-    dbms_lob.clob2file(get_templates, p_directory, c_file_name);
+    dbms_lob.clob2file(get_templates(p_cgtm_type), p_directory, c_file_name);
     $END
   end write_template_file;
     
   
-  function get_templates
+  function get_templates(
+    p_cgtm_type in char_table default null)
     return clob
   as
     c_cgtm_name constant varchar2(30) := 'EXPORT';
@@ -879,13 +881,17 @@ as
                              code_generator.wrap_string(d.cgtm_log_text) cgtm_log_text,
                              d.cgtm_log_severity
                         from code_generator_templates d
+                        join (select column_value cgtm_type
+                                from table(p_cgtm_type)) p
+                          on d.cgtm_type = p.cgtm_type 
+                          or p.cgtm_type is null
                        cross join (
                              select cgtm_text
                                from code_generator_templates
                               where cgtm_name = c_cgtm_name
                                 and cgtm_type = c_cgtm_type
                                 and cgtm_mode = 'METHODS') t
-                       where cgtm_type != c_cgtm_type
+                       where d.cgtm_type != c_cgtm_type
                     ), g_newline_char || g_newline_char) methods
                from code_generator_templates d
               where cgtm_name = c_cgtm_name
