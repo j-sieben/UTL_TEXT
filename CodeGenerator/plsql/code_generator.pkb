@@ -51,6 +51,16 @@ as
     p_cur := dbms_sql.to_cursor_number(p_cursor);
   end open_cursor;
   
+  
+  procedure open_cursor(
+    p_cur out nocopy binary_integer,
+    p_stmt in varchar2)
+  as
+    l_stmt varchar2(32767) := 'select * from (' || p_stmt || ')';
+  begin
+    dbms_sql.parse(p_cur, l_stmt, DBMS_SQL.NATIVE);
+  end open_cursor;
+  
 
   /* Prozedur zum Analysieren eines Cursor
    * %param  p_cur       ID des Cursors
@@ -107,33 +117,6 @@ as
     end loop;
   end describe_columns;
 
-
-  /* Prozedur zum Beschreiben eines Cursors
-   * %param p_cursor Bereits geoeffneter Cursor, der analysiert werden soll
-   * %param p_cur ID des Cursors
-   * %param p_cur_desc DBMS_SQL.DESC_TAB2 mit den Details zu einem Cursor
-   * %param p_clob_tab PL/SQL-Tabelle mit dem Spaltennamen (KEY) und 
-   *        einem initialen NULL-Wert fuer jede Spalte des Cursors
-   * %usage Ueberladung, wird verwendet, um einen Cursor zu analysieren und eine PL/SQL-Tabelle
-   *        zur Aufnahme der jeweiligen Spaltenwerte unter dem Spaltennamen zu erzeugen.
-   */
-  procedure describe_cursor(
-    p_cursor in out nocopy sys_refcursor,
-    p_cur in out nocopy binary_integer,
-    p_cur_desc in out nocopy dbms_sql.desc_tab2,
-    p_clob_tab in out nocopy clob_tab) 
-  as
-  begin
-    open_cursor(
-      p_cur => p_cur,
-      p_cursor => p_cursor);
-  
-    describe_columns(
-      p_cur => p_cur,
-      p_cur_desc => p_cur_desc,
-      p_clob_tab => p_clob_tab);
-  end describe_cursor;
-  
 
   /* Pozedur zum Kopieren einer Zeile in die vorbereitete PL/SQL-Tabelle
    * %param  p_cur       ID des Cursor
@@ -206,26 +189,24 @@ as
    *        Durchgang in eine doppelte KEY-VALUE-Tabelle zu konvertieren.
    */
   procedure copy_table_to_row_tab(
-    p_cursor in out nocopy sys_refcursor,
+    p_cur in out nocopy binary_integer,
     p_row_tab in out nocopy row_tab) 
   as
-    l_cur binary_integer;
     l_cur_desc dbms_sql.desc_tab2;
     l_clob_tab clob_tab;
   begin
-    describe_cursor(
-      p_cursor => p_cursor,
-      p_cur => l_cur,
+    describe_columns(
+      p_cur => p_cur,
       p_cur_desc => l_cur_desc,
       p_clob_tab => l_clob_tab);
   
     copy_values(
-      p_cur => l_cur,
+      p_cur => p_cur,
       p_cur_desc => l_cur_desc,
       p_clob_tab => l_clob_tab,
       p_row_tab => p_row_tab);
   
-    dbms_sql.close_cursor(l_cur);
+    dbms_sql.close_cursor(p_cur);
   end copy_table_to_row_tab;
   
   
@@ -253,17 +234,17 @@ as
 
 
   /* Prozedur zum Ersetzen aller Ersetzungsanker einer PL/SQL-Tabelle in einem Template
-   * %param  p_template       Template mit Ersetzungsankern. Syntax der Ersetzungsanker:
-   *                          #<Name des Ersetzungsankers, muss Tabellenspalte entsprechen>
-   *                          |<Praefix, falls Wert not null>
-   *                          |<Postfix, falls Wert not null>
-   *                          |<Wert, falls NULL>#
-   *                          Alle PIPE-Zeichen und Klauseln sind optional, muessen aber, wenn sie 
-   *                          verwendet werden, in dieser Reihenfolge eingesetzt werden.
-   *                          NB: Das Trennzeichen # entspricht g_main_anchor_char
-   *                          Beispiel: #VORNAME||, |# => Falls vorhanden wird hinter dem Vornamen ein Komma eingefuegt
+   * %param  p_template  Template mit Ersetzungsankern. Syntax der Ersetzungsanker:
+   *                     #<Name des Ersetzungsankers, muss Tabellenspalte entsprechen>
+   *                     |<Praefix, falls Wert not null>
+   *                     |<Postfix, falls Wert not null>
+   *                     |<Wert, falls NULL>#
+   *                     Alle PIPE-Zeichen und Klauseln sind optional, muessen aber, wenn sie 
+   *                     verwendet werden, in dieser Reihenfolge eingesetzt werden.
+   *                     NB: Das Trennzeichen # entspricht g_main_anchor_char
+   *                     Beispiel: #VORNAME||, |# => Falls vorhanden wird hinter dem Vornamen ein Komma eingefuegt
    * %param  p_clob_tab  Tabelle von KEY-VALUE-Paaren, erzeugt ueber COPY_ROW_TO_clob_tab
-   * %param  p_result         Ergebnis der Umwandlung
+   * %param  p_result    Ergebnis der Umwandlung
    * %usage  Der Prozedur werden ein Template und eine aufbereitete Liste von Ersetzungsankern und
    *         Ersetzungswerten uebergeben. Die Methode ersetzt alle Anker im Template durch
    *         die Ersetzungswerte in der PL/SQL-Tabelle und analysiert dabei NULL-Werte,
@@ -661,6 +642,7 @@ as
   as
     l_clob_tab clob_tab;
     l_result clob;
+    l_anchor varchar2(32767);
   begin
     for i in 1 .. p_chunks.count loop
       if mod(i, 2) = 1 then
@@ -685,6 +667,7 @@ as
     p_indent in number default 0) 
   as
     l_row_tab row_tab;
+    l_cur binary_integer;
   begin
     $IF CODE_GENERATOR.C_WITH_PIT $THEN
     pit.assert(
@@ -696,8 +679,39 @@ as
     end if;
     $END
     
+    open_cursor(
+      p_cur => l_cur,
+      p_cursor => p_cursor);
+      
     copy_table_to_row_tab(
-      p_cursor => p_cursor,
+      p_cur => l_cur,
+      p_row_tab => l_row_tab);
+  
+    bulk_replace(
+      p_row_tab => l_row_tab,
+      p_delimiter => p_delimiter,
+      p_result => p_result,
+      p_indent => p_indent);
+  end generate_text;
+  
+  
+  procedure generate_text(
+    p_template in varchar2,
+    p_stmt in varchar2,
+    p_result out nocopy varchar2,
+    p_delimiter in varchar2 default null,
+    p_indent in number default 0
+  )
+  as
+    l_cur binary_integer;
+    l_row_tab row_tab;
+  begin
+    open_cursor(
+      p_cur => l_cur,
+      p_stmt => p_stmt);
+      
+    copy_table_to_row_tab(
+      p_cur => l_cur,
       p_row_tab => l_row_tab);
   
     bulk_replace(
@@ -732,10 +746,15 @@ as
     p_cursor in out nocopy sys_refcursor,
     p_result out nocopy clob_table)
   as
+    l_cur binary_integer;
     l_row_tab row_tab;
   begin
+    open_cursor(
+      p_cur => l_cur,
+      p_cursor => p_cursor);
+      
     copy_table_to_row_tab(
-      p_cursor => p_cursor,
+      p_cur => l_cur,
       p_row_tab => l_row_tab);
   
     bulk_replace(

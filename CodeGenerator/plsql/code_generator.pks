@@ -116,20 +116,19 @@ as
     
   
   /* BULK_REPLACE-Methode mit den gleichen Moeglichkeiten der Ersetzung wie GENERATE_TEXT
-   * %param  p_template  Template mit Ersetzungsankern. Syntax der Ersetzungsanker:
-   *                     #<Name des Ersetzungsankers, muss Tabellenspalte entsprechen>
-   *                     |<Praefix, falls Wert not null>
-   *                     |<Postfix, falls Wert not null>
-   *                     |<Wert, falls NULL># 
-   *                     Alle PIPE-Zeichen und Klauseln sind optional, muessen aber, wenn sie 
-   *                     verwendet werden, in dieser Reihenfolge eingesetzt werden.
-   *                     Beispiel: #VORNAME||, |# => Falls vorhanden wird hinter dem Vornamen ein Komma eingefuegt
-   *                     Soll innerhalb einer Ersetzungszeichenfolge ein Anker verwendet werden, muss dieser
-   *                     abweichend durch eine Tilde (~) maskiert werden. Auf diese Weise kann ein Anker im 
-   *                     auf einen weiteren Anker verweisen.
-   *                     Beispiel: #NACHNAME||, |~VORNAME~# => Liefert, Vorname, falls Nachname NULL
-   * %param  p_chunks    Liste von Ankern und Ersetzungszeichen im Wechsel
-   * %param [p_indent]   Optionale Angabe einer Einrueckung
+   * %param  p_template   Template mit Ersetzungsankern. Syntax der Ersetzungsanker:
+   *                      #<Name des Ersetzungsankers, muss Tabellenspalte entsprechen>
+   *                      |<Praefix, falls Wert not null>
+   *                      |<Postfix, falls Wert not null>
+   *                      |<Wert, falls NULL># 
+   *                      Alle PIPE-Zeichen und Klauseln sind optional, muessen aber, wenn sie 
+   *                      verwendet werden, in dieser Reihenfolge eingesetzt werden.
+   *                      Beispiel: #VORNAME||, |# => Falls vorhanden wird hinter dem Vornamen ein Komma eingefuegt
+   *                      Soll innerhalb einer Ersetzungszeichenfolge ein Anker verwendet werden, muss dieser
+   *                      abweichend durch eine Tilde (~) maskiert werden. Auf diese Weise kann ein Anker im 
+   *                      auf einen weiteren Anker verweisen.
+   *                      Beispiel: #NACHNAME||, |~VORNAME~# => Liefert, Vorname, falls Nachname NULL
+   * %param  p_chunks     Liste von Ankern und Ersetzungszeichen im Wechsel
    * %return CLOB mit dem ersetzten Text
    */
   function bulk_replace(
@@ -157,6 +156,15 @@ as
   */
   procedure generate_text(
     p_cursor in out nocopy sys_refcursor,
+    p_result out nocopy varchar2,
+    p_delimiter in varchar2 default null,
+    p_indent in number default 0
+  );
+  
+  -- Ueberladung mit Template und Werte-Statement
+  procedure generate_text(
+    p_template in varchar2,
+    p_stmt in varchar2,
     p_result out nocopy varchar2,
     p_delimiter in varchar2 default null,
     p_indent in number default 0
