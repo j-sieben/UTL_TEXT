@@ -1,5 +1,5 @@
 create or replace package code_generator
-  authid definer
+  authid current_user
 as
 
   c_no_delimiter constant varchar2(4) := 'NONE';

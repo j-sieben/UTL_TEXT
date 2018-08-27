@@ -4,7 +4,7 @@
 
 @init.sql &1.
 
-alter session set current_schema=sys;
+alter session set current_schema=&SYS_USER.;
 prompt
 prompt &section.
 prompt &h1.Checking whether required users exist
