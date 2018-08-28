@@ -173,7 +173,7 @@ as
   as
     l_result varchar2(32767);
   begin
-    l_result := to_char(code_generator.bulk_replace(null, char_table('1_COL', 'Test')));
+    l_result := code_generator.bulk_replace(null, char_table('1_COL', 'Test'));
   end simple_bulk_no_template;
   
   
@@ -310,13 +310,27 @@ as
   end simple_text_missing_anchor;
   
   
+  procedure simple_different_template_name
+  as
+    l_result varchar2(32767);
+  begin
+    code_generator.set_ignore_missing_anchors(false);
+    select code_generator.generate_text(cursor(
+             select to_clob(null) some_name,
+                    'Test' foo
+               from dual))
+      into l_result
+      from dual;
+  end simple_different_template_name;
+  
+  
   procedure simple_text_no_template
   as
     l_result varchar2(32767);
   begin
     code_generator.set_ignore_missing_anchors(false);
     select code_generator.generate_text(cursor(
-             select null template,
+             select to_clob(null) template,
                     'Test' foo
                from dual))
       into l_result
@@ -399,6 +413,17 @@ as
       into l_result
       from dual;
   end simple_text_invalid_params;
+  
+  
+  procedure simple_text_overload
+  as
+    l_result varchar2(32767);
+  begin
+    l_result := to_char(code_generator.generate_text(
+                  p_template => 'Text with #A#, #B#',
+                  p_stmt => q'^select 'One' a, 'Two' b from dual^'));
+    ut.expect(l_result).to_equal('Text with One, Two');
+  end simple_text_overload;
   
   
   procedure complex_text_with_indent

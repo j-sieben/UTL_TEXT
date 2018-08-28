@@ -22,7 +22,7 @@ begin
   
 exception
   when others then
-    raise;
+    dbms_output.put_line('Expected to find UT3-Framework. This framework is available under https://github.com/utPLSQL/utPLSQL');
     raise_application_error(-20000, 'UT_PLSQL in version 3 or above is required to install the unit test package');
 end;
 /

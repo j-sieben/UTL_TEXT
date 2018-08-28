@@ -111,6 +111,10 @@ as
   
   -- %test(Converts single line SQL without providing a template)
   -- %throws(msg.NO_TEMPLATE_ERR, -20000)
+  procedure simple_different_template_name;
+  
+  -- %test(Converts single line SQL without providing a template)
+  -- %throws(msg.NO_TEMPLATE_ERR, -20000)
   procedure simple_text_no_template;
   
   -- %test(Converts single line SQL with a missing replacement)
@@ -131,6 +135,9 @@ as
 
   -- %test(Converts single line SQL, multiple rows, indenting is used)
   procedure complex_text_with_indent;
+
+  -- %test(Converts template/SQL statment overload)
+  procedure simple_text_overload;
 
   -- %test(Converts single line SQL, multiple rows, indenting is used, standard delimiter)
   procedure complex_text_with_default_indent;

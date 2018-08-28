@@ -23,7 +23,7 @@ select user sys_user,
 -- Check whether PIT is installed at the installation user
 col pit_installed new_val PIT_INSTALLED format a30
 
-select count(distinct object_name) pit_installed
+select case count(distinct object_name) when 0 then 'false' else 'true' end pit_installed
   from (select object_name
           from all_objects pit_installed
          where owner = '&INSTALL_USER.'

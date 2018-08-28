@@ -1,8 +1,5 @@
 create or replace package body code_generator 
 as
-  subtype ora_name_type is &ORA_NAME_TYPE.;
-  subtype flag_type is char(1 char);
-  subtype max_char is varchar2(32767 byte);
   
   C_PKG constant ora_name_type := $$PLSQL_UNIT;
   C_ROW_TEMPLATE constant ora_name_type := 'TEMPLATE';
@@ -12,7 +9,7 @@ as
   -- Ersetzungszeichen beim Ex- und Import zum Maskieren von Zeilenspruengen
   C_CR_CHAR constant varchar2(10) := '\CR\';
   
-  C_REGEX_ANCHOR_NAME constant varchar2(50) := q'^(^[0-9]+$|^[A-Z][A-Z0-9_\$#]+$)^';
+  C_REGEX_ANCHOR_NAME constant varchar2(50) := q'^(^[0-9]+$|^[A-Z][A-Z0-9_\$#]*$)^';
   C_REGEX_INTERNAL_ANCHORS constant varchar2(100) := '(#CGTM_NAME#|#CGTM_TYPE#|#CGTM_MODE#|#CGTM_TEXT#|#CGTM_LOG_TEXT#|#CGTM_LOG_SEVERITY#)';
   
   g_ignore_missing_anchors boolean;
@@ -25,7 +22,6 @@ as
   g_newline_char varchar2(2 byte);
 
   /* DATENTYPEN */
-  type clob_tab is table of clob index by ora_name_type;
   type row_tab is table of clob_tab index by binary_integer;
   
   -- Record mit Variablen fuer Ergebnisspaltenwerte
@@ -56,9 +52,14 @@ as
     p_cur out nocopy binary_integer,
     p_stmt in varchar2)
   as
-    l_stmt varchar2(32767) := 'select * from (' || p_stmt || ')';
+    c_stmt constant varchar2(32767) := 'select * from (#STMT#)';
+    l_stmt varchar2(32767);
+    l_dummy binary_integer;
   begin
-    dbms_sql.parse(p_cur, l_stmt, DBMS_SQL.NATIVE);
+    l_stmt := replace(c_stmt, '#STMT#', p_stmt);
+    p_cur := dbms_sql.open_cursor;
+    dbms_sql.parse(p_cur, l_stmt, dbms_sql.NATIVE);
+    l_dummy := dbms_sql.execute(p_cur);
   end open_cursor;
   
 
@@ -67,6 +68,7 @@ as
    * %param  p_cur_desc  DBMS_SQL.DESC_TAB2 mit den Details zu einem Cursor
    * %param  p_clob_tab  PL/SQL-Tabelle mit dem Spaltennamen (KEY) und 
    *                     einem initialen NULL-Wert fuer jede Spalte des Cursors
+   * %param [p_template] Optionales Template. Falls vorhanden, wird kein Template im Cursor erwartet
    * %usage  Wird verwendet, um die Spalten eines uebergebenen DBMS_SQL-Cursors
    *         zu beschreiben. Der Code erfuellt folgende Aufgaben:
    *         - Cursor analysieren
@@ -76,20 +78,27 @@ as
   procedure describe_columns(
     p_cur in binary_integer,
     p_cur_desc in out nocopy dbms_sql.desc_tab2,
-    p_clob_tab in out nocopy clob_tab) 
+    p_clob_tab in out nocopy clob_tab,
+    p_template in varchar2 default null) 
   as
     l_column_name ora_name_type;
     l_column_count binary_integer := 1;
     l_column_type binary_integer;
     l_cnt binary_integer := 0;
+    l_cur_contains_template boolean := true;
   begin
     dbms_sql.describe_columns2(
       c => p_cur,
       col_cnt => l_column_count,
       desc_t => p_cur_desc);
+      
+    if p_template is not null then
+      p_clob_tab(c_row_template) := p_template;
+      l_cur_contains_template := false;
+    end if;
                               
     for i in 1 .. l_column_count loop
-      if i = 1 then
+      if i = 1 and l_cur_contains_template then
         l_column_name := C_ROW_TEMPLATE;
       else
         l_column_name := p_cur_desc(i).col_name;
@@ -126,7 +135,7 @@ as
    * %usage  Wird verwendet, um eine Zeile eines Cursor in die vorbereitete PL/SQL-
    *         Tabelle zu uebernehmen
    */
-  procedure copy_values(
+  procedure copy_row_values(
     p_cur in binary_integer,
     p_cur_desc in dbms_sql.desc_tab2,
     p_clob_tab in out nocopy clob_tab) 
@@ -134,11 +143,7 @@ as
     l_column_name ora_name_type;
   begin
     for i in 1 .. p_cur_desc.count loop
-      if i = 1 then
-        l_column_name := C_ROW_TEMPLATE;
-      else
-        l_column_name := p_cur_desc(i).col_name;
-      end if;
+      l_column_name := p_cur_desc(i).col_name;
       
       -- Aktuellen Spaltenwerte auslesen
       if p_cur_desc(i).col_type = C_DATE_TYPE then
@@ -148,10 +153,11 @@ as
         dbms_sql.column_value(p_cur, i, p_clob_tab(l_column_name));
       end if;
     end loop;
-  end copy_values;
+  end copy_row_values;
   
 
-  /* Prozedur zum Kopieren einer Zeile in die vorbereitete PL/SQL-Tabelle
+  /* Prozedur zum Kopieren einer Tabelle in eine geschachtelte PL/SQL-Tabelle:
+   * Eine Tabelle fuer alle Zeilen, eine Tabelle fuer alle Spalten
    * %param  p_cur       ID des Cursor
    * %param  p_cur_desc  DBMS_SQL.DESC_TAB2 mit den Details zu einem Cursor
    * %param [p_clob_tab] PL/SQL-Tabelle mit dem Spaltennamen (KEY) und 
@@ -161,36 +167,38 @@ as
    * %usage  Wird verwendet, alle Zeilen eines Cursor in eine Liste aus 
    *         vorbereiteten PL/SQL-Tabellen zu uebernehmen
    */
-  procedure copy_values(
-    p_cur in integer,
+  procedure copy_table_values(
+    p_cur in binary_integer,
     p_cur_desc in dbms_sql.desc_tab2,
     p_clob_tab in out nocopy clob_tab,
     p_row_tab in out nocopy row_tab) 
   as
   begin
     while dbms_sql.fetch_rows(p_cur) > 0 loop
-      copy_values(
+      copy_row_values(
         p_cur => p_cur,
         p_cur_desc => p_cur_desc,
         p_clob_tab => p_clob_tab);
     
       p_row_tab(dbms_sql.last_row_count) := p_clob_tab;
     end loop;
-  end copy_values;
+  end copy_table_values;
 
 
   /* Prozedur zum Kopieren einer Ergebnismenge einer SQL-Anweisung in eine Liste
    * von KEY-VALUE-Tabellen. Jeder Eintrag der Tabelle enthaelt eine KEY-VALUE-Tabelle
    * gem. COPY_ROW_TO_clob_tab. Die Ergebnisliste ist INDEX BY BINARY_INTEGER.
-   * %param  p_cursor   Geoeffneter Cursor, der mehr als eine Zeile liefern kann
-   * %param  p_row_tab  PL/SQL-Tabelle, die in jedem Eintrag eine PL/SQL-Tabelle mit#
-   *                    KEY-VALUE-Paaren gem. COPY_ROW_TO_clob_tab enthaelt
+   * %param  p_cur       ID des Cursor, der mehr als eine Zeile liefern kann
+   * %param  p_row_tab   PL/SQL-Tabelle, die in jedem Eintrag eine PL/SQL-Tabelle mit#
+   *                     KEY-VALUE-Paaren gem. COPY_ROW_TO_clob_tab enthaelt
+   * %param [p_template] Optionales Template, falls vorhanden, wird kein Template im Cursor erwartet
    * %usage Wird verwendet, um eine Liste von merhreren Ersetzungsankern in einem
    *        Durchgang in eine doppelte KEY-VALUE-Tabelle zu konvertieren.
    */
   procedure copy_table_to_row_tab(
     p_cur in out nocopy binary_integer,
-    p_row_tab in out nocopy row_tab) 
+    p_row_tab in out nocopy row_tab,
+    p_template in varchar2 default null) 
   as
     l_cur_desc dbms_sql.desc_tab2;
     l_clob_tab clob_tab;
@@ -198,9 +206,10 @@ as
     describe_columns(
       p_cur => p_cur,
       p_cur_desc => l_cur_desc,
-      p_clob_tab => l_clob_tab);
+      p_clob_tab => l_clob_tab,
+      p_template => p_template);
   
-    copy_values(
+    copy_table_values(
       p_cur => p_cur,
       p_cur_desc => l_cur_desc,
       p_clob_tab => l_clob_tab,
@@ -233,125 +242,6 @@ as
   end get_delimiter;
 
 
-  /* Prozedur zum Ersetzen aller Ersetzungsanker einer PL/SQL-Tabelle in einem Template
-   * %param  p_template  Template mit Ersetzungsankern. Syntax der Ersetzungsanker:
-   *                     #<Name des Ersetzungsankers, muss Tabellenspalte entsprechen>
-   *                     |<Praefix, falls Wert not null>
-   *                     |<Postfix, falls Wert not null>
-   *                     |<Wert, falls NULL>#
-   *                     Alle PIPE-Zeichen und Klauseln sind optional, muessen aber, wenn sie 
-   *                     verwendet werden, in dieser Reihenfolge eingesetzt werden.
-   *                     NB: Das Trennzeichen # entspricht g_main_anchor_char
-   *                     Beispiel: #VORNAME||, |# => Falls vorhanden wird hinter dem Vornamen ein Komma eingefuegt
-   * %param  p_clob_tab  Tabelle von KEY-VALUE-Paaren, erzeugt ueber COPY_ROW_TO_clob_tab
-   * %param  p_result    Ergebnis der Umwandlung
-   * %usage  Der Prozedur werden ein Template und eine aufbereitete Liste von Ersetzungsankern und
-   *         Ersetzungswerten uebergeben. Die Methode ersetzt alle Anker im Template durch
-   *         die Ersetzungswerte in der PL/SQL-Tabelle und analysiert dabei NULL-Werte,
-   *         um diese durch die Ersatzwerte zu ersetzen. Ist der Wert nicht NULL, werden
-   *         PRE-und POSTFIX-Werte eingefuegt, falls im Ersetzungsanker definiert.
-   */
-  procedure bulk_replace(
-    p_template in clob default null,
-    p_clob_tab in clob_tab,
-    p_result out nocopy clob) 
-  as
-    C_REGEX varchar2(20) := replace('\#A#[A-Z0-9].*?\#A#', '#A#', g_main_anchor_char);
-    C_REGEX_ANCHOR varchar2(20) := '[^\' || g_main_separator_char || ']+';
-    C_REGEX_SEPARATOR varchar2(20) := '(.*?)(\' || g_main_separator_char || '|$)';
-      
-    /* SQL-Anweisung, um generisch aus einem Template alle Ersetzungsanker auszulesen und 
-     * optionale Pre- und Postfixe sowie Ersatzwerte fuer NULL zu ermitteln
-     */
-    cursor replacement_cur(p_template in varchar2) is
-        with anchors as (
-                select trim(g_main_anchor_char from regexp_substr(p_template, C_REGEX, 1, level)) replacement_string
-                  from dual
-               connect by level <= regexp_count(p_template, '\' || g_main_anchor_char) / 2),
-             parts as(
-             select g_main_anchor_char || replacement_string || g_main_anchor_char as replacement_string,
-                    upper(regexp_substr(replacement_string, C_REGEX_ANCHOR, 1, 1)) anchor,
-                    regexp_substr(replacement_string, C_REGEX_SEPARATOR, 1, 2, null, 1) prefix,
-                    regexp_substr(replacement_string, C_REGEX_SEPARATOR, 1, 3, null, 1) postfix,
-                    regexp_substr(replacement_string, C_REGEX_SEPARATOR, 1, 4, null, 1) null_value
-               from anchors)
-      select replacement_string, anchor, prefix, postfix, null_value, 
-             case when regexp_instr(anchor, C_REGEX_ANCHOR_NAME) > 0 then 1 else 0 end valid_anchor_name
-        from parts
-       where anchor is not null;
-  
-    l_anchor_value clob;
-    l_missing_anchors max_char;
-    l_invalid_anchors max_char;
-  begin
-    $IF CODE_GENERATOR.C_WITH_PIT $THEN
-    pit.assert_not_null(
-      p_condition => p_template,
-      p_message_name => msg.NO_TEMPLATE);
-    $ELSE
-    if p_template is null then
-      raise_application_error(-20000, 'Template must not be null');
-    end if;
-    $END
-      
-    -- Template auf Ergebnis umkopieren, um Rekursion durchfuehren zu koennen
-    p_result := p_template;
-  
-    -- Zeichenfolgen ersetzen. Ersetzungen koennen wiederum Ersetzungsanker enthalten
-    for rep in replacement_cur(p_template) loop
-      case
-      when rep.valid_anchor_name = 0 then
-        l_invalid_anchors := l_invalid_anchors || g_main_separator_char || rep.anchor;
-      when p_clob_tab.exists(rep.anchor) then
-        l_anchor_value := p_clob_tab(rep.anchor);
-        if l_anchor_value is not null then
-          p_result := replace(p_result, rep.replacement_string, rep.prefix || l_anchor_value || rep.postfix);
-        else
-          p_result := replace(p_result, rep.replacement_string, rep.null_value);
-        end if;
-      else
-        -- Ersetzungszeichenfolge ist in Ersetzungsliste nicht enthalten
-        l_missing_anchors := l_missing_anchors || g_main_separator_char || rep.anchor;
-        null;
-      end case;
-    end loop;
-  
-    if l_invalid_anchors is not null and not g_ignore_missing_anchors then
-      $IF CODE_GENERATOR.C_WITH_PIT $THEN
-      pit.error(
-        msg.INVALID_ANCHOR_NAMES,
-        msg_args(l_invalid_anchors));
-      $ELSE
-      raise_application_error(-20001, 'The following anchors are not conforming to the naming rules: ' || l_invalid_anchors); 
-      $END
-    end if;
-    
-    if l_missing_anchors is not null and not g_ignore_missing_anchors then
-      l_missing_anchors := ltrim(l_missing_anchors, g_main_separator_char);
-      $IF CODE_GENERATOR.C_WITH_PIT $THEN
-      pit.error(
-        msg.MISSING_ANCHORS,
-        msg_args(l_missing_anchors));
-      $ELSE
-      raise_application_error(-20002, 'The following anchors are missing: ' || l_missing_anchors); 
-      $END
-    end if;
-  
-    -- Rekursiver Aufruf, falls Ersetzungen wiederum Anker beinhalten,
-    -- bisheriges Ergebnis dient als Template fuer den rekursiven Aufruf
-    -- Hierfuer geschachtelte sekundaere Ersetzungstzeichen durch primaeres ersetzen
-    if p_template != p_result then
-      -- Intern verwendete Anker entfernen, um inifinte loops zu vermeiden
-      bulk_replace(
-        p_template => replace(replace(p_result, 
-                        g_secondary_anchor_char, g_main_anchor_char), 
-                        g_secondary_separator_char, g_main_separator_char),
-        p_clob_tab => p_clob_tab,
-        p_result => p_result);
-    end if;
-  end bulk_replace;
-
-
   -- %param p_row_tab Liste mit Tabelle von KEY-VALUE-Paaren, erzeugt ueber COPY_TABLE_TO_ROW_TAB
   procedure bulk_replace(
     p_row_tab in row_tab,
@@ -361,6 +251,7 @@ as
   as
     l_result clob;
     l_template clob;
+    l_template_name ora_name_type;
     l_log_message clob;
     l_clob_tab clob_tab;
     l_delimiter g_default_delimiter_char%type;
@@ -373,7 +264,11 @@ as
       
       for i in 1 .. p_row_tab.count loop
         l_clob_tab := p_row_tab(i);
-        l_template := l_clob_tab(C_ROW_TEMPLATE);
+        if l_clob_tab.exists(C_ROW_TEMPLATE) then
+          l_template := l_clob_tab(C_ROW_TEMPLATE);
+        else
+          l_template := l_clob_tab(l_clob_tab.first);
+        end if;
         
         bulk_replace(
           p_template => l_template,
@@ -627,14 +522,115 @@ as
     p_postfix in varchar2 default q'^°'^')
     return varchar2
   as
-    C_REGEX_newline constant varchar2(30) := '(' || chr(13) || chr(10) || '|' || chr(10) || '|' || chr(13) || ' |' || chr(21) || ')';
-    c_replacement constant varchar2(100) := C_CR_CHAR || p_postfix || ' || ' || g_newline_char || p_prefix;
+    C_REGEX_NEWLINE constant varchar2(30) := '(' || chr(13) || chr(10) || '|' || chr(10) || '|' || chr(13) || ' |' || chr(21) || ')';
+    C_REPLACEMENT constant varchar2(100) := C_CR_CHAR || p_postfix || ' || ' || g_newline_char || p_prefix;
   begin
-    return p_prefix || regexp_replace(p_string, C_REGEX_newline, c_replacement) || p_postfix;
+    return p_prefix || regexp_replace(p_string, C_REGEX_NEWLINE, C_REPLACEMENT) || p_postfix;
   end wrap_string;
   
   
   /* BULK_REPLACE */
+  procedure bulk_replace(
+    p_template in clob,
+    p_clob_tab in clob_tab,
+    p_result out nocopy clob) 
+  as
+    C_REGEX varchar2(20) := replace('\#A#[A-Z0-9].*?\#A#', '#A#', g_main_anchor_char);
+    C_REGEX_ANCHOR varchar2(20) := '[^\' || g_main_separator_char || ']+';
+    C_REGEX_SEPARATOR varchar2(20) := '(.*?)(\' || g_main_separator_char || '|$)';
+      
+    /* SQL-Anweisung, um generisch aus einem Template alle Ersetzungsanker auszulesen und 
+     * optionale Pre- und Postfixe sowie Ersatzwerte fuer NULL zu ermitteln
+     */
+    cursor replacement_cur(p_template in varchar2) is
+        with anchors as (
+                select trim(g_main_anchor_char from regexp_substr(p_template, C_REGEX, 1, level)) replacement_string
+                  from dual
+               connect by level <= regexp_count(p_template, '\' || g_main_anchor_char) / 2),
+             parts as(
+             select g_main_anchor_char || replacement_string || g_main_anchor_char as replacement_string,
+                    upper(regexp_substr(replacement_string, C_REGEX_ANCHOR, 1, 1)) anchor,
+                    regexp_substr(replacement_string, C_REGEX_SEPARATOR, 1, 2, null, 1) prefix,
+                    regexp_substr(replacement_string, C_REGEX_SEPARATOR, 1, 3, null, 1) postfix,
+                    regexp_substr(replacement_string, C_REGEX_SEPARATOR, 1, 4, null, 1) null_value
+               from anchors)
+      select replacement_string, anchor, prefix, postfix, null_value, 
+             case when regexp_instr(anchor, C_REGEX_ANCHOR_NAME) > 0 then 1 else 0 end valid_anchor_name
+        from parts
+       where anchor is not null;
+  
+    l_anchor_value clob;
+    l_missing_anchors max_char;
+    l_invalid_anchors max_char;
+  begin
+    $IF CODE_GENERATOR.C_WITH_PIT $THEN
+    pit.assert_not_null(
+      p_condition => p_template,
+      p_message_name => msg.NO_TEMPLATE);
+    $ELSE
+    if p_template is null then
+      raise_application_error(-20000, 'Template must not be null');
+    end if;
+    $END
+      
+    -- Template auf Ergebnis umkopieren, um Rekursion durchfuehren zu koennen
+    p_result := p_template;
+  
+    -- Zeichenfolgen ersetzen. Ersetzungen koennen wiederum Ersetzungsanker enthalten
+    for rep in replacement_cur(p_template) loop
+      case
+      when rep.valid_anchor_name = 0 then
+        l_invalid_anchors := l_invalid_anchors || g_main_separator_char || rep.anchor;
+      when p_clob_tab.exists(rep.anchor) then
+        l_anchor_value := p_clob_tab(rep.anchor);
+        if l_anchor_value is not null then
+          p_result := replace(p_result, rep.replacement_string, rep.prefix || l_anchor_value || rep.postfix);
+        else
+          p_result := replace(p_result, rep.replacement_string, rep.null_value);
+        end if;
+      else
+        -- Ersetzungszeichenfolge ist in Ersetzungsliste nicht enthalten
+        l_missing_anchors := l_missing_anchors || g_main_separator_char || rep.anchor;
+        null;
+      end case;
+    end loop;
+  
+    if l_invalid_anchors is not null and not g_ignore_missing_anchors then
+      $IF CODE_GENERATOR.C_WITH_PIT $THEN
+      pit.error(
+        msg.INVALID_ANCHOR_NAMES,
+        msg_args(l_invalid_anchors));
+      $ELSE
+      raise_application_error(-20001, 'The following anchors are not conforming to the naming rules: ' || l_invalid_anchors); 
+      $END
+    end if;
+    
+    if l_missing_anchors is not null and not g_ignore_missing_anchors then
+      l_missing_anchors := ltrim(l_missing_anchors, g_main_separator_char);
+      $IF CODE_GENERATOR.C_WITH_PIT $THEN
+      pit.error(
+        msg.MISSING_ANCHORS,
+        msg_args(l_missing_anchors));
+      $ELSE
+      raise_application_error(-20002, 'The following anchors are missing: ' || l_missing_anchors); 
+      $END
+    end if;
+  
+    -- Rekursiver Aufruf, falls Ersetzungen wiederum Anker beinhalten,
+    -- bisheriges Ergebnis dient als Template fuer den rekursiven Aufruf
+    -- Hierfuer geschachtelte sekundaere Ersetzungstzeichen durch primaeres ersetzen
+    if p_template != p_result then
+      -- Intern verwendete Anker entfernen, um inifinte loops zu vermeiden
+      bulk_replace(
+        p_template => replace(replace(p_result, 
+                        g_secondary_anchor_char, g_main_anchor_char), 
+                        g_secondary_separator_char, g_main_separator_char),
+        p_clob_tab => p_clob_tab,
+        p_result => p_result);
+    end if;
+  end bulk_replace;
+  
+  
   function bulk_replace(
     p_template in clob,
     p_chunks in char_table
@@ -693,6 +689,24 @@ as
       p_result => p_result,
       p_indent => p_indent);
   end generate_text;
+
+
+  function generate_text(
+    p_cursor in sys_refcursor,
+    p_delimiter in varchar2 default null,
+    p_indent in number default 0) 
+    return clob 
+  as
+    l_clob clob;
+    l_cur sys_refcursor := p_cursor;
+  begin
+    generate_text(
+      p_cursor => l_cur,
+      p_result => l_clob,
+      p_delimiter => p_delimiter,
+      p_indent => p_indent);
+    return l_clob;
+  end generate_text;
   
   
   procedure generate_text(
@@ -712,7 +726,8 @@ as
       
     copy_table_to_row_tab(
       p_cur => l_cur,
-      p_row_tab => l_row_tab);
+      p_row_tab => l_row_tab,
+      p_template => p_template);
   
     bulk_replace(
       p_row_tab => l_row_tab,
@@ -722,18 +737,18 @@ as
   end generate_text;
 
 
-  -- Ueberladung als Funktion
   function generate_text(
-    p_cursor in sys_refcursor,
+    p_template in varchar2,
+    p_stmt in varchar2,
     p_delimiter in varchar2 default null,
     p_indent in number default 0) 
     return clob 
   as
     l_clob clob;
-    l_cur sys_refcursor := p_cursor;
   begin
     generate_text(
-      p_cursor => l_cur,
+      p_template => p_template,
+      p_stmt => p_stmt,
       p_result => l_clob,
       p_delimiter => p_delimiter,
       p_indent => p_indent);

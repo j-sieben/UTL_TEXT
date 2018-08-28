@@ -3,11 +3,12 @@ create or replace package code_generator
 as
 
   c_no_delimiter constant varchar2(4) := 'NONE';
-  $IF $$PIT_INSTALLED $THEN
-  c_with_pit constant boolean := true;
-  $ELSE
-  c_with_pit constant boolean := false;
-  $END
+  c_with_pit constant boolean := &PIT_INSTALLED.;
+  
+  subtype ora_name_type is &ORA_NAME_TYPE.;
+  subtype flag_type is char(1 char);
+  subtype max_char is varchar2(32767 byte);
+  type clob_tab is table of clob index by ora_name_type;
 
   /* Set-Methode zum Einstellen, ob fehlende Ersetzungsanker zu einem Fehler 
    * fuehren sollen oder nicht.
@@ -115,6 +116,30 @@ as
     return varchar2;
     
   
+  /* Prozedur zum Ersetzen aller Ersetzungsanker einer PL/SQL-Tabelle in einem Template
+   * %param  p_template  Template mit Ersetzungsankern. Syntax der Ersetzungsanker:
+   *                     #<Name des Ersetzungsankers, muss Tabellenspalte entsprechen>
+   *                     |<Praefix, falls Wert not null>
+   *                     |<Postfix, falls Wert not null>
+   *                     |<Wert, falls NULL>#
+   *                     Alle PIPE-Zeichen und Klauseln sind optional, muessen aber, wenn sie 
+   *                     verwendet werden, in dieser Reihenfolge eingesetzt werden.
+   *                     NB: Das Trennzeichen # entspricht g_main_anchor_char
+   *                     Beispiel: #VORNAME||, |# => Falls vorhanden wird hinter dem Vornamen ein Komma eingefuegt
+   * %param  p_clob_tab  Tabelle von KEY-VALUE-Paaren
+   * %param  p_result    Ergebnis der Umwandlung
+   * %usage  Der Prozedur werden ein Template und eine aufbereitete Liste von Ersetzungsankern und
+   *         Ersetzungswerten uebergeben. Die Methode ersetzt alle Anker im Template durch
+   *         die Ersetzungswerte in der PL/SQL-Tabelle und analysiert dabei NULL-Werte,
+   *         um diese durch die Ersatzwerte zu ersetzen. Ist der Wert nicht NULL, werden
+   *         PRE-und POSTFIX-Werte eingefuegt, falls im Ersetzungsanker definiert.
+   */
+  procedure bulk_replace(
+    p_template in clob,
+    p_clob_tab in clob_tab,
+    p_result out nocopy clob);
+    
+    
   /* BULK_REPLACE-Methode mit den gleichen Moeglichkeiten der Ersetzung wie GENERATE_TEXT
    * %param  p_template   Template mit Ersetzungsankern. Syntax der Ersetzungsanker:
    *                      #<Name des Ersetzungsankers, muss Tabellenspalte entsprechen>
@@ -160,6 +185,13 @@ as
     p_delimiter in varchar2 default null,
     p_indent in number default 0
   );
+                          
+  -- Ueberladung als Funktion
+  function generate_text(
+    p_cursor in sys_refcursor,
+    p_delimiter in varchar2 default null,
+    p_indent in number default 0
+  ) return clob;
   
   -- Ueberladung mit Template und Werte-Statement
   procedure generate_text(
@@ -172,7 +204,8 @@ as
                           
   -- Ueberladung als Funktion
   function generate_text(
-    p_cursor in sys_refcursor,
+    p_template in varchar2,
+    p_stmt in varchar2,
     p_delimiter in varchar2 default null,
     p_indent in number default 0
   ) return clob;
