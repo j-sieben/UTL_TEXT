@@ -55,6 +55,9 @@ as
   -- %test(Converts simple BULK string)
   procedure simple_bulk;
 
+  -- %test(Converts simple BULK string using procedure interface)
+  procedure simple_bulk_proc;
+
   -- %test(Converts simple BULK string, replacement anchor is number (#1#))
   procedure simple_bulk_number;
 

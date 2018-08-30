@@ -631,14 +631,14 @@ as
   end bulk_replace;
   
   
-  function bulk_replace(
-    p_template in clob,
+  procedure bulk_replace(
+    p_template in out nocopy clob,
     p_chunks in char_table
-  ) return clob
+  )
   as
     l_clob_tab clob_tab;
-    l_result clob;
     l_anchor varchar2(32767);
+    l_result clob;
   begin
     for i in 1 .. p_chunks.count loop
       if mod(i, 2) = 1 then
@@ -650,10 +650,23 @@ as
       p_template => p_template,
       p_clob_tab => l_clob_tab,
       p_result => l_result);
-      
-    return l_result;
+    p_template := l_result;
   end bulk_replace;
   
+  
+  function bulk_replace(
+    p_template in clob,
+    p_chunks in char_table
+  ) return clob
+  as
+    l_result clob;
+  begin
+    l_result := p_template;
+    bulk_replace(
+      p_template => l_result,
+      p_chunks => p_chunks);
+    return l_result;
+  end bulk_replace;
   
   /* GENERATE_TEXT */
   procedure generate_text(

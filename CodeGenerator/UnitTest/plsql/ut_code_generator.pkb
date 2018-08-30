@@ -119,10 +119,21 @@ as
   end test_ignore_flag;
 
 
-  procedure simple_bulk is
+  procedure simple_bulk 
+  as
   begin
     ut.expect(to_char(code_generator.bulk_replace('Das ist ein #TEST#', char_table('TEST', 'Test')))).to_equal('Das ist ein Test');
   end simple_bulk;
+
+
+  procedure simple_bulk_proc 
+  as
+    l_template varchar2(32767);
+  begin
+    l_template := 'Das ist ein #TEST#';
+    code_generator.bulk_replace(l_template, char_table('TEST', 'Test'));
+    ut.expect(l_template).to_equal('Das ist ein Test');
+  end simple_bulk_proc;
 
 
   procedure simple_bulk_number is
