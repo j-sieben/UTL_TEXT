@@ -156,6 +156,12 @@ as
    * %param  p_chunks     Liste von Ankern und Ersetzungszeichen im Wechsel
    * %return CLOB mit dem ersetzten Text
    */
+  procedure bulk_replace(
+    p_template in out nocopy clob,
+    p_chunks in char_table
+  );
+  
+  /* Ueberladung als Funktion */
   function bulk_replace(
     p_template in clob,
     p_chunks in char_table
