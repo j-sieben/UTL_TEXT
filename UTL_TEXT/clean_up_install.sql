@@ -24,7 +24,7 @@ declare
   cursor message_cur is
     select pms_name
       from pit_message
-     where pms_name like 'CODE_GEN%'
+     where pms_name like 'UTL_TEXT%'
        and pms_id is not null;
 begin
   for obj in delete_object_cur loop
