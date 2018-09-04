@@ -108,6 +108,8 @@ Of course this does not have to be as complex as shown above. It's perfectly ok 
 
 All these options are available not only with `BULK_REPLACE`, but with `GENERATE_TEXT` and `GENEREATE_TEXT_TABLE` as well, as all of them reuse the same `BULK_REPLACE`engine underneath.
 
+`BULK_REPLACE` is available as a procedure and a function overload, plus an overload that accepts a template as a parameter and a list of replacement chunks as a PL/SQL table of type CLOB indexed by varchar2. This comes in handy if you have your replacement chunks in that format.
+
 ### GENERATE_TEXT
 
 `GENERATE_TEXT` extends the possibilites of `BULK_REPLACE` by calling the method within the context of a cursor. 
@@ -308,7 +310,7 @@ Any parameter that is preset is changeable during operation using getter and set
 As CodeGenerator is based on PIT, all messages can be easily translated using PITs built in translation mechanism. Simply export the default language and translate the XLIFF-file to the target language. Then re-import this file into PIT using `PIT_ADMIN.TRANSLATE_MESSAGES` and you're done.
 
 ## Installing without PIT being present
-If you decide not to install PIT and still want to use CodeGenerator, this is possible as well, but with somewhat limited functionality:
+If you decide not to install PIT and still want to use UTL_TEXT, this is possible as well, but with somewhat limited functionality:
 
 - All parameters are constants in the `code_generator`package specification
 - Any logging will happen to the console using `dbms_output`only.

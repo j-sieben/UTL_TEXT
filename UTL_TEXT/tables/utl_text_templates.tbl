@@ -1,0 +1,20 @@
+create table utl_text_templates(
+  uttm_name &ORA_NAME_TYPE., 
+	uttm_type &ORA_NAME_TYPE., 
+	uttm_mode &ORA_NAME_TYPE. default 'DEFAULT', 
+	uttm_text varchar2(4000 char), 
+	uttm_log_text varchar2(1000 char), 
+	uttm_log_severity number(2,0) default 70,
+  constraint pk_utl_text_templates primary key (uttm_name, uttm_type, uttm_mode),
+  constraint chk_uttm_text_nn check(uttm_text is not null),
+  constraint chk_uttm_log_severity check(uttm_log_severity in (20,30,40,50,60,70))
+);
+
+
+comment on table utl_text_templates is 'Central storage of  Templates';
+comment on column utl_text_templates.uttm_name is 'Unique name, part of PK';
+comment on column utl_text_templates.uttm_type is 'Type (group) of template, part of PK, defaults to DEFAULT';
+comment on column utl_text_templates.uttm_mode is 'Execution mode, alows for different template flavours, part of PK';
+comment on column utl_text_templates.uttm_text is 'Template text with replacement anchors';
+comment on column utl_text_templates.uttm_log_text is 'Optional logging template, creates log messages if present';
+comment on column utl_text_templates.uttm_log_severity is 'PIT severity that sets the output severity, defaults to PIT.LEVEL_VERBOSE';
