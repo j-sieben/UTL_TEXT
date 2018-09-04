@@ -1,8 +1,12 @@
-# CodeGenerator
+# UTL_TEXT, including CodeGenerator
 
-Helper Package to support generating template based texts.
+Helper Package to collect String related utilities and support generating template based texts.
 
 ## What it is
+
+UTL_TEXT contains two earlier projects, UTL_TEXT and CODE_GENERATOR. UTL_TEXT contained some simple text related utilities, whereas CodeGenerator does some advanced things that need further explanation. As it turned out to be a nightmare to maintain two packages with partly overlapping functionality, I decided to combine both packages into one.
+
+The basic UTL_TEXT functionality is self explanatory and consists mainly of simple helper method to make working with string easier. The rest of this intro deals with the functionality of the CodeGenerator. Although it is now contained in UTL_TEXT, I stick to the term CodeGenerator to make clear what part of UTL_TEXT I'm referring to.
 
 CodeGenerator is a helper package to support creating text based on templates with replacement anchors. This kind of replacement is often required when generating dynamic SQL or PL/SQL-code or when putting together mail messages and the like.
 
@@ -38,7 +42,7 @@ This method is the most basic one but it allows for the same flexibility in repl
 As a first example, consider this code snippet:
 
 ```
-SQL> select code_generator.bulk_replace('My first #1#', char_table('1', 'replacement')) result
+SQL> select utl_text.bulk_replace('My first #1#', char_table('1', 'replacement')) result
   2    from dual;
 
 RESULT
@@ -54,7 +58,7 @@ In this example, `#1#` is replaced with `replacement`, which could have been ach
 The real power comes from CodeGenerators recursive abilities. As a simple example, the replacement contains a second anchor:
 
 ```
-SQL> select code_generator.bulk_replace('A simple #1#', char_table(
+SQL> select utl_text.bulk_replace('A simple #1#', char_table(
   2           '1', 'replacement with #2#',
   3           '2', 'recursive replacements')) result
   4    from dual;
@@ -71,7 +75,7 @@ This example also shows how to include more than one replacement key-value-pair.
 To make things a bit more funny, you may extend the anchors syntax to support `NULL`-value treatment. In the following example, we want to inlude a `PRE` and `POST` before and after a non `NULL`-value and a `NULL` for any `NULL` value:
 
 ```
-SQL> select code_generator.bulk_replace(
+SQL> select utl_text.bulk_replace(
   2            'Null treatment for #1|PRE|POST|NULL# and #2|PRE|POST|NULL#',
   3            char_table(
   4             '1', ' value 1 ',
@@ -88,7 +92,7 @@ Null treatment for PRE value 1 POST and NULL
 This is the foundation for powerful string replacements as in the next example where we want to include a second value with `NULL` treatment, but only, if the first value is `NULL`. If we do this, we need a different syntax for the embedded anchor to distinguish it from the surrounding anchor. We will be using different characters which are referenced as `secondary anchor` and `secondoray replacement` chars. They allow to nest an anchor into a surrounding anchors conditional replacements:
 
 ```
-SQL> select code_generator.bulk_replace(
+SQL> select utl_text.bulk_replace(
   2            'Null treatment for #1|PRE|POST|^2~PRE~POST~NULL^#',
   3            char_table(
   4             '1', null,
@@ -136,7 +140,7 @@ SQL>   with templ as (
  11          union all
  12         select 'SECOND_COLUMN', 'NUMBER', null, '38,0' from dual union all
  13         select 'THIRD_COLUMN', 'INTEGER', null, null from dual)
- 14  select code_generator.generate_text(cursor(
+ 14  select utl_text.generate_text(cursor(
  15           select template, column_name, column_type, column_size, column_precision
  16             from templ
  17            cross join vals), delimiter) result
@@ -173,10 +177,10 @@ SQL>   with templ as (
  13          union all
  14         select 'SECOND_COLUMN', 'NUMBER', null, '38,0' from dual union all
  15         select 'THIRD_COLUMN', 'INTEGER', null, null from dual)
- 16  select code_generator.generate_text(cursor(
+ 16  select utl_text.generate_text(cursor(
  17         select table_template, cr,
  18                'MY_TABLE' table_name,
- 19                code_generator.generate_text(cursor(
+ 19                utl_text.generate_text(cursor(
  20                  select col_template, column_name, column_type, column_size, column_precision
  21                    from templ
  22                   cross join vals), cr, 2) column_list
@@ -227,10 +231,10 @@ begin
         union all
        select 'SECOND_COLUMN', 'NUMBER', null, '38,0' from dual union all
        select 'THIRD_COLUMN', 'INTEGER', null, null from dual)
-select code_generator.generate_text(cursor(
+select utl_text.generate_text(cursor(
        select table_template, log_template, cr,
               'MY_TABLE' table_name,
-              code_generator.generate_text(cursor(
+              utl_text.generate_text(cursor(
                 select col_template, column_name, column_type, column_size, column_precision
                   from templ
                  cross join vals), delimiter, 2) column_list
@@ -266,7 +270,7 @@ SQL> select rownum, column_value result
  12                  union all
  13                 select 'SECOND_COLUMN', 'NUMBER', null, '38,0' from dual union all
  14                 select 'THIRD_COLUMN', 'INTEGER', null, null from dual)
- 15          select code_generator.generate_text_table(cursor(
+ 15          select utl_text.generate_text_table(cursor(
  16                   select template, column_name, column_type, column_size, column_precision
  17                     from templ
  18                    cross join vals)) result
