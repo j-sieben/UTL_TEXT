@@ -12,11 +12,11 @@ prompt &h3.Check Installation Preferences
 
 prompt &h3.Create packages
 prompt &s1.Create package UT_CODE_GENERATOR
-@packages/ut_code_generator.pks
+@&ut_dir.packages/ut_utl_text.pks
 show errors
 
 prompt &s1.Create package Body UT_CODE_GENERATOR
-@packages/ut_code_generator.pkb
+@&ut_dir.packages/ut_utl_text.pkb
 show errors
 
 prompt &h3.Execute unit tests

@@ -176,5 +176,5 @@ as
   
   -- %endcontext
 
-end ut_code_generator;
+end ut_utl_text;
 /

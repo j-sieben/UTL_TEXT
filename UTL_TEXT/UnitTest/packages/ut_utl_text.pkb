@@ -11,42 +11,42 @@ as
   procedure test_date_format
   as
   begin
-    ut.expect(utl_text.get_default_date_format).to_equal(param.get_string('DEFAULT_DATE_FORMAT', 'CODE_GEN'));
+    ut.expect(utl_text.get_default_date_format).to_equal(param.get_string('DEFAULT_DATE_FORMAT', 'UTL_TEXT'));
   end test_date_format;
 
 
   procedure test_main_anchor
   as
   begin
-    ut.expect(utl_text.get_main_anchor_char).to_equal(param.get_string('MAIN_ANCHOR_CHAR', 'CODE_GEN'));
+    ut.expect(utl_text.get_main_anchor_char).to_equal(param.get_string('MAIN_ANCHOR_CHAR', 'UTL_TEXT'));
   end test_main_anchor;
 
 
   procedure test_second_anchor
   as
   begin
-    ut.expect(utl_text.get_secondary_anchor_char).to_equal(param.get_string('SECONDARY_ANCHOR_CHAR', 'CODE_GEN'));
+    ut.expect(utl_text.get_secondary_anchor_char).to_equal(param.get_string('SECONDARY_ANCHOR_CHAR', 'UTL_TEXT'));
   end test_second_anchor;
 
 
   procedure test_main_separator
   as
   begin
-    ut.expect(utl_text.get_main_separator_char).to_equal(param.get_string('MAIN_SEPARATOR_CHAR', 'CODE_GEN'));
+    ut.expect(utl_text.get_main_separator_char).to_equal(param.get_string('MAIN_SEPARATOR_CHAR', 'UTL_TEXT'));
   end test_main_separator;
 
 
   procedure test_second_seaparator
   as
   begin
-    ut.expect(utl_text.get_secondary_separator_char).to_equal(param.get_string('SECONDARY_SEPARATOR_CHAR', 'CODE_GEN'));
+    ut.expect(utl_text.get_secondary_separator_char).to_equal(param.get_string('SECONDARY_SEPARATOR_CHAR', 'UTL_TEXT'));
   end test_second_seaparator;
 
 
   procedure test_delimiter_char
   as
   begin
-    ut.expect(utl_text.get_default_delimiter_char).to_equal(param.get_string('DEFAULT_DELIMITER_CHAR', 'CODE_GEN'));
+    ut.expect(utl_text.get_default_delimiter_char).to_equal(param.get_string('DEFAULT_DELIMITER_CHAR', 'UTL_TEXT'));
   end test_delimiter_char;
   
   
@@ -109,13 +109,13 @@ as
   begin
     utl_text.set_default_delimiter_char('-');
     utl_text.initialize;
-    ut.expect(utl_text.get_default_delimiter_char).to_equal(param.get_string('DEFAULT_DELIMITER_CHAR', 'CODE_GEN'));
+    ut.expect(utl_text.get_default_delimiter_char).to_equal(param.get_string('DEFAULT_DELIMITER_CHAR', 'UTL_TEXT'));
   end test_initialize;
 
   procedure test_ignore_flag
   as
   begin
-    ut.expect(utl_text.get_ignore_missing_anchors).to_equal(param.get_string('IGNORE_MISSING_ANCHORS', 'CODE_GEN'));
+    ut.expect(utl_text.get_ignore_missing_anchors).to_equal(param.get_string('IGNORE_MISSING_ANCHORS', 'UTL_TEXT'));
   end test_ignore_flag;
 
 
@@ -583,7 +583,7 @@ as
   as
     l_anchor_list varchar2(300);
   begin
-    insert into utl_text_templates(cgtm_name, cgtm_type, cgtm_text)
+    insert into utl_text_templates(uttm_name, uttm_type, uttm_text)
     values ('TEST', 'TEST', 'Template with replacement anchors #ONE|PRE|POST|NULL#, #TWO# and #THREE#');
     
     select listagg(column_value, ':') within group (order by column_value)
@@ -591,9 +591,9 @@ as
       from table(utl_text.get_anchors('TEST', 'TEST', 'DEFAULT'));
     
     delete from utl_text_templates
-     where cgtm_name = 'TEST'
-       and cgtm_type = 'TEST'
-       and cgtm_mode = 'DEFAULT';
+     where uttm_name = 'TEST'
+       and uttm_type = 'TEST'
+       and uttm_mode = 'DEFAULT';
        
     ut.expect(l_anchor_list).to_equal('ONE:THREE:TWO');
   end read_anchors_from_template;
@@ -603,7 +603,7 @@ as
   as
     l_anchor_list varchar2(300);
   begin
-    insert into utl_text_templates(cgtm_name, cgtm_type, cgtm_text)
+    insert into utl_text_templates(uttm_name, uttm_type, uttm_text)
     values ('TEST', 'TEST', 'Template with replacement anchors #ONE|PRE|POST|NULL#, #TWO# and #THREE#');
     
     select listagg(column_value, ':') within group (order by column_value)
@@ -611,9 +611,9 @@ as
       from table(utl_text.get_anchors('TEST', 'TEST', 'DEFAULT', 1));
     
     delete from utl_text_templates
-     where cgtm_name = 'TEST'
-       and cgtm_type = 'TEST'
-       and cgtm_mode = 'DEFAULT';
+     where uttm_name = 'TEST'
+       and uttm_type = 'TEST'
+       and uttm_mode = 'DEFAULT';
        
     ut.expect(l_anchor_list).to_equal('#ONE|PRE|POST|NULL#:#THREE#:#TWO#');
   end read_complete_anchors_from_template;
