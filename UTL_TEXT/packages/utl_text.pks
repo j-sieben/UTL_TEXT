@@ -1,5 +1,5 @@
 create or replace package utl_text
-  authid current_user
+  authid definer
 as
   
   subtype ora_name_type is varchar2(128 byte);--&ORA_NAME_TYPE.;
@@ -372,16 +372,16 @@ as
     
                                
   /* Listet die Ersetzungsanker in Templates aus UTL_TEXT_TEMPLATES auf
-   * @param  p_uttm_name          Name des Templates
    * @param  p_uttm_type          Typ des Templates
+   * @param  p_uttm_name          Name des Templates
    * @param  p_uttm_mode          Ausfuehrungsodus des Templates
    * @param [p_with_replacements] Flag, das anzeigt, ob alle Ersetzungszeichenfolgen angezeigt werden sollen (1) oder nicht (0)
    * @return char_table mit Ankern
    * %usage  Wird verwendet, um die Ersetungsanker aus einem Template zu lesen und als Varchar2-Tabelle zurückzuliefern
    */                               
   function get_anchors(
-    p_uttm_name in varchar2,
     p_uttm_type in varchar2,
+    p_uttm_name in varchar2,
     p_uttm_mode in varchar2,
     p_with_replacements in number default 0
   ) return char_table
@@ -391,8 +391,8 @@ as
   /* Administrationsfunktionen */
   
   /* Methode zur Erzeugung eines Templates
-   * @param  p_uttm_name       Name des Templates
    * @param  p_uttm_type       Typ des Templates
+   * @param  p_uttm_name       Name des Templates
    * @param  p_uttm_mode       Ausfuehrungsmodus des Templates
    * @param  cgtm_text         Template mit Ersetzungsankern
    * @param [cgtm_log_text]    Optionales Template mit Ersetzungsankern für Loggingaufgaben
@@ -400,13 +400,31 @@ as
    * %usage  Wird verwendet, um ein Template zu erzeugen
    */
   procedure merge_template(
-    p_uttm_name in varchar2,
     p_uttm_type in varchar2,
+    p_uttm_name in varchar2,
     p_uttm_mode in varchar2,
     p_uttm_text in varchar2,
     p_uttm_log_text in varchar2,
     p_uttm_log_severity in number);
     
+  /* Methode zum Loeschen eines Templates
+   * @param  p_uttm_type  Typ des Templates
+   * @param  p_uttm_name  Name des Templates
+   * @param  p_uttm_mode  Ausfuehrungsmodus des Templates
+   * %usage  Wird verwendet, um ein Template zu entfernen
+   */
+  procedure delete_template(
+    p_uttm_type in varchar2,
+    p_uttm_name in varchar2,
+    p_uttm_mode in varchar2);
+    
+  
+  /* Methode zum Entfernen aller Templates eines Templatetyps
+   * @param  p_uttm_type  Typ des Templates
+   * %usage  Wird verwendet, um ein Template zu entfernen
+   */
+  procedure remove_templates(
+    p_uttm_type in varchar2);
     
   /* Methode exportiert alle Templates
    * @param [p_directory] Directory-Objekt, in das die Exportdatei geschrieben werden soll

@@ -9,10 +9,10 @@ prompt &s1.Type CLOB_TABLE
 @types/clob_table.tps
 
 prompt &h3.Create UTL_TEXT parameters
-@check_pit_exists.sql "scripts/create_parameters.sql"
+@tools/check_pit_exists.sql "scripts/create_parameters.sql"
 
 prompt &h3.Create UTL_TEXT messages
-@check_pit_exists.sql "messages/&DEFAULT_LANGUAGE./create_messages.sql"
+@tools/check_pit_exists.sql "messages/&DEFAULT_LANGUAGE./create_messages.sql"
 
 prompt &h3.Create table UTL_TEXT_TEMPLATES
 @tables/utl_text_templates.tbl

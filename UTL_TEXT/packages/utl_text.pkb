@@ -878,7 +878,7 @@ as
   begin
     $IF utl_text.C_WITH_PIT $THEN
     pit.assert(
-      p_condition => (p_delimiter = c_no_delimiter and p_indent = 0) or (p_delimiter != c_no_delimiter),
+      p_condition => (coalesce(p_delimiter, c_no_delimiter) = c_no_delimiter and p_indent = 0) or (p_delimiter != c_no_delimiter),
       p_message_name => msg.INVALID_PARAMETER_COMBI);
     $ELSE
     if not((p_delimiter = c_no_delimiter and p_indent = 0) or (p_delimiter != c_no_delimiter)) then
@@ -1013,8 +1013,8 @@ as
   
                   
   function get_anchors(
-    p_uttm_name in varchar2,
     p_uttm_type in varchar2,
+    p_uttm_name in varchar2,
     p_uttm_mode in varchar2,
     p_with_replacements in number default 0
   ) return char_table
@@ -1066,8 +1066,8 @@ as
 
   /* ADMINISTRATION */
   procedure merge_template(
-    p_uttm_name in varchar2,
     p_uttm_type in varchar2,
+    p_uttm_name in varchar2,
     p_uttm_mode in varchar2,
     p_uttm_text in varchar2,
     p_uttm_log_text in varchar2,
@@ -1095,6 +1095,28 @@ as
             s.uttm_name, s.uttm_type, s.uttm_mode, s.uttm_text, s.uttm_log_text, s.uttm_log_severity);
   end merge_template;
 
+
+  procedure delete_template(
+    p_uttm_type in varchar2,
+    p_uttm_name in varchar2,
+    p_uttm_mode in varchar2)
+  as
+  begin
+    delete from utl_text_templates
+     where uttm_type = p_uttm_type
+       and uttm_name = p_uttm_name
+       and uttm_mode = p_uttm_mode;
+  end delete_template;
+    
+  
+  procedure remove_templates(
+    p_uttm_type in varchar2)
+  as
+  begin
+    delete from utl_text_templates
+     where uttm_type = p_uttm_type;
+  end remove_templates;
+  
 
   procedure write_template_file(
     p_uttm_type in char_table default null,
