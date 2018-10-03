@@ -216,6 +216,15 @@ as
     p_table out nocopy char_table,
     p_delimiter in varchar2 default C_DEL);
 
+  
+  /* Method to convert a CLOB instance to BLOB
+   * @param  p_clob  CLOB instance to convert
+   * @return Converted BLOB instance
+   */
+  function clob_to_blob(
+    p_clob in clob) 
+    return blob;
+    
 
   /* Method to (securely) check whether P_PATTERN is contained within P_TEXT
    * @param  p_text       Text that is evaluated for matches

@@ -629,7 +629,7 @@ as
   as
     l_char_table char_table;
   begin
-    l_char_table := string_to_table(p_string, p_delimiter);
+    string_to_table(p_string, l_char_table, p_delimiter);
     for i in 1 .. l_char_table.count loop
       pipe row (l_char_table(i));
     end loop;
@@ -655,6 +655,43 @@ as
       end loop;
     end if;
   end string_to_table;
+
+  
+  function clob_to_blob(
+    p_clob in clob) 
+    return blob 
+  as
+    C_CHUNK_SIZE constant integer := 4096;
+    l_blob blob;
+    l_offset number default 1;
+    l_amount number default C_CHUNK_SIZE;
+    l_offsetwrite number default 1;
+    l_amountwrite number;
+    l_buffer max_char;
+  begin
+    if p_clob is not null then
+    dbms_lob.createtemporary(l_blob, true);
+      loop
+        dbms_lob.read (lob_loc => p_clob,
+          amount => l_amount,
+          offset => l_offset,
+          buffer => l_buffer);
+  
+        l_amountwrite := utl_raw.length (utl_raw.cast_to_raw(l_buffer));
+  
+        dbms_lob.write (lob_loc => l_blob,
+          amount => l_amountwrite,
+          offset => l_offsetwrite,
+          buffer => utl_raw.cast_to_raw(l_buffer));
+  
+        l_offsetwrite := l_offsetwrite + l_amountwrite;
+  
+        l_offset := l_offset + l_amount;
+        l_amount := C_CHUNK_SIZE;
+      end loop;
+    end if;
+    return l_blob;
+  end clob_to_blob;
 
 
   function contains(
