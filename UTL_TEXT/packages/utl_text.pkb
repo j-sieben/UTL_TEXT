@@ -670,25 +670,31 @@ as
     l_buffer max_char;
   begin
     if p_clob is not null then
-    dbms_lob.createtemporary(l_blob, true);
-      loop
-        dbms_lob.read (lob_loc => p_clob,
-          amount => l_amount,
-          offset => l_offset,
-          buffer => l_buffer);
-  
-        l_amountwrite := utl_raw.length (utl_raw.cast_to_raw(l_buffer));
-  
-        dbms_lob.write (lob_loc => l_blob,
-          amount => l_amountwrite,
-          offset => l_offsetwrite,
-          buffer => utl_raw.cast_to_raw(l_buffer));
-  
-        l_offsetwrite := l_offsetwrite + l_amountwrite;
-  
-        l_offset := l_offset + l_amount;
-        l_amount := C_CHUNK_SIZE;
-      end loop;
+      dbms_lob.createtemporary(l_blob, true);
+      begin
+        loop
+          dbms_lob.read (lob_loc => p_clob,
+            amount => l_amount,
+            offset => l_offset,
+            buffer => l_buffer);
+    
+          l_amountwrite := utl_raw.length (utl_raw.cast_to_raw(l_buffer));
+    
+          dbms_lob.write (lob_loc => l_blob,
+            amount => l_amountwrite,
+            offset => l_offsetwrite,
+            buffer => utl_raw.cast_to_raw(l_buffer));
+    
+          l_offsetwrite := l_offsetwrite + l_amountwrite;
+    
+          l_offset := l_offset + l_amount;
+          l_amount := C_CHUNK_SIZE;
+        end loop;
+    exception
+      when NO_DATA_FOUND then
+        -- Nothing left ro read
+        null;
+    end;
     end if;
     return l_blob;
   end clob_to_blob;
