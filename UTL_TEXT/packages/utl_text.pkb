@@ -389,8 +389,8 @@ as
     -- Derive delimiter from OS
     case when regexp_like(dbms_utility.port_string, '(WIN|Windows)') then
       g_newline_char := chr(13) || chr(10);
-    when regexp_like(dbms_utility.port_string, '(AIX)') then
-      g_newline_char := chr(21);
+    --when regexp_like(dbms_utility.port_string, '(AIX)') then
+    --  g_newline_char := chr(21);
     else
       g_newline_char := chr(10);
     end case;
@@ -768,9 +768,9 @@ as
     l_prefix varchar2(20) := coalesce(p_prefix, q'^q'°^');
     l_postfix varchar2(20) := coalesce(p_postfix, q'^°'^');
     C_REGEX_NEWLINE constant varchar2(30) := '(' || chr(13) || chr(10) || '|' || chr(10) || '|' || chr(13) || ' |' || chr(21) || ')';
-    C_REPLACEMENT constant varchar2(100) := C_CR_CHAR || p_postfix || ' || ' || g_newline_char || p_prefix;
+    C_REPLACEMENT constant varchar2(100) := C_CR_CHAR || l_postfix || ' || ' || g_newline_char || l_prefix;
   begin
-    return p_prefix || regexp_replace(p_text, C_REGEX_NEWLINE, C_REPLACEMENT) || p_postfix;
+    return l_prefix || regexp_replace(p_text, C_REGEX_NEWLINE, C_REPLACEMENT) || l_postfix;
   end wrap_string;
   
   
