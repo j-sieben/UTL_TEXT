@@ -2,13 +2,13 @@ create or replace package utl_text
   authid definer
 as
   
-  subtype ora_name_type is varchar2(128 byte);--&ORA_NAME_TYPE.;
+  subtype ora_name_type is varchar2(128 byte); --&ORA_NAME_TYPE.;
   subtype flag_type is char(1 char);
   subtype max_char is varchar2(32767 byte);
   type clob_tab is table of clob index by ora_name_type;
   
   C_NO_DELIMITER constant varchar2(4) := 'NONE';
-  C_WITH_PIT constant boolean := true;--&PIT_INSTALLED.;
+  C_WITH_PIT constant boolean := true; -- &PIT_INSTALLED.;
   C_TRUE constant flag_type := 'Y';
   C_FALSE constant flag_type := 'N';
   C_DEL constant varchar2(10) := ':';
@@ -121,6 +121,23 @@ as
     p_prefix in varchar2 default null,
     p_postfix in varchar2 default null)
     return varchar2;
+    
+  
+  /* Method to unwrap a string based on the outcome of WRAP_STRING.
+   * %param  p_text  Wrapped string
+   * %usage  A wrapped string contains CR-replacements which make it hard for external code to create a multi line string
+   *         of the wrapped string. This is achieved with this method. 
+   */
+  function unwrap_string(
+    p_text in varchar2)
+    return varchar2;
+    
+  
+  function clob_replace(
+    p_text in clob,
+    p_what in varchar2,
+    p_with in clob default null)
+    return clob;
     
   
   /* STRING UTILITIES */
@@ -336,10 +353,9 @@ as
   */
   procedure generate_text(
     p_cursor in out nocopy sys_refcursor,
-    p_result out nocopy varchar2,
+    p_result out nocopy clob,
     p_delimiter in varchar2 default null,
-    p_indent in number default 0
-  );
+    p_indent in number default 0);
                           
   -- Ueberladung als Funktion
   function generate_text(
@@ -352,10 +368,9 @@ as
   procedure generate_text(
     p_template in varchar2,
     p_stmt in varchar2,
-    p_result out nocopy varchar2,
+    p_result out nocopy clob,
     p_delimiter in varchar2 default null,
-    p_indent in number default 0
-  );
+    p_indent in number default 0);
                           
   -- Ueberladung als Funktion
   function generate_text(
@@ -364,6 +379,18 @@ as
     p_delimiter in varchar2 default null,
     p_indent in number default 0
   ) return clob;
+  
+  $IF dbms_db_version.ver_le_12 $THEN
+  -- Polymorphic table functions are not available on this database version
+  $ELSE
+  function generate_text(p_table in table)
+    return table pipelined 
+    row polymorphic 
+    using utl_text;
+    
+  function describe (p_table in out nocopy dbms_tf.table_t)
+    return dbms_tf.describe_t;
+  $END
                          
                         
   --Methoden zur Erzeugung von Listen von CLOBs                        
@@ -379,6 +406,18 @@ as
   ) return clob_table
     pipelined;
     
+  
+  $IF dbms_db_version.ver_le_12 $THEN
+  -- Polymorphic table functions are not available on this database version
+  $ELSE
+  function generate_text_table(p_table in table)
+    return table pipelined 
+    row polymorphic 
+    using utl_text;
+    
+  function gtt_describe (p_table in out nocopy dbms_tf.table_t)
+    return dbms_tf.describe_t;
+  $END
                                
   /* Listet die Ersetzungsanker in Templates aus UTL_TEXT_TEMPLATES auf
    * @param  p_uttm_type          Typ des Templates

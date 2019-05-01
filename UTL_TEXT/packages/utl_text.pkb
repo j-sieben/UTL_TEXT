@@ -774,6 +774,38 @@ as
   end wrap_string;
   
   
+  function unwrap_string(
+    p_text in varchar2)
+    return varchar2
+  as
+  begin
+    return replace(p_text, C_CR_CHAR, g_newline_char);
+  end unwrap_string;
+  
+  
+  function clob_replace(
+    p_text in clob,
+    p_what in varchar2,
+    p_with in clob default null)
+    return clob 
+  as
+    l_result clob;
+    l_before varchar2(32767);
+    l_after varchar2(32767);
+    l_idx binary_integer;
+  begin
+    l_idx := instr(p_text, p_what);
+    if l_idx > 0 then
+      l_before := substr(p_text, 1, l_idx - 1);
+      l_after := substr(p_text, l_idx + length(p_what));
+      l_result :=  l_before || p_with || l_after;
+      return l_result;
+    else
+      return p_text;
+    end if;
+  end clob_replace;
+  
+ 
   /* BULK_REPLACE */
   procedure bulk_replace(
     p_template in clob,
@@ -785,7 +817,7 @@ as
     C_REGEX_SEPARATOR varchar2(20) := '(.*?)(\' || g_main_separator_char || '|$)';
       
     /* Cursor detects all replacement anchors within a template and extracts any substructure */
-    cursor replacement_cur(p_template in varchar2) is
+    cursor replacement_cur(p_template in clob) is
         with anchors as (
                 select trim(g_main_anchor_char from regexp_substr(p_template, C_REGEX, 1, level)) replacement_string
                   from dual
@@ -807,8 +839,8 @@ as
     l_invalid_anchors max_char;
   begin
     $IF utl_text.C_WITH_PIT $THEN
-    pit.assert_not_null(
-      p_condition => p_template,
+    pit.assert(
+      p_condition => dbms_lob.getlength(p_template) > 0,
       p_message_name => msg.NO_TEMPLATE);
     $ELSE
     if p_template is null then
@@ -827,9 +859,9 @@ as
       when p_clob_tab.exists(rep.anchor) then
         l_anchor_value := p_clob_tab(rep.anchor);
         if l_anchor_value is not null then
-          p_result := replace(p_result, rep.replacement_string, rep.prefix || l_anchor_value || rep.postfix);
+          p_result := clob_replace(p_result, rep.replacement_string, rep.prefix || l_anchor_value || rep.postfix);
         else
-          p_result := replace(p_result, rep.replacement_string, rep.null_value);
+          p_result := clob_replace(p_result, rep.replacement_string, rep.null_value);
         end if;
       else
         -- replacement anchor is missing
@@ -878,7 +910,6 @@ as
   )
   as
     l_clob_tab clob_tab;
-    l_anchor varchar2(32767);
     l_result clob;
   begin
     for i in 1 .. p_chunks.count loop
@@ -912,7 +943,7 @@ as
   /* GENERATE_TEXT */
   procedure generate_text(
     p_cursor in out nocopy sys_refcursor,
-    p_result out nocopy varchar2,
+    p_result out nocopy clob,
     p_delimiter in varchar2 default null,
     p_indent in number default 0) 
   as
@@ -966,10 +997,9 @@ as
   procedure generate_text(
     p_template in varchar2,
     p_stmt in varchar2,
-    p_result out nocopy varchar2,
+    p_result out nocopy clob,
     p_delimiter in varchar2 default null,
-    p_indent in number default 0
-  )
+    p_indent in number default 0)
   as
     l_cur binary_integer;
     l_row_tab row_tab;
@@ -1008,6 +1038,58 @@ as
       p_indent => p_indent);
     return l_clob;
   end generate_text;
+  
+  
+  $IF dbms_db_version.ver_le_12 $THEN
+  -- Polymorphic table functions are not available on this database version
+  $ELSE
+  function describe (p_table in out nocopy dbms_tf.table_t)
+    return dbms_tf.describe_t
+  as
+  begin
+    -- make all columns readable and omit them from output
+    for i in 1 .. p_table.column.count loop
+      p_table.column(i).for_read := true;
+      p_table.column(i).pass_through := false;
+    end loop;
+
+    return dbms_tf.describe_t(
+             new_columns => dbms_tf.columns_new_t(
+                              1 => dbms_tf.column_metadata_t(
+                                     name => 'RESULT',
+                                     type => dbms_tf.type_clob))
+           );
+  end describe;
+  
+  procedure fetch_rows is
+    l_rowset dbms_tf.row_set_t;
+    l_colcnt pls_integer;
+    l_rowcnt pls_integer;
+    l_result dbms_tf.tab_clob_t;
+    l_env dbms_tf.env_t;
+    l_anchor varchar2(32767);
+    l_value varchar2(32767);
+    l_template varchar2(32767);
+  begin
+    -- Initialization
+    l_env := dbms_tf.get_env();
+    dbms_tf.get_row_set(l_rowset, l_rowcnt, l_colcnt);
+    
+    for r in 1 .. l_rowcnt loop
+      l_result(r) := '';
+      for c in 1 .. l_colcnt loop
+        if c = 1 then
+          l_template := dbms_tf.col_to_char(l_rowset(c), r);
+        else
+          l_anchor := '#' || l_env.get_columns(c).name || '#';
+          l_value := dbms_tf.col_to_char(l_rowset(c), r);
+          l_result(r) := replace(l_result(r), l_anchor, l_value);
+        end if; 
+      end loop;
+    end loop;
+    dbms_tf.put_col(1, l_result);
+  end;
+  $END
 
 
   /* GENERATE_TEXT_TABLE */
@@ -1053,6 +1135,18 @@ as
     end loop;
     return;
   end generate_text_table;
+  
+  
+  $IF dbms_db_version.ver_le_12 $THEN
+  -- Polymorphic table functions are not available on this database version
+  $ELSE
+  function gtt_describe (p_table in out nocopy dbms_tf.table_t)
+    return dbms_tf.describe_t
+  as
+  begin
+    return null;
+  end gtt_describe;
+  $END
   
                   
   function get_anchors(
