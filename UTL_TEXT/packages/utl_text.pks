@@ -217,13 +217,15 @@ as
     
 
   /* Method to convert a string to an instance of CHAR_TABLE
-   * @param  p_string     Text to split into entries of CHAR_TABLE
-   * @param [p_delimiter] Optional delimiter that is used to split text into entries of P_CHUNKS. Defaults to a C_DEL
+   * @param  p_string      Text to split into entries of CHAR_TABLE
+   * @param [p_delimiter]  Optional delimiter that is used to split text into entries of P_CHUNKS. Defaults to a C_DEL
+   * @param [p_omit_empty] Flag to indicate whether empty recors should be surpressed (C_TRUE) or not (C_FALSE). Defaults to C_FALSE
    * @return Instance of CHAR_TABLE. Function overload is pipelined to allow for usage within a TABLE() function.
    */
   function string_to_table(
     p_string in varchar2,
-    p_delimiter in varchar2 default C_DEL)
+    p_delimiter in varchar2 default C_DEL,
+    p_omit_empty in flag_type default C_FALSE)
     return char_table
     pipelined;
     
@@ -231,7 +233,28 @@ as
   procedure string_to_table(
     p_string in varchar2,
     p_table out nocopy char_table,
-    p_delimiter in varchar2 default C_DEL);
+    p_delimiter in varchar2 default C_DEL,
+    p_omit_empty in flag_type default C_FALSE);
+    
+
+  /* Method to convert a string to an instance of CHAR_TABLE
+   * @param  p_table       Instance of CHAR_TABLE of char_table to join
+   * @param [p_delimiter]  Optional delimiter that is used to join text. Defaults to a C_DEL
+   * @param [p_max_length] Maximum output length. Defaults to 32767
+   * @return String with P_MAX_LENGTH.
+   */
+  function table_to_string(
+    p_table in char_table,
+    p_delimiter in varchar2 default C_DEL,
+    p_max_length in number default 32767)
+    return varchar2;
+    
+  /* Procedure overload */
+  procedure table_to_string(
+    p_table in char_table,
+    p_string out nocopy varchar2,
+    p_delimiter in varchar2 default C_DEL,
+    p_max_length in number default 32767);
 
   
   /* Method to convert a CLOB instance to BLOB
@@ -439,12 +462,12 @@ as
   /* Administrationsfunktionen */
   
   /* Methode zur Erzeugung eines Templates
-   * @param  p_uttm_type       Typ des Templates
-   * @param  p_uttm_name       Name des Templates
-   * @param  p_uttm_mode       Ausfuehrungsmodus des Templates
-   * @param  cgtm_text         Template mit Ersetzungsankern
-   * @param [cgtm_log_text]    Optionales Template mit Ersetzungsankern für Loggingaufgaben
-   * @param [cgtm_logseverity] Schweregrad der Logmeldung zur Steuerung der Logmenge
+   * @param  p_uttm_type          Typ des Templates
+   * @param  p_uttm_name          Name des Templates
+   * @param  p_uttm_mode          Ausfuehrungsmodus des Templates
+   * @param  p_uttm_text          Template mit Ersetzungsankern
+   * @param [p_uttm_log_text]     Optionales Template mit Ersetzungsankern für Loggingaufgaben
+   * @param [p_uttm_log_severity] Schweregrad der Logmeldung zur Steuerung der Logmenge
    * %usage  Wird verwendet, um ein Template zu erzeugen
    */
   procedure merge_template(
@@ -452,8 +475,8 @@ as
     p_uttm_name in varchar2,
     p_uttm_mode in varchar2,
     p_uttm_text in varchar2,
-    p_uttm_log_text in varchar2,
-    p_uttm_log_severity in number);
+    p_uttm_log_text in varchar2 default null,
+    p_uttm_log_severity in number default null);
     
   /* Methode zum Loeschen eines Templates
    * @param  p_uttm_type  Typ des Templates
