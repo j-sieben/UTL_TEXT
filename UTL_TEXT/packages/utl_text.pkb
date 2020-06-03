@@ -1,16 +1,12 @@
 create or replace package body utl_text
 as
 
-  C_PKG constant ora_name_type := $$PLSQL_UNIT;
   C_ROW_TEMPLATE constant ora_name_type := 'TEMPLATE';
   C_LOG_TEMPLATE constant ora_name_type := 'LOG_TEMPLATE';
   C_DATE_TYPE constant binary_integer := 12;
   C_PARAM_GROUP constant ora_name_type := 'UTL_TEXT';
-  -- Ersetzungszeichen beim Ex- und Import zum Maskieren von Zeilenspruengen
+  -- characters used to mask a CR in export files
   C_CR_CHAR constant varchar2(10) := '\CR\';
-
-  C_REGEX_ANCHOR_NAME constant varchar2(50) := q'^(^[0-9]+$|^[A-Z][A-Z0-9_\$#]*$)^';
-  C_REGEX_INTERNAL_ANCHORS constant varchar2(100) := '(#CGTM_NAME#|#CGTM_TYPE#|#CGTM_MODE#|#CGTM_TEXT#|#CGTM_LOG_TEXT#|#CGTM_LOG_SEVERITY#)';
 
   g_ignore_missing_anchors boolean;
   g_default_date_format varchar2(200);
@@ -24,7 +20,6 @@ as
   /* DATENTYPEN */
   type row_tab is table of clob_tab index by binary_integer;
 
-  -- Record mit Variablen fuer Ergebnisspaltenwerte
   type ref_rec_type is record(
     r_string max_char,
     r_date date,
@@ -245,7 +240,6 @@ as
   as
     l_result clob;
     l_template clob;
-    l_template_name ora_name_type;
     l_log_message clob;
     l_clob_tab clob_tab;
     l_delimiter g_default_delimiter_char%type;
@@ -577,7 +571,6 @@ as
     p_clob in out nocopy clob,
     p_chunk in clob)
   as
-    l_length number;
   begin
      p_clob := append_clob(p_clob, p_chunk);
   end append_clob;
@@ -704,11 +697,11 @@ as
     l_dest_offset   integer := 1;
     l_source_offset integer := 1;
   begin
-    pit.enter_optional(
-      p_params => msg_params(
-                    msg_param('p_clob.length', to_char(dbms_lob.getlength(p_clob)))));
-                    
+    $IF utl_text.C_WITH_PIT $THEN   
     pit.assert_not_null(p_clob);
+    $ELSE
+    return null;
+    $END
     
     dbms_lob.createtemporary(l_blob, true, dbms_lob.call);
     dbms_lob.converttoblob (
@@ -722,11 +715,12 @@ as
       warning => l_warning
     );
 
-    pit.leave_optional;
     return l_blob;
+  $IF utl_text.C_WITH_PIT $THEN   
   exception
     when msg.ASSERT_IS_NOT_NULL_ERR then
       return null;
+  $END
   end clob_to_blob;
 
 
@@ -843,8 +837,9 @@ as
     p_result out nocopy clob)
   as
     C_REGEX varchar2(20) := replace('\#A#[A-Z0-9].*?\#A#', '#A#', g_main_anchor_char);
-    C_REGEX_ANCHOR varchar2(20) := '[^\' || g_main_separator_char || ']+';
+    C_REGEX_ANCHOR varchar2(20) := '[^\' || g_main_anchor_char || ']+';
     C_REGEX_SEPARATOR varchar2(20) := '(.*?)(\' || g_main_separator_char || '|$)';
+    C_REGEX_ANCHOR_NAME constant varchar2(50) := q'^(^[0-9]+$|^[A-Z][A-Z0-9_\$#]*$)^';
 
     /* Cursor detects all replacement anchors within a template and extracts any substructure */
     cursor replacement_cur(p_template in clob) is
@@ -886,7 +881,7 @@ as
     for rep in replacement_cur(p_template) loop
       case
       when rep.valid_anchor_name = 0 then
-        l_invalid_anchors := l_invalid_anchors || g_main_separator_char || rep.anchor;
+        l_invalid_anchors := l_invalid_anchors || g_main_anchor_char || rep.anchor;
       when p_clob_tab.exists(rep.anchor) then
         l_anchor_value := p_clob_tab(rep.anchor);
         if l_anchor_value is not null then
@@ -896,7 +891,7 @@ as
         end if;
       else
         -- replacement anchor is missing
-        l_missing_anchors := l_missing_anchors || g_main_separator_char || rep.anchor;
+        l_missing_anchors := l_missing_anchors || g_main_anchor_char || rep.anchor;
         null;
       end case;
     end loop;
@@ -912,7 +907,7 @@ as
     end if;
 
     if l_missing_anchors is not null and not g_ignore_missing_anchors then
-      l_missing_anchors := ltrim(l_missing_anchors, g_main_separator_char);
+      l_missing_anchors := ltrim(l_missing_anchors, g_main_anchor_char);
       $IF utl_text.C_WITH_PIT $THEN
       pit.error(
         msg.MISSING_ANCHORS,
@@ -1149,7 +1144,7 @@ as
   end generate_text_table;
 
 
-  -- Ueberladung als Funktion
+  -- overloaded version as function
   function generate_text_table(
     p_cursor in sys_refcursor)
     return clob_table
@@ -1209,7 +1204,7 @@ as
        and uttm_type = upper(p_uttm_type)
        and uttm_mode = upper(p_uttm_mode);
 
-    -- Template gefunden, initialisieren
+    -- Template found, initialize
     case when p_with_replacements = 1 then
       l_regex := C_REGEX_ANCHOR_complete;
     else

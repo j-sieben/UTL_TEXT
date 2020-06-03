@@ -9,7 +9,7 @@ prompt &s1.Type CLOB_TABLE
 @types/clob_table.tps
 
 prompt &h3.Create UTL_TEXT parameters
-@tools/check_pit_exists.sql "scripts/create_parameters.sql"
+@tools/check_pit_exists.sql "scripts/ParameterGroup_UTL_TEXT.sql"
 
 prompt &h3.Create UTL_TEXT messages
 @tools/check_pit_exists.sql "messages/&DEFAULT_LANGUAGE./create_messages.sql"
@@ -24,8 +24,4 @@ show errors
 
 prompt &s1.Create package Body UTL_TEXT
 @packages/utl_text.pkb
-show errors
-
-prompt &h3.Create UTL_TEXT templates
-@scripts/create_templates.sql
 show errors
