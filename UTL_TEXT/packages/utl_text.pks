@@ -2,13 +2,13 @@ create or replace package utl_text
   authid definer
 as
   
-  subtype ora_name_type is varchar2(128 byte); --&ORA_NAME_TYPE.;
+  subtype ora_name_type is &ORA_NAME_TYPE.;
   subtype flag_type is char(1 char);
   subtype max_char is varchar2(32767 byte);
   type clob_tab is table of clob index by ora_name_type;
   
   C_NO_DELIMITER constant varchar2(4) := 'NONE';
-  C_WITH_PIT constant boolean := true; -- &PIT_INSTALLED.;
+  C_WITH_PIT constant boolean := &PIT_INSTALLED.;
   C_TRUE constant flag_type := 'Y';
   C_FALSE constant flag_type := 'N';
   C_DEL constant varchar2(10) := ':';
