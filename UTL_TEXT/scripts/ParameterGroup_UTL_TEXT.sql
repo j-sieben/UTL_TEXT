@@ -21,7 +21,7 @@ begin
   param_admin.edit_parameter(
     p_par_id => 'IGNORE_MISSING_ANCHORS'
    ,p_par_pgr_id => 'UTL_TEXT'
-   ,p_par_description => 'Flag to indicate whether missing anchors shall raise an error or not'   ,p_par_boolean_value => true   ,p_par_is_modifiable => null
+   ,p_par_description => 'Flag to indicate whether missing anchors raise an error or not'   ,p_par_boolean_value => true   ,p_par_is_modifiable => null
   );
 
   param_admin.edit_parameter(

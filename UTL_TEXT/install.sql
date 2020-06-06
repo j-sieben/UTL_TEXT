@@ -12,7 +12,7 @@ prompt &h3.Create UTL_TEXT parameters
 @tools/check_pit_exists.sql "scripts/ParameterGroup_UTL_TEXT.sql"
 
 prompt &h3.Create UTL_TEXT messages
-@tools/check_pit_exists.sql "messages/&DEFAULT_LANGUAGE./create_messages.sql"
+@tools/check_pit_exists.sql "messages/&DEFAULT_LANGUAGE./MessageGroup_UTL_TEXT.sql"
 
 prompt &h3.Create table UTL_TEXT_TEMPLATES
 @tables/utl_text_templates.tbl
