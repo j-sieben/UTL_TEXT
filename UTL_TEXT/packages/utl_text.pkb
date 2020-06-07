@@ -17,7 +17,7 @@ as
   g_secondary_separator_char flag_type;
   g_newline_char varchar2(2 byte);
 
-  /* DATENTYPEN */
+  /*+ DATENTYPEN */
   type row_tab is table of clob_tab index by binary_integer;
 
   type ref_rec_type is record(
@@ -27,11 +27,11 @@ as
   l_ref_rec ref_rec_type;
 
 
-  /* HELPER */
-  /* Method to open a cursor
-   * %param  p_cur     Cursor ID
-   * %param  p_cursor  SYS_REFCURSOR
-   * %usage  Overload is used if a sys_refcursor needs to be converted to a DBMS_SQL cursor
+  /*+ HELPER */
+  /*+ Method to open a cursor
+   * @param  p_cur     Cursor ID
+   * @param  p_cursor  SYS_REFCURSOR
+   * @usage  Overload is used if a sys_refcursor needs to be converted to a DBMS_SQL cursor
    */
   procedure open_cursor(
     p_cur out nocopy binary_integer,
@@ -42,10 +42,10 @@ as
   end open_cursor;
 
 
-  /* Method to open a cursor
-   * %param  p_cur   Cursor ID
-   * %param  p_stmt  SELECT statement
-   * %usage  Overload is used if a select statment needs to be parsed and opened by DBMS_SQL
+  /*+ Method to open a cursor
+   * @param  p_cur   Cursor ID
+   * @param  p_stmt  SELECT statement
+   * @usage  Overload is used if a select statment needs to be parsed and opened by DBMS_SQL
    */
   procedure open_cursor(
     p_cur out nocopy binary_integer,
@@ -63,12 +63,12 @@ as
   end open_cursor;
 
 
-  /* Method to analyze a cursor
-   * %param  p_cur       Cursor ID
-   * %param  p_cur_desc  DBMS_SQL.DESC_TAB2 with details to the actual cursor
-   * %param  p_clob_tab  PL/SQL table with column_name (KEY) and initial NULL value for each column
-   * %param [p_template] Optional template. If present, no template is expected to be part of the cursor
-   * %usage  Is used to describe cursor columns. The following functionality is implemented:
+  /*+ Method to analyze a cursor
+   * @param  p_cur       Cursor ID
+   * @param  p_cur_desc  DBMS_SQL.DESC_TAB2 with details to the actual cursor
+   * @param  p_clob_tab  PL/SQL table with column_name (KEY) and initial NULL value for each column
+   * @param [p_template] Optional template. If present, no template is expected to be part of the cursor
+   * @usage  Is used to describe cursor columns. The following functionality is implemented:
    *         - analyze cursor
    *         - initialize PL/SQL with column_name as key an NULL as payload
    *         - register out variables for each column with cursor
@@ -124,11 +124,11 @@ as
   end describe_columns;
 
 
-  /* Method to copy row values in prepared PL/SQL table
-   * %param  p_cur       Cursor ID
-   * %param  p_cur_desc  DBMS_SQL.DESC_TAB2 with details to the actual cursor
-   * %param  p_clob_tab  PL/SQL table with column_name (KEY) and initial NULL value for each column
-   * %usage  Is used to copy column values as payload into the prepared PL/SQL table
+  /*+ Method to copy row values in prepared PL/SQL table
+   * @param  p_cur       Cursor ID
+   * @param  p_cur_desc  DBMS_SQL.DESC_TAB2 with details to the actual cursor
+   * @param  p_clob_tab  PL/SQL table with column_name (KEY) and initial NULL value for each column
+   * @usage  Is used to copy column values as payload into the prepared PL/SQL table
    */
   procedure copy_row_values(
     p_cur in binary_integer,
@@ -151,13 +151,13 @@ as
   end copy_row_values;
 
 
-  /* Method to copy multiple row values into a nested PL/SQL table
+  /*+ Method to copy multiple row values into a nested PL/SQL table
    * (one entry per row in the outer table, on entry per column in the inner table)
-   * %param  p_cur       Cursor ID
-   * %param  p_cur_desc  DBMS_SQL.DESC_TAB2 with details to the actual cursor
-   * %param  p_clob_tab  PL/SQL table with one entry per column
-   * %param  p_row_tab   PL/SQL with one entry of type P_CLOB_TAB per row
-   * %usage  Is used to copy all rows of a cursor including their column values into a nested PL/SQL table
+   * @param  p_cur       Cursor ID
+   * @param  p_cur_desc  DBMS_SQL.DESC_TAB2 with details to the actual cursor
+   * @param  p_clob_tab  PL/SQL table with one entry per column
+   * @param  p_row_tab   PL/SQL with one entry of type P_CLOB_TAB per row
+   * @usage  Is used to copy all rows of a cursor including their column values into a nested PL/SQL table
    *         Parameter P_CLOB_TAB is necessary as it has been prepared upfront and must be passed all the way through the layers
    */
   procedure copy_table_values(
@@ -178,11 +178,11 @@ as
   end copy_table_values;
 
 
-  /* Method to copy a table into a nested PL/SQL table. Helper method as it is called three times
-   * %param  p_cur       Cursor ID des Cursor that is allowed to contain multiple rows
-   * %param  p_row_tab   PL/SQL table with the rows and column values
-   * %param [p_template] Optiona template. If present, no template is expected to be part of the cursor
-   * %usage Is used to copy a table into a nested PL/SQL table.
+  /*+ Method to copy a table into a nested PL/SQL table. Helper method as it is called three times
+   * @param  p_cur       Cursor ID des Cursor that is allowed to contain multiple rows
+   * @param  p_row_tab   PL/SQL table with the rows and column values
+   * @param [p_template] Optiona template. If present, no template is expected to be part of the cursor
+   * @usage Is used to copy a table into a nested PL/SQL table.
    */
   procedure copy_table_to_row_tab(
     p_cur in out nocopy binary_integer,
@@ -208,9 +208,9 @@ as
   end copy_table_to_row_tab;
 
 
-  /* Method to calculate the actual delimiter sign. Allows to switch delimiter off by passing in C_NO_DELIMITER
-   * %param  p_delimiter  Delimiter char. If NULL, G_DEFAULT_DELIMITER is used
-   * %return Delimiter character
+  /*+ Method to calculate the actual delimiter sign. Allows to switch delimiter off by passing in C_NO_DELIMITER
+   * @param  p_delimiter  Delimiter char. If NULL, G_DEFAULT_DELIMITER is used
+   * @return Delimiter character
    */
   function get_delimiter(
     p_delimiter in varchar2)
@@ -231,7 +231,12 @@ as
   end get_delimiter;
 
 
-  -- %param  p_row_tab  Nested PL/SQL table, created by COPY_TABLE_TO_ROW_TAB
+  /** Method to replace all anchors with respective values from P_ROW_TAB
+   * @param  p_row_tab    Nested PL/SQL table, created by COPY_TABLE_TO_ROW_TAB
+   * @param  p_delimiter  Delimiter char to separate optional compponents within an anchor
+   * @param  p_indent     Optional amount of blanks to indent each resulting row
+   * @param  p_result     CLOB instance with the converted result
+   */
   procedure bulk_replace(
     p_row_tab in row_tab,
     p_delimiter in varchar2,
@@ -294,7 +299,11 @@ as
   end bulk_replace;
 
 
-  -- %param  p_result  Overlaod with return value CLOB_TABLE
+  /** Method to replace all anchors with respective values from P_ROW_TAB
+   * @param  p_row_tab    Nested PL/SQL table, created by COPY_TABLE_TO_ROW_TAB
+   * @param  p_delimiter  Delimiter char to separate optional compponents within an anchor
+   * @param  p_result     CLOB_TABLE instance with the converted result (one CLOB instance per row)
+   */
   procedure bulk_replace(
     p_row_tab in row_tab,
     p_delimiter in varchar2,
@@ -344,7 +353,7 @@ as
   end bulk_replace;
 
 
-  /* PACKAGE INITIALIZATION */
+  /*+ PACKAGE INITIALIZATION */
   procedure initialize
   as
   begin
@@ -391,8 +400,8 @@ as
   end initialize;
 
 
-  /* INTERFACE*/
-  /* GETTER/SETTER */
+  /*+ INTERFACE*/
+  /*+ GETTER/SETTER */
   procedure set_ignore_missing_anchors(
     p_flag in boolean)
   as
@@ -502,7 +511,7 @@ as
     return g_newline_char;
   end get_newline_char;
 
-  /* TEXT UTILS */
+  /*+ TEXT UTILS */
   function not_empty(
     p_text in varchar2)
     return boolean
@@ -782,7 +791,7 @@ as
   end merge_string;
 
 
-  /* WRAP_STRING */
+  /*+ WRAP_STRING */
   function wrap_string(
     p_text in varchar2,
     p_prefix in varchar2 default null,
@@ -830,7 +839,7 @@ as
   end clob_replace;
 
 
-  /* BULK_REPLACE */
+  /*+ BULK_REPLACE */
   procedure bulk_replace(
     p_template in clob,
     p_clob_tab in clob_tab,
@@ -841,7 +850,7 @@ as
     C_REGEX_SEPARATOR varchar2(20) := '(.*?)(\' || g_main_separator_char || '|$)';
     C_REGEX_ANCHOR_NAME constant varchar2(50) := q'^(^[0-9]+$|^[A-Z][A-Z0-9_\$#]*$)^';
 
-    /* Cursor detects all replacement anchors within a template and extracts any substructure */
+    /*+ Cursor detects all replacement anchors within a template and extracts any substructure */
     cursor replacement_cur(p_template in clob) is
         with anchors as (
                 select trim(g_main_anchor_char from regexp_substr(p_template, C_REGEX, 1, level)) replacement_string
@@ -849,7 +858,7 @@ as
                connect by level <= regexp_count(p_template, '\' || g_main_anchor_char) / 2),
              parts as(
              select g_main_anchor_char || replacement_string || g_main_anchor_char as replacement_string,
-                    upper(regexp_substr(replacement_string, C_REGEX_ANCHOR, 1, 1)) anchor,
+                    upper(regexp_substr(replacement_string, C_REGEX_SEPARATOR, 1, 1, null, 1)) anchor,
                     regexp_substr(replacement_string, C_REGEX_SEPARATOR, 1, 2, null, 1) prefix,
                     regexp_substr(replacement_string, C_REGEX_SEPARATOR, 1, 3, null, 1) postfix,
                     regexp_substr(replacement_string, C_REGEX_SEPARATOR, 1, 4, null, 1) null_value
@@ -877,8 +886,9 @@ as
     -- Copy template to result to allow for easy recursion
     p_result := p_template;
 
-    -- Replace replacement anchors. Replacements may containt replacement anchors
+    -- Replace replacement anchors. Replacements may contain replacement anchors
     for rep in replacement_cur(p_template) loop
+      dbms_output.put_line('String: ' || rep.replacement_string || ', Anchor: ' || rep.anchor || ', Prefix: ' || rep.prefix);
       case
       when rep.valid_anchor_name = 0 then
         l_invalid_anchors := l_invalid_anchors || g_main_anchor_char || rep.anchor;
@@ -969,7 +979,7 @@ as
     return l_result;
   end bulk_replace;
 
-  /* GENERATE_TEXT */
+  /*+ GENERATE_TEXT */
   procedure generate_text(
     p_cursor in out nocopy sys_refcursor,
     p_result out nocopy clob,
@@ -1121,7 +1131,7 @@ as
   $END
 
 
-  /* GENERATE_TEXT_TABLE */
+  /*+ GENERATE_TEXT_TABLE */
   procedure generate_text_table(
     p_cursor in out nocopy sys_refcursor,
     p_result out nocopy clob_table)
@@ -1230,7 +1240,7 @@ as
   end get_anchors;
 
 
-  /* ADMINISTRATION */
+  /*+ ADMINISTRATION */
   procedure merge_template(
     p_uttm_type in varchar2,
     p_uttm_name in varchar2,
