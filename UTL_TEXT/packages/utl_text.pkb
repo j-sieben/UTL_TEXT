@@ -888,7 +888,6 @@ as
 
     -- Replace replacement anchors. Replacements may contain replacement anchors
     for rep in replacement_cur(p_template) loop
-      dbms_output.put_line('String: ' || rep.replacement_string || ', Anchor: ' || rep.anchor || ', Prefix: ' || rep.prefix);
       case
       when rep.valid_anchor_name = 0 then
         l_invalid_anchors := l_invalid_anchors || g_main_anchor_char || rep.anchor;
