@@ -41,6 +41,17 @@ select 'varchar2(' || data_length || ' byte)' ORA_NAME_TYPE
  where table_name = 'USER_TABLES'
    and column_name = 'TABLE_NAME';
            
+
+-- ADJUST THIS SETTING IF YOU WANT ANOTHER TYPE 
+define FLAG_TYPE="char(1 byte)";
+define C_TRUE="'Y'";
+define C_FALSE="'N'";
+
+--define FLAG_TYPE="number(1, 0)";
+--define C_TRUE=1;
+--define C_FALSE=0;
+
+           
 define section="********************************************************************************"
 define h1="*** "
 define h2="**  "

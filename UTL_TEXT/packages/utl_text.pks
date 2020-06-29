@@ -3,14 +3,14 @@ create or replace package utl_text
 as
   
   subtype ora_name_type is &ORA_NAME_TYPE.;
-  subtype flag_type is char(1 char);
+  subtype flag_type is &FLAG_TYPE.;
   subtype max_char is varchar2(32767 byte);
   type clob_tab is table of clob index by ora_name_type;
   
   C_NO_DELIMITER constant varchar2(4) := 'NONE';
   C_WITH_PIT constant boolean := &PIT_INSTALLED.;
-  C_TRUE constant flag_type := 'Y';
-  C_FALSE constant flag_type := 'N';
+  C_TRUE constant flag_type := &C_TRUE.;
+  C_FALSE constant flag_type := &C_FALSE.;
   C_DEL constant varchar2(10) := ':';
 
   /* Setter and getter methods for package configuration */

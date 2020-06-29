@@ -707,7 +707,7 @@ as
     l_source_offset integer := 1;
   begin
     $IF utl_text.C_WITH_PIT $THEN   
-    pit.assert_not_null(p_clob);
+    pit.assert(dbms_lob.getlength(p_clob) > 0);
     $ELSE
     return null;
     $END
