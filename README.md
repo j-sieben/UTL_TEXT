@@ -119,7 +119,7 @@ To work properly, the cursor passed in to `UTL_TEXT.GENERATE_TEXT` assumes sever
 
 - It must contain a column named `TEMPLATE` that contains the replacement template.
 - the names of the replacement anchors must match the column names of the other columns of the cursor. We strongly advise not to include umlauts or other specific character in the names but rather KISS. All column names will be converted to uppercase.
-- If you want to log conversions, you need to provide a log template as a column named `LOG_TEMPLATE`. If this column is present, UTL_TEXT will emit a message using PIT, if available, containing the converted log template, or use DBMS_OUTPUT.PUT_LINE, if PIT is not present.
+- If you want to log conversions, you need to provide a log template as a column named `LOG_TEMPLATE`. If this column is present, `UTL_TEXT` will emit a message using `PIT`, if available, containing the converted log template, or use `DBMS_OUTPUT.PUT_LINE`, if `PIT` is not present.
 
 If a column of type `DATE` is detected, this value will be converted to `VARCHAR2` using a format mask derived from a parameter called `DEFAULT_DATE_FORMAT`. You may also choose to convert any `date` or `number` column upfront and deliver those values as `varchar2` to keep full control over the process.
 
