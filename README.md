@@ -102,7 +102,7 @@ As an example, this is a simple replacement anchor: `#SAMPLE_REPLACEMENT#`. If y
 
 Should it be necessary, the replacement characters can be changed either on a case by case basis by calling setter methods or generally by adjusting initialization parameters, if `PIT` is installed. `UTL_TEXT` works best in conjunction with `PIT` but may be installed without it as well. In this case, the replacement characters are set within the initialization of the package as package constants.
 
-## Functionality
+## Code Generator
 
 `UTL_TEXT` has two methods that form the code generator, each designed as a procedure and a function:
 
