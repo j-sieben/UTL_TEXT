@@ -52,8 +52,8 @@ as
     p_stmt in varchar2)
   as
     -- wrapper is necessary to avoid direct execution of DDL statements
-    c_stmt constant varchar2(32767) := 'select * from (#STMT#)';
-    l_stmt varchar2(32767);
+    c_stmt constant max_char := 'select * from (#STMT#)';
+    l_stmt max_char;
     l_dummy binary_integer;
   begin
     l_stmt := replace(c_stmt, '#STMT#', p_stmt);
@@ -528,7 +528,7 @@ as
     p_before in varchar2 default C_FALSE)
     return varchar2
   as
-    l_result varchar2(32767);
+    l_result max_char;
   begin
     if not_empty(p_chunk) then
       if upper(p_before) != c_false then
@@ -591,7 +591,7 @@ as
     p_ignore_nulls varchar2 default C_FALSE)
     return varchar2
   as
-    l_result varchar2(32767);
+    l_result max_char;
   begin
     for i in p_chunks.first .. p_chunks.last loop
       if (not_empty(p_chunks(i)) and p_ignore_nulls = C_TRUE) or (p_ignore_nulls = C_FALSE) then
@@ -646,7 +646,7 @@ as
     p_delimiter in varchar2 default C_DEL,
     p_omit_empty in flag_type default C_FALSE)
   as
-    l_chunk varchar2(32767);
+    l_chunk max_char;
   begin
     if p_table is null then
       p_table := char_table();
@@ -669,7 +669,7 @@ as
     p_max_length in number default 32767)
     return varchar2
   as
-    l_result varchar2(32767);
+    l_result max_char;
   begin
     table_to_string(p_table, l_result, p_delimiter, p_max_length);
     
@@ -754,7 +754,7 @@ as
     p_delimiter in varchar2 default C_DEL)
     return varchar2
   as
-    l_result varchar2(32767);
+    l_result max_char;
     l_strings char_table;
     l_patterns char_table;
     l_exists boolean := false;
@@ -805,6 +805,28 @@ as
   begin
     return l_prefix || regexp_replace(p_text, C_REGEX_NEWLINE, C_REPLACEMENT) || l_postfix;
   end wrap_string;
+  
+  
+  function wrap_clob(
+    p_text in clob,
+    p_prefix in varchar2 default null,
+    p_postfix in varchar2 default null)
+    return clob
+  as
+    l_text clob;
+    l_prefix varchar2(20) := coalesce(p_prefix, q'[q'{]');
+    l_postfix varchar2(20) := coalesce(p_postfix, q'[}']');
+    C_REGEX_NEWLINE constant varchar2(30) := '(' || chr(13) || chr(10) || '|' || chr(10) || '|' || chr(13) || ' |' || chr(21) || ')';
+    C_REPLACEMENT constant varchar2(100) := C_CR_CHAR || l_postfix || ' || ' || g_newline_char || l_prefix;
+  begin
+    if p_text is not null and dbms_lob.getlength(p_text) < 32767 then
+      l_text := l_prefix || regexp_replace(p_text, C_REGEX_NEWLINE, C_REPLACEMENT) || l_postfix;
+    else
+      -- TODO: Klären, was mit CLOB > 32K passieren soll
+      null;
+    end if;
+    return l_text;
+  end wrap_clob;
 
 
   function unwrap_string(
@@ -816,6 +838,22 @@ as
   end unwrap_string;
 
 
+  function unwrap_clob(
+    p_text in clob)
+    return clob
+  as
+    l_text clob;
+  begin
+    if p_text is not null and dbms_lob.getlength(p_text) <= 32767 then
+      l_text := replace(p_text, C_CR_CHAR, g_newline_char);
+    else
+      -- TODO: Klären, was mit CLOB > 32K passieren soll
+      null;
+    end if;
+    return l_text;
+  end unwrap_clob;
+
+
   function clob_replace(
     p_text in clob,
     p_what in varchar2,
@@ -823,8 +861,8 @@ as
     return clob
   as
     l_result clob;
-    l_before varchar2(32767);
-    l_after varchar2(32767);
+    l_before max_char;
+    l_after max_char;
     l_idx binary_integer;
   begin
     l_idx := instr(p_text, p_what);
@@ -1105,9 +1143,9 @@ as
     l_rowcnt pls_integer;
     l_result dbms_tf.tab_clob_t;
     l_env dbms_tf.env_t;
-    l_anchor varchar2(32767);
-    l_value varchar2(32767);
-    l_template varchar2(32767);
+    l_anchor max_char;
+    l_value max_char;
+    l_template max_char;
   begin
     -- Initialization
     l_env := dbms_tf.get_env();

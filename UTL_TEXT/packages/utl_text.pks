@@ -108,19 +108,30 @@ as
    * @param  p_text     Multi line string
    * @param [p_prefix]  Override for start quote operator
    * @param [p_postfix] Override for end quote operator
-   * @param [p_newline] Override for new line character. Defaults to NEWLINE_CHAR as defined within this package
    * @return List of single line texts wrapped in quote operators and concatenated
    * @usage  SQL*Plus has trouble working with multi line strings if not set up properly. To stabilize
    *         script execution, multi line strings such as code templates should be split into one line
    *         strings wrapped in quote operators concatenated. So a two line string then becomes
-   *         q'°First line\CR\°' ||
-   *         q'°Second line°';
+   *         q'[First line\CR\]' ||
+   *         q'[Second line]';
+   *         Attention: If used from within SQL, max length of p_text depends on
+   *         - the length of P_PREFIX + P_POSTFIX
+   *         - the amount of new line characters
+   *         The resulting string is limited to a max of 4000 byte. 
+   *         If it is possible that your string exceeds this limit, use WRAP_CLOB instead.
    */
   function wrap_string(
     p_text in varchar2,
     p_prefix in varchar2 default null,
     p_postfix in varchar2 default null)
     return varchar2;
+    
+    
+  function wrap_clob(
+    p_text in clob,
+    p_prefix in varchar2 default null,
+    p_postfix in varchar2 default null)
+    return clob;
     
   
   /* Method to unwrap a string based on the outcome of WRAP_STRING.
@@ -131,6 +142,10 @@ as
   function unwrap_string(
     p_text in varchar2)
     return varchar2;
+    
+  function unwrap_clob(
+    p_text in clob)
+    return clob;
     
   
   function clob_replace(
