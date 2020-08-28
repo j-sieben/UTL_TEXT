@@ -24,7 +24,7 @@ as
     r_string max_char,
     r_date date,
     r_clob clob);
-  l_ref_rec ref_rec_type;
+  g_ref_rec ref_rec_type;
 
 
   /*+ HELPER */
@@ -113,12 +113,12 @@ as
         dbms_sql.define_column(
           c => p_cur,
           position => l_cnt,
-          column => l_ref_rec.r_date);
+          column => g_ref_rec.r_date);
       else
         dbms_sql.define_column(
           c => p_cur,
           position => l_cnt,
-          column => l_ref_rec.r_clob);
+          column => g_ref_rec.r_clob);
       end if;
     end loop;
   end describe_columns;
@@ -142,8 +142,8 @@ as
 
       -- get actual column value
       if p_cur_desc(i).col_type = C_DATE_TYPE then
-        dbms_sql.column_value(p_cur, i, l_ref_rec.r_date);
-        p_clob_tab(l_column_name) := to_char(l_ref_rec.r_date, g_default_date_format);
+        dbms_sql.column_value(p_cur, i, g_ref_rec.r_date);
+        p_clob_tab(l_column_name) := to_char(g_ref_rec.r_date, g_default_date_format);
       else
         dbms_sql.column_value(p_cur, i, p_clob_tab(l_column_name));
       end if;
@@ -793,21 +793,6 @@ as
 
   /*+ WRAP_STRING */
   function wrap_string(
-    p_text in varchar2,
-    p_prefix in varchar2 default null,
-    p_postfix in varchar2 default null)
-    return varchar2
-  as
-    l_prefix varchar2(20) := coalesce(p_prefix, q'[q'{]');
-    l_postfix varchar2(20) := coalesce(p_postfix, q'[}']');
-    C_REGEX_NEWLINE constant varchar2(30) := '(' || chr(13) || chr(10) || '|' || chr(10) || '|' || chr(13) || ' |' || chr(21) || ')';
-    C_REPLACEMENT constant varchar2(100) := C_CR_CHAR || l_postfix || ' || ' || g_newline_char || l_prefix;
-  begin
-    return l_prefix || regexp_replace(p_text, C_REGEX_NEWLINE, C_REPLACEMENT) || l_postfix;
-  end wrap_string;
-  
-  
-  function wrap_clob(
     p_text in clob,
     p_prefix in varchar2 default null,
     p_postfix in varchar2 default null)
@@ -826,19 +811,10 @@ as
       null;
     end if;
     return l_text;
-  end wrap_clob;
+  end wrap_string;
 
 
   function unwrap_string(
-    p_text in varchar2)
-    return varchar2
-  as
-  begin
-    return replace(p_text, C_CR_CHAR, g_newline_char);
-  end unwrap_string;
-
-
-  function unwrap_clob(
     p_text in clob)
     return clob
   as
@@ -851,7 +827,7 @@ as
       null;
     end if;
     return l_text;
-  end unwrap_clob;
+  end unwrap_string;
 
 
   function clob_replace(

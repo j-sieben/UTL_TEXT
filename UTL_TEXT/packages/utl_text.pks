@@ -114,20 +114,9 @@ as
    *         strings wrapped in quote operators concatenated. So a two line string then becomes
    *         q'[First line\CR\]' ||
    *         q'[Second line]';
-   *         Attention: If used from within SQL, max length of p_text depends on
-   *         - the length of P_PREFIX + P_POSTFIX
-   *         - the amount of new line characters
-   *         The resulting string is limited to a max of 4000 byte. 
-   *         If it is possible that your string exceeds this limit, use WRAP_CLOB instead.
+   *         Attention: The maximum length of P_TEXT is limited to 32K at the moment
    */
   function wrap_string(
-    p_text in varchar2,
-    p_prefix in varchar2 default null,
-    p_postfix in varchar2 default null)
-    return varchar2;
-    
-    
-  function wrap_clob(
     p_text in clob,
     p_prefix in varchar2 default null,
     p_postfix in varchar2 default null)
@@ -138,12 +127,9 @@ as
    * %param  p_text  Wrapped string
    * %usage  A wrapped string contains CR-replacements which make it hard for external code to create a multi line string
    *         of the wrapped string. This is achieved with this method. 
+   *         Attention: The maximum length of P_TEXT is limited to 32K at the moment
    */
   function unwrap_string(
-    p_text in varchar2)
-    return varchar2;
-    
-  function unwrap_clob(
     p_text in clob)
     return clob;
     
