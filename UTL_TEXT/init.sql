@@ -7,7 +7,7 @@ set pages 9999
 whenever sqlerror exit
 clear screen
 
-set termout off
+set termout on
 col sys_user new_val SYS_USER format a30
 col install_user new_val INSTALL_USER format a30
 col default_language new_val DEFAULT_LANGUAGE format a30

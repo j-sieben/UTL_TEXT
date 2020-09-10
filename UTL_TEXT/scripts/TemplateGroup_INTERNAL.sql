@@ -20,8 +20,8 @@ begin
     p_uttm_name => '#UTTM_NAME#',
     p_uttm_type => '#UTTM_TYPE#',
     p_uttm_mode => '#UTTM_MODE#',
-    p_uttm_text => #UTTM_TEXT#,
-    p_uttm_log_text => #UTTM_LOG_TEXT#,
+    p_uttm_text => #UTTM_TEXT|||null#,
+    p_uttm_log_text => #UTTM_LOG_TEXT|||null#,
     p_uttm_log_severity => #UTTM_LOG_SEVERITY|||null#
   );°',
     p_uttm_log_text => q'°°',
