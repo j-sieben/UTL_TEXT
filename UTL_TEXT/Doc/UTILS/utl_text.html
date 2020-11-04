@@ -1,0 +1,2233 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<HTML>
+ <HEAD>
+ <LINK REL="STYLESHEET" TYPE="text/css" HREF="../plsqldoc.css">
+ <TITLE>Package utl_text</TITLE>
+ <META name="object" content="PACKAGE">
+ <META name="name" content="UTILS.utl_text">
+ <META name="description" content="String utilities including a code generator">
+</HEAD>
+<BODY>
+<TABLE WIDTH="100%"><TR>
+<TD><P ALIGN="LEFT"><STRONG><SMALL>UTILS</SMALL></STRONG></TD>
+<TD><P ALIGN="RIGHT"><STRONG><SMALL><A HREF="../index.html">index</A></SMALL></STRONG></TD>
+</TR></TABLE>
+<TABLE CLASS="MAIN_TABLE"><TR><TD CLASS="DESC_TEXT">
+<P CLASS="MAIN_TITLE">Package utl_text</P>
+String utilities including a code generator<br>
+
+<BR>
+</TD></TR></TABLE>
+<HR>
+<A NAME="Program units"></A>
+<TABLE CLASS="SUB_TABLE"><TR><TD CLASS="SUB_TITLE">
+Program units
+</TD></TR></TABLE>
+<TABLE CLASS="SUB_TABLE">
+<TR><TD VALIGN="TOP" CLASS="TYPE_ITEM">
+<A HREF="#SET_IGNORE_MISSING_ANCHORS">set_ignore_missing_anchors</A>&nbsp;&nbsp;
+</TD><TD CLASS="DESC_TEXT" WIDTH=95%>
+Flag to indicate whether missing replacement anchors shall raise an error or not
+</TD></TR>
+<TR><TD VALIGN="TOP" CLASS="TYPE_ITEM">
+<A HREF="#GET_IGNORE_MISSING_ANCHORS">get_ignore_missing_anchors</A>&nbsp;&nbsp;
+</TD><TD CLASS="DESC_TEXT" WIDTH=95%>
+
+</TD></TR>
+<TR><TD VALIGN="TOP" CLASS="TYPE_ITEM">
+<A HREF="#SET_DEFAULT_DATE_FORMAT">set_default_date_format</A>&nbsp;&nbsp;
+</TD><TD CLASS="DESC_TEXT" WIDTH=95%>
+Default data format that is used if no explicit conversion has been taken place Defaults to parameter DEFAULT_DATE_FORMAT
+</TD></TR>
+<TR><TD VALIGN="TOP" CLASS="TYPE_ITEM">
+<A HREF="#GET_DEFAULT_DATE_FORMAT">get_default_date_format</A>&nbsp;&nbsp;
+</TD><TD CLASS="DESC_TEXT" WIDTH=95%>
+
+</TD></TR>
+<TR><TD VALIGN="TOP" CLASS="TYPE_ITEM">
+<A HREF="#SET_NEWLINE_CHAR">set_newline_char</A>&nbsp;&nbsp;
+</TD><TD CLASS="DESC_TEXT" WIDTH=95%>
+Sets newline char Defaults to CHR(21) on AIX, CHR(13)+CHR(10) on Windows and CHR(10) on Unix systems
+</TD></TR>
+<TR><TD VALIGN="TOP" CLASS="TYPE_ITEM">
+<A HREF="#GET_NEWLINE_CHAR">get_newline_char</A>&nbsp;&nbsp;
+</TD><TD CLASS="DESC_TEXT" WIDTH=95%>
+
+</TD></TR>
+<TR><TD VALIGN="TOP" CLASS="TYPE_ITEM">
+<A HREF="#SET_DEFAULT_DELIMITER_CHAR">set_default_delimiter_char</A>&nbsp;&nbsp;
+</TD><TD CLASS="DESC_TEXT" WIDTH=95%>
+Sets delimiter char for multi line bulk replaces and text generation
+</TD></TR>
+<TR><TD VALIGN="TOP" CLASS="TYPE_ITEM">
+<A HREF="#GET_DEFAULT_DELIMITER_CHAR">get_default_delimiter_char</A>&nbsp;&nbsp;
+</TD><TD CLASS="DESC_TEXT" WIDTH=95%>
+
+</TD></TR>
+<TR><TD VALIGN="TOP" CLASS="TYPE_ITEM">
+<A HREF="#SET_MAIN_ANCHOR_CHAR">set_main_anchor_char</A>&nbsp;&nbsp;
+</TD><TD CLASS="DESC_TEXT" WIDTH=95%>
+Sets primary anchor char for bulk replaces and text generation
+</TD></TR>
+<TR><TD VALIGN="TOP" CLASS="TYPE_ITEM">
+<A HREF="#GET_MAIN_ANCHOR_CHAR">get_main_anchor_char</A>&nbsp;&nbsp;
+</TD><TD CLASS="DESC_TEXT" WIDTH=95%>
+
+</TD></TR>
+<TR><TD VALIGN="TOP" CLASS="TYPE_ITEM">
+<A HREF="#SET_SECONDARY_ANCHOR_CHAR">set_secondary_anchor_char</A>&nbsp;&nbsp;
+</TD><TD CLASS="DESC_TEXT" WIDTH=95%>
+Sets secondary anchor char for bulk replaces and text generation
+</TD></TR>
+<TR><TD VALIGN="TOP" CLASS="TYPE_ITEM">
+<A HREF="#GET_SECONDARY_ANCHOR_CHAR">get_secondary_anchor_char</A>&nbsp;&nbsp;
+</TD><TD CLASS="DESC_TEXT" WIDTH=95%>
+
+</TD></TR>
+<TR><TD VALIGN="TOP" CLASS="TYPE_ITEM">
+<A HREF="#SET_MAIN_SEPARATOR_CHAR">set_main_separator_char</A>&nbsp;&nbsp;
+</TD><TD CLASS="DESC_TEXT" WIDTH=95%>
+Sets primary separator char for bulk replaces and text generation
+</TD></TR>
+<TR><TD VALIGN="TOP" CLASS="TYPE_ITEM">
+<A HREF="#GET_MAIN_SEPARATOR_CHAR">get_main_separator_char</A>&nbsp;&nbsp;
+</TD><TD CLASS="DESC_TEXT" WIDTH=95%>
+
+</TD></TR>
+<TR><TD VALIGN="TOP" CLASS="TYPE_ITEM">
+<A HREF="#SET_SECONDARY_SEPARATOR_CHAR">set_secondary_separator_char</A>&nbsp;&nbsp;
+</TD><TD CLASS="DESC_TEXT" WIDTH=95%>
+Sets secondary separator char for bulk replaces and text generation
+</TD></TR>
+<TR><TD VALIGN="TOP" CLASS="TYPE_ITEM">
+<A HREF="#GET_SECONDARY_SEPARATOR_CHAR">get_secondary_separator_char</A>&nbsp;&nbsp;
+</TD><TD CLASS="DESC_TEXT" WIDTH=95%>
+
+</TD></TR>
+<TR><TD VALIGN="TOP" CLASS="TYPE_ITEM">
+<A HREF="#WRAP_STRING">wrap_string</A>&nbsp;&nbsp;
+</TD><TD CLASS="DESC_TEXT" WIDTH=95%>
+Method to split a multi line string into concatenated strings with a quote operator per line
+</TD></TR>
+<TR><TD VALIGN="TOP" CLASS="TYPE_ITEM">
+<A HREF="#UNWRAP_STRING">unwrap_string</A>&nbsp;&nbsp;
+</TD><TD CLASS="DESC_TEXT" WIDTH=95%>
+Method to unwrap a string based on the outcome of <A HREF=#WRAP_STRING>WRAP_STRING</A>.
+</TD></TR>
+<TR><TD VALIGN="TOP" CLASS="TYPE_ITEM">
+<A HREF="#CLOB_REPLACE">clob_replace</A>&nbsp;&nbsp;
+</TD><TD CLASS="DESC_TEXT" WIDTH=95%>
+Method to replace an anchor within a CLOB instance with a CLOB value
+</TD></TR>
+<TR><TD VALIGN="TOP" CLASS="TYPE_ITEM">
+<A HREF="#NOT_EMPTY">not_empty</A>&nbsp;&nbsp;
+</TD><TD CLASS="DESC_TEXT" WIDTH=95%>
+Method to check whether a string is empty or not
+</TD></TR>
+<TR><TD VALIGN="TOP" CLASS="TYPE_ITEM">
+<A HREF="#APPEND">append</A>&nbsp;&nbsp;
+</TD><TD CLASS="DESC_TEXT" WIDTH=95%>
+Method to append text to a string
+</TD></TR>
+<TR><TD VALIGN="TOP" CLASS="TYPE_ITEM">
+<A HREF="#APPEND2">append</A>&nbsp;&nbsp;
+</TD><TD CLASS="DESC_TEXT" WIDTH=95%>
+Procedure overload
+</TD></TR>
+<TR><TD VALIGN="TOP" CLASS="TYPE_ITEM">
+<A HREF="#APPEND_CLOB">append_clob</A>&nbsp;&nbsp;
+</TD><TD CLASS="DESC_TEXT" WIDTH=95%>
+Method to <A HREF=#APPEND>append</A> text to a CLOB
+</TD></TR>
+<TR><TD VALIGN="TOP" CLASS="TYPE_ITEM">
+<A HREF="#APPEND_CLOB2">append_clob</A>&nbsp;&nbsp;
+</TD><TD CLASS="DESC_TEXT" WIDTH=95%>
+Procedure overload
+</TD></TR>
+<TR><TD VALIGN="TOP" CLASS="TYPE_ITEM">
+<A HREF="#CONCATENATE">concatenate</A>&nbsp;&nbsp;
+</TD><TD CLASS="DESC_TEXT" WIDTH=95%>
+Method concatenates entries of CHAR_TABLE instance to a single string comparable to LISTAGG function in SQL
+</TD></TR>
+<TR><TD VALIGN="TOP" CLASS="TYPE_ITEM">
+<A HREF="#CONCATENATE2">concatenate</A>&nbsp;&nbsp;
+</TD><TD CLASS="DESC_TEXT" WIDTH=95%>
+Procedure overload
+</TD></TR>
+<TR><TD VALIGN="TOP" CLASS="TYPE_ITEM">
+<A HREF="#STRING_TO_TABLE">string_to_table</A>&nbsp;&nbsp;
+</TD><TD CLASS="DESC_TEXT" WIDTH=95%>
+Method to convert a string to an instance of CHAR_TABLE
+</TD></TR>
+<TR><TD VALIGN="TOP" CLASS="TYPE_ITEM">
+<A HREF="#STRING_TO_TABLE2">string_to_table</A>&nbsp;&nbsp;
+</TD><TD CLASS="DESC_TEXT" WIDTH=95%>
+Procedure overload
+</TD></TR>
+<TR><TD VALIGN="TOP" CLASS="TYPE_ITEM">
+<A HREF="#TABLE_TO_STRING">table_to_string</A>&nbsp;&nbsp;
+</TD><TD CLASS="DESC_TEXT" WIDTH=95%>
+Method to convert a string to an instance of CHAR_TABLE
+</TD></TR>
+<TR><TD VALIGN="TOP" CLASS="TYPE_ITEM">
+<A HREF="#TABLE_TO_STRING2">table_to_string</A>&nbsp;&nbsp;
+</TD><TD CLASS="DESC_TEXT" WIDTH=95%>
+Procedure overload
+</TD></TR>
+<TR><TD VALIGN="TOP" CLASS="TYPE_ITEM">
+<A HREF="#CLOB_TO_BLOB">clob_to_blob</A>&nbsp;&nbsp;
+</TD><TD CLASS="DESC_TEXT" WIDTH=95%>
+Method to convert a CLOB instance to BLOB
+</TD></TR>
+<TR><TD VALIGN="TOP" CLASS="TYPE_ITEM">
+<A HREF="#CONTAINS">contains</A>&nbsp;&nbsp;
+</TD><TD CLASS="DESC_TEXT" WIDTH=95%>
+Method to (securely) check whether P_PATTERN is contained within P_TEXT
+</TD></TR>
+<TR><TD VALIGN="TOP" CLASS="TYPE_ITEM">
+<A HREF="#MERGE_STRING">merge_string</A>&nbsp;&nbsp;
+</TD><TD CLASS="DESC_TEXT" WIDTH=95%>
+Method to merge a pattern into a text
+</TD></TR>
+<TR><TD VALIGN="TOP" CLASS="TYPE_ITEM">
+<A HREF="#MERGE_STRING2">merge_string</A>&nbsp;&nbsp;
+</TD><TD CLASS="DESC_TEXT" WIDTH=95%>
+Procedure overload
+</TD></TR>
+<TR><TD VALIGN="TOP" CLASS="TYPE_ITEM">
+<A HREF="#BULK_REPLACE">bulk_replace</A>&nbsp;&nbsp;
+</TD><TD CLASS="DESC_TEXT" WIDTH=95%>
+Procedure to replace all replacement anchors of a PL/SQL table in a template
+</TD></TR>
+<TR><TD VALIGN="TOP" CLASS="TYPE_ITEM">
+<A HREF="#BULK_REPLACE2">bulk_replace</A>&nbsp;&nbsp;
+</TD><TD CLASS="DESC_TEXT" WIDTH=95%>
+BULK_REPLACE-Methode mit den gleichen Moeglichkeiten der Ersetzung wie <A HREF=#GENERATE_TEXT>GENERATE_TEXT</A>
+</TD></TR>
+<TR><TD VALIGN="TOP" CLASS="TYPE_ITEM">
+<A HREF="#BULK_REPLACE3">bulk_replace</A>&nbsp;&nbsp;
+</TD><TD CLASS="DESC_TEXT" WIDTH=95%>
+Overload as a function
+</TD></TR>
+<TR><TD VALIGN="TOP" CLASS="TYPE_ITEM">
+<A HREF="#GENERATE_TEXT">generate_text</A>&nbsp;&nbsp;
+</TD><TD CLASS="DESC_TEXT" WIDTH=95%>
+Procedure for generating texts based on a dynamic template
+</TD></TR>
+<TR><TD VALIGN="TOP" CLASS="TYPE_ITEM">
+<A HREF="#GENERATE_TEXT2">generate_text</A>&nbsp;&nbsp;
+</TD><TD CLASS="DESC_TEXT" WIDTH=95%>
+Ueberladung als Funktion
+</TD></TR>
+<TR><TD VALIGN="TOP" CLASS="TYPE_ITEM">
+<A HREF="#GENERATE_TEXT3">generate_text</A>&nbsp;&nbsp;
+</TD><TD CLASS="DESC_TEXT" WIDTH=95%>
+Ueberladung mit Template und Werte-Statement
+</TD></TR>
+<TR><TD VALIGN="TOP" CLASS="TYPE_ITEM">
+<A HREF="#GENERATE_TEXT4">generate_text</A>&nbsp;&nbsp;
+</TD><TD CLASS="DESC_TEXT" WIDTH=95%>
+Ueberladung als Funktion
+</TD></TR>
+<TR><TD VALIGN="TOP" CLASS="TYPE_ITEM">
+<A HREF="#GENERATE_TEXT5">generate_text</A>&nbsp;&nbsp;
+</TD><TD CLASS="DESC_TEXT" WIDTH=95%>
+$ELSE
+</TD></TR>
+<TR><TD VALIGN="TOP" CLASS="TYPE_ITEM">
+<A HREF="#DESCRIBE">describe</A>&nbsp;&nbsp;
+</TD><TD CLASS="DESC_TEXT" WIDTH=95%>
+
+</TD></TR>
+<TR><TD VALIGN="TOP" CLASS="TYPE_ITEM">
+<A HREF="#GENERATE_TEXT_TABLE">generate_text_table</A>&nbsp;&nbsp;
+</TD><TD CLASS="DESC_TEXT" WIDTH=95%>
+Methoden zur Erzeugung von Listen von CLOBs
+</TD></TR>
+<TR><TD VALIGN="TOP" CLASS="TYPE_ITEM">
+<A HREF="#GENERATE_TEXT_TABLE2">generate_text_table</A>&nbsp;&nbsp;
+</TD><TD CLASS="DESC_TEXT" WIDTH=95%>
+Ueberladung als Funktion
+</TD></TR>
+<TR><TD VALIGN="TOP" CLASS="TYPE_ITEM">
+<A HREF="#GENERATE_TEXT_TABLE3">generate_text_table</A>&nbsp;&nbsp;
+</TD><TD CLASS="DESC_TEXT" WIDTH=95%>
+$ELSE
+</TD></TR>
+<TR><TD VALIGN="TOP" CLASS="TYPE_ITEM">
+<A HREF="#GTT_DESCRIBE">gtt_describe</A>&nbsp;&nbsp;
+</TD><TD CLASS="DESC_TEXT" WIDTH=95%>
+
+</TD></TR>
+<TR><TD VALIGN="TOP" CLASS="TYPE_ITEM">
+<A HREF="#GET_ANCHORS">get_anchors</A>&nbsp;&nbsp;
+</TD><TD CLASS="DESC_TEXT" WIDTH=95%>
+Lists the replacement anchors in templates from <A HREF="UTL_TEXT_TEMPLATES.html">UTL_TEXT_TEMPLATES</A>
+</TD></TR>
+<TR><TD VALIGN="TOP" CLASS="TYPE_ITEM">
+<A HREF="#MERGE_TEMPLATE">merge_template</A>&nbsp;&nbsp;
+</TD><TD CLASS="DESC_TEXT" WIDTH=95%>
+Method for creating a template
+</TD></TR>
+<TR><TD VALIGN="TOP" CLASS="TYPE_ITEM">
+<A HREF="#DELETE_TEMPLATE">delete_template</A>&nbsp;&nbsp;
+</TD><TD CLASS="DESC_TEXT" WIDTH=95%>
+Method to delete a template
+</TD></TR>
+<TR><TD VALIGN="TOP" CLASS="TYPE_ITEM">
+<A HREF="#REMOVE_TEMPLATES">remove_templates</A>&nbsp;&nbsp;
+</TD><TD CLASS="DESC_TEXT" WIDTH=95%>
+Method to remove all templates of a template type
+</TD></TR>
+<TR><TD VALIGN="TOP" CLASS="TYPE_ITEM">
+<A HREF="#WRITE_TEMPLATE_FILE">write_template_file</A>&nbsp;&nbsp;
+</TD><TD CLASS="DESC_TEXT" WIDTH=95%>
+method exports all templates
+</TD></TR>
+<TR><TD VALIGN="TOP" CLASS="TYPE_ITEM">
+<A HREF="#GET_TEMPLATES">get_templates</A>&nbsp;&nbsp;
+</TD><TD CLASS="DESC_TEXT" WIDTH=95%>
+method to output all templates as export
+</TD></TR>
+<TR><TD VALIGN="TOP" CLASS="TYPE_ITEM">
+<A HREF="#INITIALIZE">initialize</A>&nbsp;&nbsp;
+</TD><TD CLASS="DESC_TEXT" WIDTH=95%>
+Initialization method
+</TD></TR>
+</TABLE>
+<BR>
+<A NAME="Types"></A>
+<TABLE CLASS="SUB_TABLE"><TR><TD CLASS="SUB_TITLE">
+Types
+</TD></TR></TABLE>
+<TABLE CLASS="SUB_TABLE">
+<TR><TD VALIGN="TOP" CLASS="TYPE_ITEM">
+<A HREF="#ORA_NAME_TYPE">ora_name_type</A>&nbsp;&nbsp;
+</TD><TD CLASS="DESC_TEXT" WIDTH=95%>
+
+</TD></TR>
+<TR><TD VALIGN="TOP" CLASS="TYPE_ITEM">
+<A HREF="#FLAG_TYPE">flag_type</A>&nbsp;&nbsp;
+</TD><TD CLASS="DESC_TEXT" WIDTH=95%>
+
+</TD></TR>
+<TR><TD VALIGN="TOP" CLASS="TYPE_ITEM">
+<A HREF="#MAX_CHAR">max_char</A>&nbsp;&nbsp;
+</TD><TD CLASS="DESC_TEXT" WIDTH=95%>
+
+</TD></TR>
+<TR><TD VALIGN="TOP" CLASS="TYPE_ITEM">
+<A HREF="#CLOB_TAB">clob_tab</A>&nbsp;&nbsp;
+</TD><TD CLASS="DESC_TEXT" WIDTH=95%>
+
+</TD></TR>
+</TABLE>
+<BR>
+<A NAME="Constants"></A>
+<TABLE CLASS="SUB_TABLE"><TR><TD CLASS="SUB_TITLE">
+Constants
+</TD></TR></TABLE>
+<TABLE CLASS="SUB_TABLE">
+<TR><TD VALIGN="TOP" CLASS="TYPE_ITEM">
+<A HREF="#C_NO_DELIMITER">C_NO_DELIMITER</A>&nbsp;&nbsp;
+</TD><TD CLASS="DESC_TEXT" WIDTH=95%>
+
+</TD></TR>
+<TR><TD VALIGN="TOP" CLASS="TYPE_ITEM">
+<A HREF="#C_WITH_PIT">C_WITH_PIT</A>&nbsp;&nbsp;
+</TD><TD CLASS="DESC_TEXT" WIDTH=95%>
+
+</TD></TR>
+<TR><TD VALIGN="TOP" CLASS="TYPE_ITEM">
+<A HREF="#C_TRUE">C_TRUE</A>&nbsp;&nbsp;
+</TD><TD CLASS="DESC_TEXT" WIDTH=95%>
+
+</TD></TR>
+<TR><TD VALIGN="TOP" CLASS="TYPE_ITEM">
+<A HREF="#C_FALSE">C_FALSE</A>&nbsp;&nbsp;
+</TD><TD CLASS="DESC_TEXT" WIDTH=95%>
+
+</TD></TR>
+<TR><TD VALIGN="TOP" CLASS="TYPE_ITEM">
+<A HREF="#C_DEL">C_DEL</A>&nbsp;&nbsp;
+</TD><TD CLASS="DESC_TEXT" WIDTH=95%>
+
+</TD></TR>
+</TABLE>
+<BR>
+<HR>
+<A NAME="ORA_NAME_TYPE"></A>
+<P CLASS="TYPE_TITLE">
+ora_name_type
+</P>
+<PRE CLASS="DECL_TEXT">
+subtype ora_name_type is varchar2(128 byte);
+</PRE>
+<HR>
+<A NAME="FLAG_TYPE"></A>
+<P CLASS="TYPE_TITLE">
+flag_type
+</P>
+<PRE CLASS="DECL_TEXT">
+subtype flag_type is char(1 byte);
+</PRE>
+<HR>
+<A NAME="MAX_CHAR"></A>
+<P CLASS="TYPE_TITLE">
+max_char
+</P>
+<PRE CLASS="DECL_TEXT">
+subtype max_char is varchar2(32767 byte);
+</PRE>
+<HR>
+<A NAME="CLOB_TAB"></A>
+<P CLASS="TYPE_TITLE">
+clob_tab
+</P>
+<PRE CLASS="DECL_TEXT">
+type clob_tab is table of clob index by ora_name_type;
+</PRE>
+<HR>
+<A NAME="C_NO_DELIMITER"></A>
+<P CLASS="TYPE_TITLE">
+C_NO_DELIMITER
+</P>
+<PRE CLASS="DECL_TEXT">
+C_NO_DELIMITER constant varchar2(4) := 'NONE';
+</PRE>
+<HR>
+<A NAME="C_WITH_PIT"></A>
+<P CLASS="TYPE_TITLE">
+C_WITH_PIT
+</P>
+<PRE CLASS="DECL_TEXT">
+C_WITH_PIT constant boolean := true;
+</PRE>
+<HR>
+<A NAME="C_TRUE"></A>
+<P CLASS="TYPE_TITLE">
+C_TRUE
+</P>
+<PRE CLASS="DECL_TEXT">
+C_TRUE constant <A HREF=#FLAG_TYPE>flag_type</A> := 'Y';
+</PRE>
+<HR>
+<A NAME="C_FALSE"></A>
+<P CLASS="TYPE_TITLE">
+C_FALSE
+</P>
+<PRE CLASS="DECL_TEXT">
+C_FALSE constant <A HREF=#FLAG_TYPE>flag_type</A> := 'N';
+</PRE>
+<HR>
+<A NAME="C_DEL"></A>
+<P CLASS="TYPE_TITLE">
+C_DEL
+</P>
+<PRE CLASS="DECL_TEXT">
+C_DEL constant varchar2(10) := ':';
+</PRE>
+<HR>
+<A NAME="SET_IGNORE_MISSING_ANCHORS"></A>
+<P CLASS="TYPE_TITLE">
+set_ignore_missing_anchors
+</P>
+<PRE CLASS="DECL_TEXT">
+Procedure set_ignore_missing_anchors(p_flag in boolean)
+
+</PRE>
+<P CLASS="DESC_TEXT">
+Flag to indicate whether missing replacement anchors shall raise an error or not<br>
+
+<BR>
+</P>
+<A NAME="Parameters"></A>
+<TABLE CLASS="LIST_TABLE"><TR><TD CLASS="LIST_TITLE">
+Parameters
+</TD></TR></TABLE>
+<TABLE CLASS="LIST_TABLE">
+<TR><TD VALIGN="TOP" CLASS="LIST_ITEM" WIDTH=1%>
+</TD><TD VALIGN="TOP" CLASS="LIST_ITEM" WIDTH=1%>
+p_flag&nbsp;&nbsp;
+</TD><TD CLASS="DESC_TEXT" WIDTH=95%>
+Boolean flag FALSE: missing replacement anchors are silently ignored TRUE:&nbsp; missing replacement anchors terminate processing with an exception Defaults to setting in parameter IGNORE_MISSING_ANCHORS<br>
+
+</TD></TR>
+</TABLE>
+<BR>
+<A NAME="Raises"></A>
+<TABLE CLASS="LIST_TABLE"><TR><TD CLASS="LIST_TITLE">
+Raises
+</TD></TR></TABLE>
+<TABLE CLASS="LIST_TABLE">
+<TR><TD VALIGN="TOP" CLASS="LIST_ITEM" WIDTH=1%>
+</TD><TD VALIGN="TOP" CLASS="LIST_ITEM" WIDTH=1%>
+msg.INVALID_ANCHOR_NAMES_ERR&nbsp;&nbsp;
+</TD><TD CLASS="DESC_TEXT" WIDTH=95%>
+
+</TD></TR>
+</TABLE>
+<BR>
+<HR>
+<A NAME="GET_IGNORE_MISSING_ANCHORS"></A>
+<P CLASS="TYPE_TITLE">
+get_ignore_missing_anchors
+</P>
+<PRE CLASS="DECL_TEXT">
+Function get_ignore_missing_anchors return boolean
+
+</PRE>
+<HR>
+<A NAME="SET_DEFAULT_DATE_FORMAT"></A>
+<P CLASS="TYPE_TITLE">
+set_default_date_format
+</P>
+<PRE CLASS="DECL_TEXT">
+Procedure set_default_date_format(p_format in varchar2)
+
+</PRE>
+<P CLASS="DESC_TEXT">
+Default data format that is used if no explicit conversion has been taken place Defaults to parameter DEFAULT_DATE_FORMAT<br>
+
+<BR>
+</P>
+<A NAME="Parameters"></A>
+<TABLE CLASS="LIST_TABLE"><TR><TD CLASS="LIST_TITLE">
+Parameters
+</TD></TR></TABLE>
+<TABLE CLASS="LIST_TABLE">
+<TR><TD VALIGN="TOP" CLASS="LIST_ITEM" WIDTH=1%>
+</TD><TD VALIGN="TOP" CLASS="LIST_ITEM" WIDTH=1%>
+p_format&nbsp;&nbsp;
+</TD><TD CLASS="DESC_TEXT" WIDTH=95%>
+Mask according to Oracle date formatting rules<br>
+
+</TD></TR>
+</TABLE>
+<BR>
+<HR>
+<A NAME="GET_DEFAULT_DATE_FORMAT"></A>
+<P CLASS="TYPE_TITLE">
+get_default_date_format
+</P>
+<PRE CLASS="DECL_TEXT">
+Function get_default_date_format return varchar2
+
+</PRE>
+<HR>
+<A NAME="SET_NEWLINE_CHAR"></A>
+<P CLASS="TYPE_TITLE">
+set_newline_char
+</P>
+<PRE CLASS="DECL_TEXT">
+Procedure set_newline_char(p_char in varchar2)
+
+</PRE>
+<P CLASS="DESC_TEXT">
+Sets newline char Defaults to CHR(21) on AIX, CHR(13)+CHR(10) on Windows and CHR(10) on Unix systems<br>
+
+<BR>
+</P>
+<A NAME="Parameters"></A>
+<TABLE CLASS="LIST_TABLE"><TR><TD CLASS="LIST_TITLE">
+Parameters
+</TD></TR></TABLE>
+<TABLE CLASS="LIST_TABLE">
+<TR><TD VALIGN="TOP" CLASS="LIST_ITEM" WIDTH=1%>
+</TD><TD VALIGN="TOP" CLASS="LIST_ITEM" WIDTH=1%>
+p_char&nbsp;&nbsp;
+</TD><TD CLASS="DESC_TEXT" WIDTH=95%>
+newline char<br>
+
+</TD></TR>
+</TABLE>
+<BR>
+<HR>
+<A NAME="GET_NEWLINE_CHAR"></A>
+<P CLASS="TYPE_TITLE">
+get_newline_char
+</P>
+<PRE CLASS="DECL_TEXT">
+Function get_newline_char return varchar2
+
+</PRE>
+<HR>
+<A NAME="SET_DEFAULT_DELIMITER_CHAR"></A>
+<P CLASS="TYPE_TITLE">
+set_default_delimiter_char
+</P>
+<PRE CLASS="DECL_TEXT">
+Procedure set_default_delimiter_char(p_delimiter in varchar2)
+
+</PRE>
+<P CLASS="DESC_TEXT">
+Sets delimiter char for multi line bulk replaces and text generation<br>
+
+<BR>
+</P>
+<A NAME="Parameters"></A>
+<TABLE CLASS="LIST_TABLE"><TR><TD CLASS="LIST_TITLE">
+Parameters
+</TD></TR></TABLE>
+<TABLE CLASS="LIST_TABLE">
+<TR><TD VALIGN="TOP" CLASS="LIST_ITEM" WIDTH=1%>
+</TD><TD VALIGN="TOP" CLASS="LIST_ITEM" WIDTH=1%>
+p_delimiter&nbsp;&nbsp;
+</TD><TD CLASS="DESC_TEXT" WIDTH=95%>
+Character that is used to identify a replacement anchor on first level Defaults to parameter DEFAULT_DELIMITER_CHAR<br>
+
+</TD></TR>
+</TABLE>
+<BR>
+<HR>
+<A NAME="GET_DEFAULT_DELIMITER_CHAR"></A>
+<P CLASS="TYPE_TITLE">
+get_default_delimiter_char
+</P>
+<PRE CLASS="DECL_TEXT">
+Function get_default_delimiter_char return varchar2
+
+</PRE>
+<HR>
+<A NAME="SET_MAIN_ANCHOR_CHAR"></A>
+<P CLASS="TYPE_TITLE">
+set_main_anchor_char
+</P>
+<PRE CLASS="DECL_TEXT">
+Procedure set_main_anchor_char(p_char in varchar2)
+
+</PRE>
+<P CLASS="DESC_TEXT">
+Sets primary anchor char for bulk replaces and text generation<br>
+
+<BR>
+</P>
+<A NAME="Parameters"></A>
+<TABLE CLASS="LIST_TABLE"><TR><TD CLASS="LIST_TITLE">
+Parameters
+</TD></TR></TABLE>
+<TABLE CLASS="LIST_TABLE">
+<TR><TD VALIGN="TOP" CLASS="LIST_ITEM" WIDTH=1%>
+</TD><TD VALIGN="TOP" CLASS="LIST_ITEM" WIDTH=1%>
+p_delimiter&nbsp;&nbsp;
+</TD><TD CLASS="DESC_TEXT" WIDTH=95%>
+Character that is used to identify a replacement anchor on first level Defaults to parameter MAIN_ANCHOR_CHAR<br>
+
+</TD></TR>
+</TABLE>
+<BR>
+<HR>
+<A NAME="GET_MAIN_ANCHOR_CHAR"></A>
+<P CLASS="TYPE_TITLE">
+get_main_anchor_char
+</P>
+<PRE CLASS="DECL_TEXT">
+Function get_main_anchor_char return varchar2
+
+</PRE>
+<HR>
+<A NAME="SET_SECONDARY_ANCHOR_CHAR"></A>
+<P CLASS="TYPE_TITLE">
+set_secondary_anchor_char
+</P>
+<PRE CLASS="DECL_TEXT">
+Procedure set_secondary_anchor_char(p_char in varchar2)
+
+</PRE>
+<P CLASS="DESC_TEXT">
+Sets secondary anchor char for bulk replaces and text generation<br>
+
+<BR>
+</P>
+<A NAME="Parameters"></A>
+<TABLE CLASS="LIST_TABLE"><TR><TD CLASS="LIST_TITLE">
+Parameters
+</TD></TR></TABLE>
+<TABLE CLASS="LIST_TABLE">
+<TR><TD VALIGN="TOP" CLASS="LIST_ITEM" WIDTH=1%>
+</TD><TD VALIGN="TOP" CLASS="LIST_ITEM" WIDTH=1%>
+p_delimiter&nbsp;&nbsp;
+</TD><TD CLASS="DESC_TEXT" WIDTH=95%>
+Character that is used to identify a replacement anchor on second level Defaults to parameter SECONDARY_ANCHOR_CHAR<br>
+
+</TD></TR>
+</TABLE>
+<BR>
+<HR>
+<A NAME="GET_SECONDARY_ANCHOR_CHAR"></A>
+<P CLASS="TYPE_TITLE">
+get_secondary_anchor_char
+</P>
+<PRE CLASS="DECL_TEXT">
+Function get_secondary_anchor_char return varchar2
+
+</PRE>
+<HR>
+<A NAME="SET_MAIN_SEPARATOR_CHAR"></A>
+<P CLASS="TYPE_TITLE">
+set_main_separator_char
+</P>
+<PRE CLASS="DECL_TEXT">
+Procedure set_main_separator_char(p_char in varchar2)
+
+</PRE>
+<P CLASS="DESC_TEXT">
+Sets primary separator char for bulk replaces and text generation<br>
+
+<BR>
+</P>
+<A NAME="Parameters"></A>
+<TABLE CLASS="LIST_TABLE"><TR><TD CLASS="LIST_TITLE">
+Parameters
+</TD></TR></TABLE>
+<TABLE CLASS="LIST_TABLE">
+<TR><TD VALIGN="TOP" CLASS="LIST_ITEM" WIDTH=1%>
+</TD><TD VALIGN="TOP" CLASS="LIST_ITEM" WIDTH=1%>
+p_delimiter&nbsp;&nbsp;
+</TD><TD CLASS="DESC_TEXT" WIDTH=95%>
+Character that is used to separate substructure of a replacement anchor on first level Defaults to parameter MAIN_SEPARATOR_CHAR<br>
+
+</TD></TR>
+</TABLE>
+<BR>
+<HR>
+<A NAME="GET_MAIN_SEPARATOR_CHAR"></A>
+<P CLASS="TYPE_TITLE">
+get_main_separator_char
+</P>
+<PRE CLASS="DECL_TEXT">
+Function get_main_separator_char return varchar2
+
+</PRE>
+<HR>
+<A NAME="SET_SECONDARY_SEPARATOR_CHAR"></A>
+<P CLASS="TYPE_TITLE">
+set_secondary_separator_char
+</P>
+<PRE CLASS="DECL_TEXT">
+Procedure set_secondary_separator_char(p_char in varchar2)
+
+</PRE>
+<P CLASS="DESC_TEXT">
+Sets secondary separator char for bulk replaces and text generation<br>
+
+<BR>
+</P>
+<A NAME="Parameters"></A>
+<TABLE CLASS="LIST_TABLE"><TR><TD CLASS="LIST_TITLE">
+Parameters
+</TD></TR></TABLE>
+<TABLE CLASS="LIST_TABLE">
+<TR><TD VALIGN="TOP" CLASS="LIST_ITEM" WIDTH=1%>
+</TD><TD VALIGN="TOP" CLASS="LIST_ITEM" WIDTH=1%>
+p_delimiter&nbsp;&nbsp;
+</TD><TD CLASS="DESC_TEXT" WIDTH=95%>
+Character that is used to separate substructure of a replacement anchor on second level Defaults to parameter SECONDARY_SEPARATOR_CHAR<br>
+
+</TD></TR>
+</TABLE>
+<BR>
+<HR>
+<A NAME="GET_SECONDARY_SEPARATOR_CHAR"></A>
+<P CLASS="TYPE_TITLE">
+get_secondary_separator_char
+</P>
+<PRE CLASS="DECL_TEXT">
+Function get_secondary_separator_char return varchar2
+
+</PRE>
+<HR>
+<A NAME="WRAP_STRING"></A>
+<P CLASS="TYPE_TITLE">
+wrap_string
+</P>
+<PRE CLASS="DECL_TEXT">
+Function wrap_string(p_text    in clob,
+                     p_prefix  in varchar2 default null,
+                     p_postfix in varchar2 default null) return clob
+
+</PRE>
+<P CLASS="DESC_TEXT">
+Method to split a multi line string into concatenated strings with a quote operator per line<br>
+
+<BR>
+</P>
+<A NAME="Usage"></A>
+<TABLE CLASS="LIST_TABLE"><TR><TD CLASS="LIST_TITLE">
+Usage
+</TD></TR></TABLE>
+<TABLE CLASS="LIST_TABLE">
+<TR><TD VALIGN="TOP" CLASS="LIST_ITEM" WIDTH=1%>
+</TD><TD CLASS="DESC_TEXT" WIDTH=95%>
+SQL*Plus has trouble working with multi line strings if not set up properly. To stabilize script execution, multi line strings such as code templates should be split into one line strings wrapped in quote operators concatenated. So a two line string then becomes q'[First line\CR\]' || q'[Second line]'; Attention: The maximum length of P_TEXT is limited to 32K at the moment<br>
+
+</TD></TR>
+</TABLE>
+<BR>
+<A NAME="Parameters"></A>
+<TABLE CLASS="LIST_TABLE"><TR><TD CLASS="LIST_TITLE">
+Parameters
+</TD></TR></TABLE>
+<TABLE CLASS="LIST_TABLE">
+<TR><TD VALIGN="TOP" CLASS="LIST_ITEM" WIDTH=1%>
+</TD><TD VALIGN="TOP" CLASS="LIST_ITEM" WIDTH=1%>
+p_text&nbsp;&nbsp;
+</TD><TD CLASS="DESC_TEXT" WIDTH=95%>
+Multi line string<br>
+
+</TD></TR>
+<TR><TD VALIGN="TOP" CLASS="LIST_ITEM" WIDTH=1%>
+</TD><TD VALIGN="TOP" CLASS="LIST_ITEM" WIDTH=1%>
+[p_prefix]&nbsp;&nbsp;
+</TD><TD CLASS="DESC_TEXT" WIDTH=95%>
+Override for start quote operator<br>
+
+</TD></TR>
+<TR><TD VALIGN="TOP" CLASS="LIST_ITEM" WIDTH=1%>
+</TD><TD VALIGN="TOP" CLASS="LIST_ITEM" WIDTH=1%>
+[p_postfix]&nbsp;&nbsp;
+</TD><TD CLASS="DESC_TEXT" WIDTH=95%>
+Override for end quote operator<br>
+
+</TD></TR>
+</TABLE>
+<BR>
+<A NAME="Returns"></A>
+<TABLE CLASS="LIST_TABLE"><TR><TD CLASS="LIST_TITLE">
+Returns
+</TD></TR></TABLE>
+<TABLE CLASS="LIST_TABLE">
+<TR><TD VALIGN="TOP" CLASS="LIST_ITEM" WIDTH=1%>
+</TD><TD CLASS="DESC_TEXT" WIDTH=95%>
+List of single line texts wrapped in quote operators and concatenated<br>
+
+</TD></TR>
+</TABLE>
+<BR>
+<HR>
+<A NAME="UNWRAP_STRING"></A>
+<P CLASS="TYPE_TITLE">
+unwrap_string
+</P>
+<PRE CLASS="DECL_TEXT">
+Function unwrap_string(p_text in clob) return clob
+
+</PRE>
+<P CLASS="DESC_TEXT">
+Method to unwrap a string based on the outcome of <A HREF=#WRAP_STRING>WRAP_STRING</A>.<br>
+
+<BR>
+</P>
+<A NAME="Usage"></A>
+<TABLE CLASS="LIST_TABLE"><TR><TD CLASS="LIST_TITLE">
+Usage
+</TD></TR></TABLE>
+<TABLE CLASS="LIST_TABLE">
+<TR><TD VALIGN="TOP" CLASS="LIST_ITEM" WIDTH=1%>
+</TD><TD CLASS="DESC_TEXT" WIDTH=95%>
+A wrapped string <A HREF=#CONTAINS>contains</A> CR-replacements which make it hard for external code to create a multi line string of the wrapped string. This is achieved with this method. Attention: The maximum length of P_TEXT is limited to 32K at the moment<br>
+
+</TD></TR>
+</TABLE>
+<BR>
+<A NAME="Parameters"></A>
+<TABLE CLASS="LIST_TABLE"><TR><TD CLASS="LIST_TITLE">
+Parameters
+</TD></TR></TABLE>
+<TABLE CLASS="LIST_TABLE">
+<TR><TD VALIGN="TOP" CLASS="LIST_ITEM" WIDTH=1%>
+</TD><TD VALIGN="TOP" CLASS="LIST_ITEM" WIDTH=1%>
+p_text&nbsp;&nbsp;
+</TD><TD CLASS="DESC_TEXT" WIDTH=95%>
+Wrapped string<br>
+
+</TD></TR>
+</TABLE>
+<BR>
+<HR>
+<A NAME="CLOB_REPLACE"></A>
+<P CLASS="TYPE_TITLE">
+clob_replace
+</P>
+<PRE CLASS="DECL_TEXT">
+Function clob_replace(p_text in clob,
+                      p_what in varchar2,
+                      p_with in clob default null) return clob
+
+</PRE>
+<P CLASS="DESC_TEXT">
+Method to replace an anchor within a CLOB instance with a CLOB value<br>
+
+<BR>
+</P>
+<A NAME="Parameters"></A>
+<TABLE CLASS="LIST_TABLE"><TR><TD CLASS="LIST_TITLE">
+Parameters
+</TD></TR></TABLE>
+<TABLE CLASS="LIST_TABLE">
+<TR><TD VALIGN="TOP" CLASS="LIST_ITEM" WIDTH=1%>
+</TD><TD VALIGN="TOP" CLASS="LIST_ITEM" WIDTH=1%>
+p_text&nbsp;&nbsp;
+</TD><TD CLASS="DESC_TEXT" WIDTH=95%>
+CLOB where the anchor has to be replaced<br>
+
+</TD></TR>
+<TR><TD VALIGN="TOP" CLASS="LIST_ITEM" WIDTH=1%>
+</TD><TD VALIGN="TOP" CLASS="LIST_ITEM" WIDTH=1%>
+p_what&nbsp;&nbsp;
+</TD><TD CLASS="DESC_TEXT" WIDTH=95%>
+Anchor that will be replaced<br>
+
+</TD></TR>
+<TR><TD VALIGN="TOP" CLASS="LIST_ITEM" WIDTH=1%>
+</TD><TD VALIGN="TOP" CLASS="LIST_ITEM" WIDTH=1%>
+p_with&nbsp;&nbsp;
+</TD><TD CLASS="DESC_TEXT" WIDTH=95%>
+CLOB instance to replace anchor with<br>
+
+</TD></TR>
+</TABLE>
+<BR>
+<A NAME="Returns"></A>
+<TABLE CLASS="LIST_TABLE"><TR><TD CLASS="LIST_TITLE">
+Returns
+</TD></TR></TABLE>
+<TABLE CLASS="LIST_TABLE">
+<TR><TD VALIGN="TOP" CLASS="LIST_ITEM" WIDTH=1%>
+</TD><TD CLASS="DESC_TEXT" WIDTH=95%>
+CLOB instance with the replaced CLOB<br>
+
+</TD></TR>
+</TABLE>
+<BR>
+<HR>
+<A NAME="NOT_EMPTY"></A>
+<P CLASS="TYPE_TITLE">
+not_empty
+</P>
+<PRE CLASS="DECL_TEXT">
+Function not_empty(p_text in varchar2) return boolean
+
+</PRE>
+<P CLASS="DESC_TEXT">
+Method to check whether a string is empty or not<br>
+
+<BR>
+</P>
+<A NAME="Parameters"></A>
+<TABLE CLASS="LIST_TABLE"><TR><TD CLASS="LIST_TITLE">
+Parameters
+</TD></TR></TABLE>
+<TABLE CLASS="LIST_TABLE">
+<TR><TD VALIGN="TOP" CLASS="LIST_ITEM" WIDTH=1%>
+</TD><TD VALIGN="TOP" CLASS="LIST_ITEM" WIDTH=1%>
+p_text&nbsp;&nbsp;
+</TD><TD CLASS="DESC_TEXT" WIDTH=95%>
+String to check<br>
+
+</TD></TR>
+</TABLE>
+<BR>
+<A NAME="Returns"></A>
+<TABLE CLASS="LIST_TABLE"><TR><TD CLASS="LIST_TITLE">
+Returns
+</TD></TR></TABLE>
+<TABLE CLASS="LIST_TABLE">
+<TR><TD VALIGN="TOP" CLASS="LIST_ITEM" WIDTH=1%>
+</TD><TD CLASS="DESC_TEXT" WIDTH=95%>
+TRUE if String is not empty, FALSE otherwise<br>
+
+</TD></TR>
+</TABLE>
+<BR>
+<HR>
+<A NAME="APPEND"></A>
+<P CLASS="TYPE_TITLE">
+append
+</P>
+<PRE CLASS="DECL_TEXT">
+Function append(p_text      in varchar2,
+                p_chunk     in varchar2,
+                p_delimiter in varchar2 default null,
+                p_before    in varchar2 default <A HREF=#C_FALSE>C_FALSE</A>) return varchar2
+
+</PRE>
+<P CLASS="DESC_TEXT">
+Method to append text to a string<br>
+
+<BR>
+</P>
+<A NAME="Usage"></A>
+<TABLE CLASS="LIST_TABLE"><TR><TD CLASS="LIST_TITLE">
+Usage
+</TD></TR></TABLE>
+<TABLE CLASS="LIST_TABLE">
+<TR><TD VALIGN="TOP" CLASS="LIST_ITEM" WIDTH=1%>
+</TD><TD CLASS="DESC_TEXT" WIDTH=95%>
+Is used to append strings with or withour delimiters to an existing text. Returns the appended text. If P_CHUNK is null, no delimiter is appended By setting p_berfore to a value != <A HREF=#C_FALSE>C_FALSE</A>, string gets append before text, after otherwise Function implements this flag as a char to allow for usage from SQL, procedure overload implements it as boolean<br>
+
+</TD></TR>
+</TABLE>
+<BR>
+<A NAME="Parameters"></A>
+<TABLE CLASS="LIST_TABLE"><TR><TD CLASS="LIST_TITLE">
+Parameters
+</TD></TR></TABLE>
+<TABLE CLASS="LIST_TABLE">
+<TR><TD VALIGN="TOP" CLASS="LIST_ITEM" WIDTH=1%>
+</TD><TD VALIGN="TOP" CLASS="LIST_ITEM" WIDTH=1%>
+p_text&nbsp;&nbsp;
+</TD><TD CLASS="DESC_TEXT" WIDTH=95%>
+Text to append string to<br>
+
+</TD></TR>
+<TR><TD VALIGN="TOP" CLASS="LIST_ITEM" WIDTH=1%>
+</TD><TD VALIGN="TOP" CLASS="LIST_ITEM" WIDTH=1%>
+p_chunk&nbsp;&nbsp;
+</TD><TD CLASS="DESC_TEXT" WIDTH=95%>
+String to be appended<br>
+
+</TD></TR>
+<TR><TD VALIGN="TOP" CLASS="LIST_ITEM" WIDTH=1%>
+</TD><TD VALIGN="TOP" CLASS="LIST_ITEM" WIDTH=1%>
+[p_delimiter]&nbsp;&nbsp;
+</TD><TD CLASS="DESC_TEXT" WIDTH=95%>
+Delimiter that is used to separate string from text if required<br>
+
+</TD></TR>
+<TR><TD VALIGN="TOP" CLASS="LIST_ITEM" WIDTH=1%>
+</TD><TD VALIGN="TOP" CLASS="LIST_ITEM" WIDTH=1%>
+[p_before]&nbsp;&nbsp;
+</TD><TD CLASS="DESC_TEXT" WIDTH=95%>
+Flag to indicate whether string should be append before or after text<br>
+
+</TD></TR>
+</TABLE>
+<BR>
+<A NAME="Returns"></A>
+<TABLE CLASS="LIST_TABLE"><TR><TD CLASS="LIST_TITLE">
+Returns
+</TD></TR></TABLE>
+<TABLE CLASS="LIST_TABLE">
+<TR><TD VALIGN="TOP" CLASS="LIST_ITEM" WIDTH=1%>
+</TD><TD CLASS="DESC_TEXT" WIDTH=95%>
+Appended text<br>
+
+</TD></TR>
+</TABLE>
+<BR>
+<HR>
+<A NAME="APPEND2"></A>
+<P CLASS="TYPE_TITLE">
+append
+</P>
+<PRE CLASS="DECL_TEXT">
+Procedure append(p_text      in out nocopy varchar2,
+                 p_chunk     in varchar2,
+                 p_delimiter in varchar2 default null,
+                 p_before    in boolean default false)
+
+</PRE>
+<P CLASS="DESC_TEXT">
+Procedure overload<br>
+
+<BR>
+</P>
+<HR>
+<A NAME="APPEND_CLOB"></A>
+<P CLASS="TYPE_TITLE">
+append_clob
+</P>
+<PRE CLASS="DECL_TEXT">
+Function append_clob(p_clob in clob, p_chunk in clob) return clob
+
+</PRE>
+<P CLASS="DESC_TEXT">
+Method to <A HREF=#APPEND>append</A> text to a CLOB<br>
+
+<BR>
+</P>
+<A NAME="Usage"></A>
+<TABLE CLASS="LIST_TABLE"><TR><TD CLASS="LIST_TITLE">
+Usage
+</TD></TR></TABLE>
+<TABLE CLASS="LIST_TABLE">
+<TR><TD VALIGN="TOP" CLASS="LIST_ITEM" WIDTH=1%>
+</TD><TD CLASS="DESC_TEXT" WIDTH=95%>
+Is used to (securerly) add a string to a clob. If P_CLOB is null, its initialized If P_CHUNK is null, P_CLOB returns unchanged<br>
+
+</TD></TR>
+</TABLE>
+<BR>
+<A NAME="Parameters"></A>
+<TABLE CLASS="LIST_TABLE"><TR><TD CLASS="LIST_TITLE">
+Parameters
+</TD></TR></TABLE>
+<TABLE CLASS="LIST_TABLE">
+<TR><TD VALIGN="TOP" CLASS="LIST_ITEM" WIDTH=1%>
+</TD><TD VALIGN="TOP" CLASS="LIST_ITEM" WIDTH=1%>
+p_clob&nbsp;&nbsp;
+</TD><TD CLASS="DESC_TEXT" WIDTH=95%>
+CLOB P_CHUNK shall be appended at<br>
+
+</TD></TR>
+<TR><TD VALIGN="TOP" CLASS="LIST_ITEM" WIDTH=1%>
+</TD><TD VALIGN="TOP" CLASS="LIST_ITEM" WIDTH=1%>
+p_chunk&nbsp;&nbsp;
+</TD><TD CLASS="DESC_TEXT" WIDTH=95%>
+String to <A HREF=#APPEND>append</A> to P_CLOB<br>
+
+</TD></TR>
+</TABLE>
+<BR>
+<A NAME="Returns"></A>
+<TABLE CLASS="LIST_TABLE"><TR><TD CLASS="LIST_TITLE">
+Returns
+</TD></TR></TABLE>
+<TABLE CLASS="LIST_TABLE">
+<TR><TD VALIGN="TOP" CLASS="LIST_ITEM" WIDTH=1%>
+</TD><TD CLASS="DESC_TEXT" WIDTH=95%>
+Appended CLOB<br>
+
+</TD></TR>
+</TABLE>
+<BR>
+<HR>
+<A NAME="APPEND_CLOB2"></A>
+<P CLASS="TYPE_TITLE">
+append_clob
+</P>
+<PRE CLASS="DECL_TEXT">
+Procedure append_clob(p_clob in out nocopy clob, p_chunk in clob)
+
+</PRE>
+<P CLASS="DESC_TEXT">
+Procedure overload<br>
+
+<BR>
+</P>
+<HR>
+<A NAME="CONCATENATE"></A>
+<P CLASS="TYPE_TITLE">
+concatenate
+</P>
+<PRE CLASS="DECL_TEXT">
+Function concatenate(p_chunks       in char_table,
+                     p_delimiter    in varchar2 default <A HREF=#C_DEL>C_DEL</A>,
+                     p_ignore_nulls varchar2 default <A HREF=#C_FALSE>C_FALSE</A>)
+  return varchar2
+
+</PRE>
+<P CLASS="DESC_TEXT">
+Method concatenates entries of CHAR_TABLE instance to a single string comparable to LISTAGG function in SQL<br>
+
+<BR>
+</P>
+<A NAME="Usage"></A>
+<TABLE CLASS="LIST_TABLE"><TR><TD CLASS="LIST_TITLE">
+Usage
+</TD></TR></TABLE>
+<TABLE CLASS="LIST_TABLE">
+<TR><TD VALIGN="TOP" CLASS="LIST_ITEM" WIDTH=1%>
+</TD><TD CLASS="DESC_TEXT" WIDTH=95%>
+Method is used as an overload for LISTAGG in that it allows to pass in an instance of CHAR_TABLE.<br>
+
+</TD></TR>
+</TABLE>
+<BR>
+<A NAME="Parameters"></A>
+<TABLE CLASS="LIST_TABLE"><TR><TD CLASS="LIST_TITLE">
+Parameters
+</TD></TR></TABLE>
+<TABLE CLASS="LIST_TABLE">
+<TR><TD VALIGN="TOP" CLASS="LIST_ITEM" WIDTH=1%>
+</TD><TD VALIGN="TOP" CLASS="LIST_ITEM" WIDTH=1%>
+p_chunks&nbsp;&nbsp;
+</TD><TD CLASS="DESC_TEXT" WIDTH=95%>
+CHAR_TABLE instance with the strings to concatenate<br>
+
+</TD></TR>
+<TR><TD VALIGN="TOP" CLASS="LIST_ITEM" WIDTH=1%>
+</TD><TD VALIGN="TOP" CLASS="LIST_ITEM" WIDTH=1%>
+[p_delimiter]&nbsp;&nbsp;
+</TD><TD CLASS="DESC_TEXT" WIDTH=95%>
+Optional delimiter char between entries of P_CHUNKS Defaults to a <A HREF=#C_DEL>C_DEL</A>
+
+</TD></TR>
+<TR><TD VALIGN="TOP" CLASS="LIST_ITEM" WIDTH=1%>
+</TD><TD VALIGN="TOP" CLASS="LIST_ITEM" WIDTH=1%>
+[p_ignore_nulls]&nbsp;&nbsp;
+</TD><TD CLASS="DESC_TEXT" WIDTH=95%>
+Flag to indicate whether NULL values shall surpress delimiters (!= N, true) or not (N, false)<br>
+
+</TD></TR>
+</TABLE>
+<BR>
+<A NAME="Returns"></A>
+<TABLE CLASS="LIST_TABLE"><TR><TD CLASS="LIST_TITLE">
+Returns
+</TD></TR></TABLE>
+<TABLE CLASS="LIST_TABLE">
+<TR><TD VALIGN="TOP" CLASS="LIST_ITEM" WIDTH=1%>
+</TD><TD CLASS="DESC_TEXT" WIDTH=95%>
+Concatenated text<br>
+
+</TD></TR>
+</TABLE>
+<BR>
+<HR>
+<A NAME="CONCATENATE2"></A>
+<P CLASS="TYPE_TITLE">
+concatenate
+</P>
+<PRE CLASS="DECL_TEXT">
+Procedure concatenate(p_text         in out nocopy varchar2,
+                      p_chunks       in char_table,
+                      p_delimiter    in varchar2 default <A HREF=#C_DEL>C_DEL</A>,
+                      p_ignore_nulls in boolean default true)
+
+</PRE>
+<P CLASS="DESC_TEXT">
+Procedure overload<br>
+
+<BR>
+</P>
+<HR>
+<A NAME="STRING_TO_TABLE"></A>
+<P CLASS="TYPE_TITLE">
+string_to_table
+</P>
+<PRE CLASS="DECL_TEXT">
+Function string_to_table(p_string     in varchar2,
+                         p_delimiter  in varchar2 default <A HREF=#C_DEL>C_DEL</A>,
+                         p_omit_empty in <A HREF=#FLAG_TYPE>flag_type</A> default <A HREF=#C_FALSE>C_FALSE</A>)
+  return char_table
+
+</PRE>
+<P CLASS="DESC_TEXT">
+Method to convert a string to an instance of CHAR_TABLE<br>
+
+<BR>
+</P>
+<A NAME="Parameters"></A>
+<TABLE CLASS="LIST_TABLE"><TR><TD CLASS="LIST_TITLE">
+Parameters
+</TD></TR></TABLE>
+<TABLE CLASS="LIST_TABLE">
+<TR><TD VALIGN="TOP" CLASS="LIST_ITEM" WIDTH=1%>
+</TD><TD VALIGN="TOP" CLASS="LIST_ITEM" WIDTH=1%>
+p_string&nbsp;&nbsp;
+</TD><TD CLASS="DESC_TEXT" WIDTH=95%>
+Text to split into entries of CHAR_TABLE<br>
+
+</TD></TR>
+<TR><TD VALIGN="TOP" CLASS="LIST_ITEM" WIDTH=1%>
+</TD><TD VALIGN="TOP" CLASS="LIST_ITEM" WIDTH=1%>
+[p_delimiter]&nbsp;&nbsp;
+</TD><TD CLASS="DESC_TEXT" WIDTH=95%>
+Optional delimiter that is used to split text into entries of P_CHUNKS. Defaults to a <A HREF=#C_DEL>C_DEL</A>
+
+</TD></TR>
+<TR><TD VALIGN="TOP" CLASS="LIST_ITEM" WIDTH=1%>
+</TD><TD VALIGN="TOP" CLASS="LIST_ITEM" WIDTH=1%>
+[p_omit_empty]&nbsp;&nbsp;
+</TD><TD CLASS="DESC_TEXT" WIDTH=95%>
+Flag to indicate whether empty recors should be surpressed (<A HREF=#C_TRUE>C_TRUE</A>) or not (<A HREF=#C_FALSE>C_FALSE</A>). Defaults to <A HREF=#C_FALSE>C_FALSE</A>
+
+</TD></TR>
+</TABLE>
+<BR>
+<A NAME="Returns"></A>
+<TABLE CLASS="LIST_TABLE"><TR><TD CLASS="LIST_TITLE">
+Returns
+</TD></TR></TABLE>
+<TABLE CLASS="LIST_TABLE">
+<TR><TD VALIGN="TOP" CLASS="LIST_ITEM" WIDTH=1%>
+</TD><TD CLASS="DESC_TEXT" WIDTH=95%>
+Instance of CHAR_TABLE. Function overload is pipelined to allow for usage within a TABLE() function.<br>
+
+</TD></TR>
+</TABLE>
+<BR>
+<HR>
+<A NAME="STRING_TO_TABLE2"></A>
+<P CLASS="TYPE_TITLE">
+string_to_table
+</P>
+<PRE CLASS="DECL_TEXT">
+Procedure string_to_table(p_string     in varchar2,
+                          p_table      out nocopy char_table,
+                          p_delimiter  in varchar2 default <A HREF=#C_DEL>C_DEL</A>,
+                          p_omit_empty in <A HREF=#FLAG_TYPE>flag_type</A> default <A HREF=#C_FALSE>C_FALSE</A>)
+
+</PRE>
+<P CLASS="DESC_TEXT">
+Procedure overload<br>
+
+<BR>
+</P>
+<HR>
+<A NAME="TABLE_TO_STRING"></A>
+<P CLASS="TYPE_TITLE">
+table_to_string
+</P>
+<PRE CLASS="DECL_TEXT">
+Function table_to_string(p_table      in char_table,
+                         p_delimiter  in varchar2 default <A HREF=#C_DEL>C_DEL</A>,
+                         p_max_length in number default 32767)
+  return varchar2
+
+</PRE>
+<P CLASS="DESC_TEXT">
+Method to convert a string to an instance of CHAR_TABLE<br>
+
+<BR>
+</P>
+<A NAME="Parameters"></A>
+<TABLE CLASS="LIST_TABLE"><TR><TD CLASS="LIST_TITLE">
+Parameters
+</TD></TR></TABLE>
+<TABLE CLASS="LIST_TABLE">
+<TR><TD VALIGN="TOP" CLASS="LIST_ITEM" WIDTH=1%>
+</TD><TD VALIGN="TOP" CLASS="LIST_ITEM" WIDTH=1%>
+p_table&nbsp;&nbsp;
+</TD><TD CLASS="DESC_TEXT" WIDTH=95%>
+Instance of CHAR_TABLE of char_table to join<br>
+
+</TD></TR>
+<TR><TD VALIGN="TOP" CLASS="LIST_ITEM" WIDTH=1%>
+</TD><TD VALIGN="TOP" CLASS="LIST_ITEM" WIDTH=1%>
+[p_delimiter]&nbsp;&nbsp;
+</TD><TD CLASS="DESC_TEXT" WIDTH=95%>
+Optional delimiter that is used to join text. Defaults to a <A HREF=#C_DEL>C_DEL</A>
+
+</TD></TR>
+<TR><TD VALIGN="TOP" CLASS="LIST_ITEM" WIDTH=1%>
+</TD><TD VALIGN="TOP" CLASS="LIST_ITEM" WIDTH=1%>
+[p_max_length]&nbsp;&nbsp;
+</TD><TD CLASS="DESC_TEXT" WIDTH=95%>
+Maximum output length. Defaults to 32767<br>
+
+</TD></TR>
+</TABLE>
+<BR>
+<A NAME="Returns"></A>
+<TABLE CLASS="LIST_TABLE"><TR><TD CLASS="LIST_TITLE">
+Returns
+</TD></TR></TABLE>
+<TABLE CLASS="LIST_TABLE">
+<TR><TD VALIGN="TOP" CLASS="LIST_ITEM" WIDTH=1%>
+</TD><TD CLASS="DESC_TEXT" WIDTH=95%>
+String with P_MAX_LENGTH.<br>
+
+</TD></TR>
+</TABLE>
+<BR>
+<HR>
+<A NAME="TABLE_TO_STRING2"></A>
+<P CLASS="TYPE_TITLE">
+table_to_string
+</P>
+<PRE CLASS="DECL_TEXT">
+Procedure table_to_string(p_table      in char_table,
+                          p_string     out nocopy varchar2,
+                          p_delimiter  in varchar2 default <A HREF=#C_DEL>C_DEL</A>,
+                          p_max_length in number default 32767)
+
+</PRE>
+<P CLASS="DESC_TEXT">
+Procedure overload<br>
+
+<BR>
+</P>
+<HR>
+<A NAME="CLOB_TO_BLOB"></A>
+<P CLASS="TYPE_TITLE">
+clob_to_blob
+</P>
+<PRE CLASS="DECL_TEXT">
+Function clob_to_blob(p_clob in clob) return blob
+
+</PRE>
+<P CLASS="DESC_TEXT">
+Method to convert a CLOB instance to BLOB<br>
+
+<BR>
+</P>
+<A NAME="Parameters"></A>
+<TABLE CLASS="LIST_TABLE"><TR><TD CLASS="LIST_TITLE">
+Parameters
+</TD></TR></TABLE>
+<TABLE CLASS="LIST_TABLE">
+<TR><TD VALIGN="TOP" CLASS="LIST_ITEM" WIDTH=1%>
+</TD><TD VALIGN="TOP" CLASS="LIST_ITEM" WIDTH=1%>
+p_clob&nbsp;&nbsp;
+</TD><TD CLASS="DESC_TEXT" WIDTH=95%>
+CLOB instance to convert<br>
+
+</TD></TR>
+</TABLE>
+<BR>
+<A NAME="Returns"></A>
+<TABLE CLASS="LIST_TABLE"><TR><TD CLASS="LIST_TITLE">
+Returns
+</TD></TR></TABLE>
+<TABLE CLASS="LIST_TABLE">
+<TR><TD VALIGN="TOP" CLASS="LIST_ITEM" WIDTH=1%>
+</TD><TD CLASS="DESC_TEXT" WIDTH=95%>
+Converted BLOB instance<br>
+
+</TD></TR>
+</TABLE>
+<BR>
+<HR>
+<A NAME="CONTAINS"></A>
+<P CLASS="TYPE_TITLE">
+contains
+</P>
+<PRE CLASS="DECL_TEXT">
+Function contains(p_text      in varchar2,
+                  p_pattern   in varchar2,
+                  p_delimiter in varchar2 default <A HREF=#C_DEL>C_DEL</A>) return varchar2
+
+</PRE>
+<P CLASS="DESC_TEXT">
+Method to (securely) check whether P_PATTERN is contained within P_TEXT<br>
+
+<BR>
+</P>
+<A NAME="Usage"></A>
+<TABLE CLASS="LIST_TABLE"><TR><TD CLASS="LIST_TITLE">
+Usage
+</TD></TR></TABLE>
+<TABLE CLASS="LIST_TABLE">
+<TR><TD VALIGN="TOP" CLASS="LIST_ITEM" WIDTH=1%>
+</TD><TD CLASS="DESC_TEXT" WIDTH=95%>
+Method encloses P_TEXT and P_PATTERN by P_DELIMITER and performs an INSTR search. Enclosing P_PATTERN assures that no false positives are possible. Fi the pattern TEST would be Found in TE,TESTING if not enclosed by P_DELIMITER Enclosing leads to instr(',TE,TESTING,', ',TEST,') which is 0<br>
+
+</TD></TR>
+</TABLE>
+<BR>
+<A NAME="Parameters"></A>
+<TABLE CLASS="LIST_TABLE"><TR><TD CLASS="LIST_TITLE">
+Parameters
+</TD></TR></TABLE>
+<TABLE CLASS="LIST_TABLE">
+<TR><TD VALIGN="TOP" CLASS="LIST_ITEM" WIDTH=1%>
+</TD><TD VALIGN="TOP" CLASS="LIST_ITEM" WIDTH=1%>
+p_text&nbsp;&nbsp;
+</TD><TD CLASS="DESC_TEXT" WIDTH=95%>
+Text that is evaluated for matches<br>
+
+</TD></TR>
+<TR><TD VALIGN="TOP" CLASS="LIST_ITEM" WIDTH=1%>
+</TD><TD VALIGN="TOP" CLASS="LIST_ITEM" WIDTH=1%>
+p_pattern&nbsp;&nbsp;
+</TD><TD CLASS="DESC_TEXT" WIDTH=95%>
+String that is searched within P_TEXT<br>
+
+</TD></TR>
+<TR><TD VALIGN="TOP" CLASS="LIST_ITEM" WIDTH=1%>
+</TD><TD VALIGN="TOP" CLASS="LIST_ITEM" WIDTH=1%>
+[p_delimiter]&nbsp;&nbsp;
+</TD><TD CLASS="DESC_TEXT" WIDTH=95%>
+Optional delimiter that is used to enclose P_PATTERN. Defaults to <A HREF=#C_DEL>C_DEL</A>
+
+</TD></TR>
+</TABLE>
+<BR>
+<A NAME="Returns"></A>
+<TABLE CLASS="LIST_TABLE"><TR><TD CLASS="LIST_TITLE">
+Returns
+</TD></TR></TABLE>
+<TABLE CLASS="LIST_TABLE">
+<TR><TD VALIGN="TOP" CLASS="LIST_ITEM" WIDTH=1%>
+</TD><TD CLASS="DESC_TEXT" WIDTH=95%>
+Flag that indicates whether P_PATTERN is contained within P_TEXT (<A HREF=#C_TRUE>C_TRUE</A>) or not (<A HREF=#C_FALSE>C_FALSE</A>)<br>
+
+</TD></TR>
+</TABLE>
+<BR>
+<HR>
+<A NAME="MERGE_STRING"></A>
+<P CLASS="TYPE_TITLE">
+merge_string
+</P>
+<PRE CLASS="DECL_TEXT">
+Function merge_string(p_text      in varchar2,
+                      p_pattern   in varchar2,
+                      p_delimiter in varchar2 default <A HREF=#C_DEL>C_DEL</A>)
+  return varchar2
+
+</PRE>
+<P CLASS="DESC_TEXT">
+Method to merge a pattern into a text<br>
+
+<BR>
+</P>
+<A NAME="Usage"></A>
+<TABLE CLASS="LIST_TABLE"><TR><TD CLASS="LIST_TITLE">
+Usage
+</TD></TR></TABLE>
+<TABLE CLASS="LIST_TABLE">
+<TR><TD VALIGN="TOP" CLASS="LIST_ITEM" WIDTH=1%>
+</TD><TD CLASS="DESC_TEXT" WIDTH=95%>
+Is used to assure that a pattern exists within a text only once. Order is not maintained, so if you merge A into A:B:C, the resulting text might be B:C:A.<br>
+
+</TD></TR>
+</TABLE>
+<BR>
+<A NAME="Parameters"></A>
+<TABLE CLASS="LIST_TABLE"><TR><TD CLASS="LIST_TITLE">
+Parameters
+</TD></TR></TABLE>
+<TABLE CLASS="LIST_TABLE">
+<TR><TD VALIGN="TOP" CLASS="LIST_ITEM" WIDTH=1%>
+</TD><TD VALIGN="TOP" CLASS="LIST_ITEM" WIDTH=1%>
+p_text&nbsp;&nbsp;
+</TD><TD CLASS="DESC_TEXT" WIDTH=95%>
+Text that is evaluated for matches<br>
+
+</TD></TR>
+<TR><TD VALIGN="TOP" CLASS="LIST_ITEM" WIDTH=1%>
+</TD><TD VALIGN="TOP" CLASS="LIST_ITEM" WIDTH=1%>
+p_pattern&nbsp;&nbsp;
+</TD><TD CLASS="DESC_TEXT" WIDTH=95%>
+String that is searched within P_TEXT<br>
+
+</TD></TR>
+<TR><TD VALIGN="TOP" CLASS="LIST_ITEM" WIDTH=1%>
+</TD><TD VALIGN="TOP" CLASS="LIST_ITEM" WIDTH=1%>
+[p_delimiter]&nbsp;&nbsp;
+</TD><TD CLASS="DESC_TEXT" WIDTH=95%>
+Optional delimiter that is used to enclose P_PATTERN. Defaults to <A HREF=#C_DEL>C_DEL</A>
+
+</TD></TR>
+</TABLE>
+<BR>
+<A NAME="Returns"></A>
+<TABLE CLASS="LIST_TABLE"><TR><TD CLASS="LIST_TITLE">
+Returns
+</TD></TR></TABLE>
+<TABLE CLASS="LIST_TABLE">
+<TR><TD VALIGN="TOP" CLASS="LIST_ITEM" WIDTH=1%>
+</TD><TD CLASS="DESC_TEXT" WIDTH=95%>
+Merged text<br>
+
+</TD></TR>
+</TABLE>
+<BR>
+<HR>
+<A NAME="MERGE_STRING2"></A>
+<P CLASS="TYPE_TITLE">
+merge_string
+</P>
+<PRE CLASS="DECL_TEXT">
+Procedure merge_string(p_text      in out nocopy varchar2,
+                       p_pattern   in varchar2,
+                       p_delimiter in varchar2 default <A HREF=#C_DEL>C_DEL</A>)
+
+</PRE>
+<P CLASS="DESC_TEXT">
+Procedure overload<br>
+
+<BR>
+</P>
+<HR>
+<A NAME="BULK_REPLACE"></A>
+<P CLASS="TYPE_TITLE">
+bulk_replace
+</P>
+<PRE CLASS="DECL_TEXT">
+Procedure bulk_replace(p_template in clob,
+                       p_clob_tab in <A HREF=#CLOB_TAB>clob_tab</A>,
+                       p_result   out nocopy clob)
+
+</PRE>
+<P CLASS="DESC_TEXT">
+Procedure to replace all replacement anchors of a PL/SQL table in a template<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; #&lt;Name of replacement anchor, must correspond to table column&gt;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; |&lt;Prefix, if value not zero&gt;
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; |&lt;Postfix, if value not null&gt;
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; |&lt;value if NULL&gt;#
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; All PIPE characters and clauses are optional, but must be used in this order.
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; NB: The separator # corresponds to g_main_anchor_char
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Example: #FIRENAME||, |# =&gt; If available, a comma is inserted after the first name
+
+<BR>
+</P>
+<A NAME="Usage"></A>
+<TABLE CLASS="LIST_TABLE"><TR><TD CLASS="LIST_TITLE">
+Usage
+</TD></TR></TABLE>
+<TABLE CLASS="LIST_TABLE">
+<TR><TD VALIGN="TOP" CLASS="LIST_ITEM" WIDTH=1%>
+</TD><TD CLASS="DESC_TEXT" WIDTH=95%>
+The procedure will generate a template and a prepared list of replacement anchors and:cr.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Pass replacement values. The method replaces all anchors in the template with:cr.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; the replacement values in the PL/SQL table and analyzes NULL values,:cr.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; to replace them with the replacement values. If the value is not NULL:cr.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; PRE and POSTFIX values inserted if defined in replacement anchor.:cr. 
+
+</TD></TR>
+</TABLE>
+<BR>
+<A NAME="Parameters"></A>
+<TABLE CLASS="LIST_TABLE"><TR><TD CLASS="LIST_TITLE">
+Parameters
+</TD></TR></TABLE>
+<TABLE CLASS="LIST_TABLE">
+<TR><TD VALIGN="TOP" CLASS="LIST_ITEM" WIDTH=1%>
+</TD><TD VALIGN="TOP" CLASS="LIST_ITEM" WIDTH=1%>
+p_template&nbsp;&nbsp;
+</TD><TD CLASS="DESC_TEXT" WIDTH=95%>
+Template with replacement anchors. Syntax of the replacement anchors:<br>
+
+</TD></TR>
+<TR><TD VALIGN="TOP" CLASS="LIST_ITEM" WIDTH=1%>
+</TD><TD VALIGN="TOP" CLASS="LIST_ITEM" WIDTH=1%>
+p_clob_tab&nbsp;&nbsp;
+</TD><TD CLASS="DESC_TEXT" WIDTH=95%>
+Table of KEY-VALUE pairs
+
+</TD></TR>
+<TR><TD VALIGN="TOP" CLASS="LIST_ITEM" WIDTH=1%>
+</TD><TD VALIGN="TOP" CLASS="LIST_ITEM" WIDTH=1%>
+p_result&nbsp;&nbsp;
+</TD><TD CLASS="DESC_TEXT" WIDTH=95%>
+Result of the conversion
+
+</TD></TR>
+</TABLE>
+<BR>
+<HR>
+<A NAME="BULK_REPLACE2"></A>
+<P CLASS="TYPE_TITLE">
+bulk_replace
+</P>
+<PRE CLASS="DECL_TEXT">
+Procedure bulk_replace(p_template in out nocopy clob,
+                       p_chunks   in char_table)
+
+</PRE>
+<P CLASS="DESC_TEXT">
+BULK_REPLACE-Methode mit den gleichen Moeglichkeiten der Ersetzung wie <A HREF=#GENERATE_TEXT>GENERATE_TEXT</A>
+&nbsp;&nbsp; Procedure to replace all replacement anchors of a PL/SQL table in a template<br>
+* %param&nbsp; p_template&nbsp; Template with replacement anchors. Syntax of the replacement anchors:<br>
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; #&lt;Name of replacement anchor, must correspond to table column&gt;<br>
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; |&lt;Prefix, if value not zero&gt;
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; |&lt;Postfix, if value not null&gt;
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; |&lt;value if NULL&gt;#
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; All PIPE characters and clauses are optional, but must be used in this order.
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; NB: The separator # corresponds to g_main_anchor_char
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Example: #FIRENAME||, |# =&gt; If available, a comma is inserted after the first name
+* %param&nbsp; p_clob_tab&nbsp; Table of KEY-VALUE pairs
+* %param&nbsp; p_chunks&nbsp;&nbsp;&nbsp; List of alternating anchors and replacement characters
+* %return CLOB with the replaced text
+
+
+<BR>
+</P>
+<HR>
+<A NAME="BULK_REPLACE3"></A>
+<P CLASS="TYPE_TITLE">
+bulk_replace
+</P>
+<PRE CLASS="DECL_TEXT">
+Function bulk_replace(p_template in clob, p_chunks in char_table)
+  return clob
+
+</PRE>
+<P CLASS="DESC_TEXT">
+Overload as a function<br>
+
+<BR>
+</P>
+<HR>
+<A NAME="GENERATE_TEXT"></A>
+<P CLASS="TYPE_TITLE">
+generate_text
+</P>
+<PRE CLASS="DECL_TEXT">
+Procedure generate_text(p_cursor    in out nocopy sys_refcursor,
+                        p_result    out nocopy clob,
+                        p_delimiter in varchar2 default null,
+                        p_indent    in number default 0)
+
+</PRE>
+<P CLASS="DESC_TEXT">
+Procedure for generating texts based on a dynamic template<br>
+
+<BR>
+</P>
+<A NAME="Usage"></A>
+<TABLE CLASS="LIST_TABLE"><TR><TD CLASS="LIST_TITLE">
+Usage
+</TD></TR></TABLE>
+<TABLE CLASS="LIST_TABLE">
+<TR><TD VALIGN="TOP" CLASS="LIST_ITEM" WIDTH=1%>
+</TD><TD CLASS="DESC_TEXT" WIDTH=95%>
+Is used to generate a result text directly from an SQL statement and a template. If the SQL statement <A HREF=#CONTAINS>contains</A> multiple rows, an optional P_DELIMITER parameter can be used as a separator between the can be passed to individual lines. Since no template is passed as a separate parameter, this overload expects the template as column TEMPLATE of the SQL statement. The SQL statement must contain all replacement anchors in all transferred templates can fill. If the cursor <A HREF=#CONTAINS>contains</A> a LOG_TEMPLATE column, this template is filled in parallel to the template of the TEMPLATE column<br>
+
+</TD></TR>
+</TABLE>
+<BR>
+<A NAME="Parameters"></A>
+<TABLE CLASS="LIST_TABLE"><TR><TD CLASS="LIST_TITLE">
+Parameters
+</TD></TR></TABLE>
+<TABLE CLASS="LIST_TABLE">
+<TR><TD VALIGN="TOP" CLASS="LIST_ITEM" WIDTH=1%>
+</TD><TD VALIGN="TOP" CLASS="LIST_ITEM" WIDTH=1%>
+p_cursor&nbsp;&nbsp;
+</TD><TD CLASS="DESC_TEXT" WIDTH=95%>
+Open cursor with one or more result rows. Convention:<br>
+
+<TABLE CLASS="LIST_TABLE">
+<TR><TD VALIGN="TOP" CLASS="LIST_ITEM" WIDTH=1%>
+</TD><TD VALIGN="TOP" CLASS="LIST_ITEM" WIDTH=1%>
+-&nbsp;&nbsp;
+</TD><TD CLASS="DESC_TEXT" WIDTH=95%>
+TEMPLATE column: Template in which the anchors are to be inserted<br>
+
+</TD></TR>
+<TR><TD VALIGN="TOP" CLASS="LIST_ITEM" WIDTH=1%>
+</TD><TD VALIGN="TOP" CLASS="LIST_ITEM" WIDTH=1%>
+-&nbsp;&nbsp;
+</TD><TD CLASS="DESC_TEXT" WIDTH=95%>
+LOG_TEMPLATE column: log template used to output a message<br>
+
+</TD></TR>
+<TR><TD VALIGN="TOP" CLASS="LIST_ITEM" WIDTH=1%>
+</TD><TD VALIGN="TOP" CLASS="LIST_ITEM" WIDTH=1%>
+-&nbsp;&nbsp;
+</TD><TD CLASS="DESC_TEXT" WIDTH=95%>
+additional column labels correspond to the names of the replacement anchors in the templates<br>
+
+</TD></TR>
+</TABLE>
+<BR>
+</TD></TR>
+<TR><TD VALIGN="TOP" CLASS="LIST_ITEM" WIDTH=1%>
+</TD><TD VALIGN="TOP" CLASS="LIST_ITEM" WIDTH=1%>
+p_result&nbsp;&nbsp;
+</TD><TD CLASS="DESC_TEXT" WIDTH=95%>
+Result of the conversion<br>
+
+</TD></TR>
+<TR><TD VALIGN="TOP" CLASS="LIST_ITEM" WIDTH=1%>
+</TD><TD VALIGN="TOP" CLASS="LIST_ITEM" WIDTH=1%>
+p_delimiter&nbsp;&nbsp;
+</TD><TD CLASS="DESC_TEXT" WIDTH=95%>
+Terminating character, which is placed between the individual instances of the prepared templates<br>
+
+</TD></TR>
+</TABLE>
+<BR>
+<HR>
+<A NAME="GENERATE_TEXT2"></A>
+<P CLASS="TYPE_TITLE">
+generate_text
+</P>
+<PRE CLASS="DECL_TEXT">
+Function generate_text(p_cursor    in sys_refcursor,
+                       p_delimiter in varchar2 default null,
+                       p_indent    in number default 0) return clob
+
+</PRE>
+<P CLASS="DESC_TEXT">
+Ueberladung als Funktion<br>
+
+<BR>
+</P>
+<HR>
+<A NAME="GENERATE_TEXT3"></A>
+<P CLASS="TYPE_TITLE">
+generate_text
+</P>
+<PRE CLASS="DECL_TEXT">
+Procedure generate_text(p_template  in varchar2,
+                        p_stmt      in varchar2,
+                        p_result    out nocopy clob,
+                        p_delimiter in varchar2 default null,
+                        p_indent    in number default 0)
+
+</PRE>
+<P CLASS="DESC_TEXT">
+Ueberladung mit Template und Werte-Statement<br>
+
+<BR>
+</P>
+<HR>
+<A NAME="GENERATE_TEXT4"></A>
+<P CLASS="TYPE_TITLE">
+generate_text
+</P>
+<PRE CLASS="DECL_TEXT">
+Function generate_text(p_template  in varchar2,
+                       p_stmt      in varchar2,
+                       p_delimiter in varchar2 default null,
+                       p_indent    in number default 0) return clob
+
+</PRE>
+<P CLASS="DESC_TEXT">
+Ueberladung als Funktion<br>
+
+<BR>
+</P>
+<HR>
+<A NAME="GENERATE_TEXT5"></A>
+<P CLASS="TYPE_TITLE">
+generate_text
+</P>
+<PRE CLASS="DECL_TEXT">
+Function generate_text(p_table in table) return table
+
+</PRE>
+<P CLASS="DESC_TEXT">
+$ELSE<br>
+
+<BR>
+</P>
+<HR>
+<A NAME="DESCRIBE"></A>
+<P CLASS="TYPE_TITLE">
+describe
+</P>
+<PRE CLASS="DECL_TEXT">
+Function describe(p_table in out nocopy dbms_tf.table_t)
+  return dbms_tf.describe_t
+
+</PRE>
+<HR>
+<A NAME="GENERATE_TEXT_TABLE"></A>
+<P CLASS="TYPE_TITLE">
+generate_text_table
+</P>
+<PRE CLASS="DECL_TEXT">
+Procedure generate_text_table(p_cursor in out nocopy sys_refcursor,
+                              p_result out nocopy <A HREF="clob_table.html">clob_table</A>)
+
+</PRE>
+<P CLASS="DESC_TEXT">
+Methoden zur Erzeugung von Listen von CLOBs<br>
+
+<BR>
+</P>
+<HR>
+<A NAME="GENERATE_TEXT_TABLE2"></A>
+<P CLASS="TYPE_TITLE">
+generate_text_table
+</P>
+<PRE CLASS="DECL_TEXT">
+Function generate_text_table(p_cursor in sys_refcursor) return <A HREF="clob_table.html">clob_table</A>
+
+</PRE>
+<P CLASS="DESC_TEXT">
+Ueberladung als Funktion<br>
+
+<BR>
+</P>
+<HR>
+<A NAME="GENERATE_TEXT_TABLE3"></A>
+<P CLASS="TYPE_TITLE">
+generate_text_table
+</P>
+<PRE CLASS="DECL_TEXT">
+Function generate_text_table(p_table in table) return table
+
+</PRE>
+<P CLASS="DESC_TEXT">
+$ELSE<br>
+
+<BR>
+</P>
+<HR>
+<A NAME="GTT_DESCRIBE"></A>
+<P CLASS="TYPE_TITLE">
+gtt_describe
+</P>
+<PRE CLASS="DECL_TEXT">
+Function gtt_describe(p_table in out nocopy dbms_tf.table_t)
+  return dbms_tf.describe_t
+
+</PRE>
+<HR>
+<A NAME="GET_ANCHORS"></A>
+<P CLASS="TYPE_TITLE">
+get_anchors
+</P>
+<PRE CLASS="DECL_TEXT">
+Function get_anchors(p_uttm_type         in varchar2,
+                     p_uttm_name         in varchar2,
+                     p_uttm_mode         in varchar2,
+                     p_with_replacements in <A HREF=#FLAG_TYPE>flag_type</A> default <A HREF=#C_FALSE>C_FALSE</A>)
+  return char_table
+
+</PRE>
+<P CLASS="DESC_TEXT">
+Lists the replacement anchors in templates from <A HREF="UTL_TEXT_TEMPLATES.html">UTL_TEXT_TEMPLATES</A>
+
+<BR>
+</P>
+<A NAME="Usage"></A>
+<TABLE CLASS="LIST_TABLE"><TR><TD CLASS="LIST_TITLE">
+Usage
+</TD></TR></TABLE>
+<TABLE CLASS="LIST_TABLE">
+<TR><TD VALIGN="TOP" CLASS="LIST_ITEM" WIDTH=1%>
+</TD><TD CLASS="DESC_TEXT" WIDTH=95%>
+Used to read the replacement anchors from a template and return them as a CHAR_TABLE instance<br>
+
+</TD></TR>
+</TABLE>
+<BR>
+<A NAME="Parameters"></A>
+<TABLE CLASS="LIST_TABLE"><TR><TD CLASS="LIST_TITLE">
+Parameters
+</TD></TR></TABLE>
+<TABLE CLASS="LIST_TABLE">
+<TR><TD VALIGN="TOP" CLASS="LIST_ITEM" WIDTH=1%>
+</TD><TD VALIGN="TOP" CLASS="LIST_ITEM" WIDTH=1%>
+p_uttm_type&nbsp;&nbsp;
+</TD><TD CLASS="DESC_TEXT" WIDTH=95%>
+Type of the template<br>
+
+</TD></TR>
+<TR><TD VALIGN="TOP" CLASS="LIST_ITEM" WIDTH=1%>
+</TD><TD VALIGN="TOP" CLASS="LIST_ITEM" WIDTH=1%>
+p_uttm_name&nbsp;&nbsp;
+</TD><TD CLASS="DESC_TEXT" WIDTH=95%>
+Name of the template<br>
+
+</TD></TR>
+<TR><TD VALIGN="TOP" CLASS="LIST_ITEM" WIDTH=1%>
+</TD><TD VALIGN="TOP" CLASS="LIST_ITEM" WIDTH=1%>
+p_uttm_mode&nbsp;&nbsp;
+</TD><TD CLASS="DESC_TEXT" WIDTH=95%>
+Execution mode of the template<br>
+
+</TD></TR>
+<TR><TD VALIGN="TOP" CLASS="LIST_ITEM" WIDTH=1%>
+</TD><TD VALIGN="TOP" CLASS="LIST_ITEM" WIDTH=1%>
+[p_with_replacements]&nbsp;&nbsp;
+</TD><TD CLASS="DESC_TEXT" WIDTH=95%>
+Flag indicating whether all replacement strings should be displayed (<A HREF=#C_TRUE>C_TRUE</A>) or not (<A HREF=#C_FALSE>C_FALSE</A>)<br>
+
+</TD></TR>
+</TABLE>
+<BR>
+<A NAME="Returns"></A>
+<TABLE CLASS="LIST_TABLE"><TR><TD CLASS="LIST_TITLE">
+Returns
+</TD></TR></TABLE>
+<TABLE CLASS="LIST_TABLE">
+<TR><TD VALIGN="TOP" CLASS="LIST_ITEM" WIDTH=1%>
+</TD><TD CLASS="DESC_TEXT" WIDTH=95%>
+char_table with anchors<br>
+
+</TD></TR>
+</TABLE>
+<BR>
+<HR>
+<A NAME="MERGE_TEMPLATE"></A>
+<P CLASS="TYPE_TITLE">
+merge_template
+</P>
+<PRE CLASS="DECL_TEXT">
+Procedure merge_template(p_uttm_type         in varchar2,
+                         p_uttm_name         in varchar2,
+                         p_uttm_mode         in varchar2,
+                         p_uttm_text         in varchar2,
+                         p_uttm_log_text     in varchar2 default null,
+                         p_uttm_log_severity in number default null)
+
+</PRE>
+<P CLASS="DESC_TEXT">
+Method for creating a template<br>
+
+<BR>
+</P>
+<A NAME="Usage"></A>
+<TABLE CLASS="LIST_TABLE"><TR><TD CLASS="LIST_TITLE">
+Usage
+</TD></TR></TABLE>
+<TABLE CLASS="LIST_TABLE">
+<TR><TD VALIGN="TOP" CLASS="LIST_ITEM" WIDTH=1%>
+</TD><TD CLASS="DESC_TEXT" WIDTH=95%>
+Is used to create a template<br>
+
+</TD></TR>
+</TABLE>
+<BR>
+<A NAME="Parameters"></A>
+<TABLE CLASS="LIST_TABLE"><TR><TD CLASS="LIST_TITLE">
+Parameters
+</TD></TR></TABLE>
+<TABLE CLASS="LIST_TABLE">
+<TR><TD VALIGN="TOP" CLASS="LIST_ITEM" WIDTH=1%>
+</TD><TD VALIGN="TOP" CLASS="LIST_ITEM" WIDTH=1%>
+p_uttm_type&nbsp;&nbsp;
+</TD><TD CLASS="DESC_TEXT" WIDTH=95%>
+Type of the template<br>
+
+</TD></TR>
+<TR><TD VALIGN="TOP" CLASS="LIST_ITEM" WIDTH=1%>
+</TD><TD VALIGN="TOP" CLASS="LIST_ITEM" WIDTH=1%>
+p_uttm_name&nbsp;&nbsp;
+</TD><TD CLASS="DESC_TEXT" WIDTH=95%>
+Name of the template<br>
+
+</TD></TR>
+<TR><TD VALIGN="TOP" CLASS="LIST_ITEM" WIDTH=1%>
+</TD><TD VALIGN="TOP" CLASS="LIST_ITEM" WIDTH=1%>
+p_uttm_mode&nbsp;&nbsp;
+</TD><TD CLASS="DESC_TEXT" WIDTH=95%>
+Execution mode of the template<br>
+
+</TD></TR>
+<TR><TD VALIGN="TOP" CLASS="LIST_ITEM" WIDTH=1%>
+</TD><TD VALIGN="TOP" CLASS="LIST_ITEM" WIDTH=1%>
+p_uttm_text&nbsp;&nbsp;
+</TD><TD CLASS="DESC_TEXT" WIDTH=95%>
+Template with replacement anchors<br>
+
+</TD></TR>
+<TR><TD VALIGN="TOP" CLASS="LIST_ITEM" WIDTH=1%>
+</TD><TD VALIGN="TOP" CLASS="LIST_ITEM" WIDTH=1%>
+[p_uttm_log_text]&nbsp;&nbsp;
+</TD><TD CLASS="DESC_TEXT" WIDTH=95%>
+Optional template with replacement anchors for logging tasks<br>
+
+</TD></TR>
+<TR><TD VALIGN="TOP" CLASS="LIST_ITEM" WIDTH=1%>
+</TD><TD VALIGN="TOP" CLASS="LIST_ITEM" WIDTH=1%>
+[p_uttm_log_severity]&nbsp;&nbsp;
+</TD><TD CLASS="DESC_TEXT" WIDTH=95%>
+Severity of the log message to control the log amount<br>
+
+</TD></TR>
+</TABLE>
+<BR>
+<HR>
+<A NAME="DELETE_TEMPLATE"></A>
+<P CLASS="TYPE_TITLE">
+delete_template
+</P>
+<PRE CLASS="DECL_TEXT">
+Procedure delete_template(p_uttm_type in varchar2,
+                          p_uttm_name in varchar2,
+                          p_uttm_mode in varchar2)
+
+</PRE>
+<P CLASS="DESC_TEXT">
+Method to delete a template<br>
+
+<BR>
+</P>
+<A NAME="Usage"></A>
+<TABLE CLASS="LIST_TABLE"><TR><TD CLASS="LIST_TITLE">
+Usage
+</TD></TR></TABLE>
+<TABLE CLASS="LIST_TABLE">
+<TR><TD VALIGN="TOP" CLASS="LIST_ITEM" WIDTH=1%>
+</TD><TD CLASS="DESC_TEXT" WIDTH=95%>
+Used to remove a template<br>
+
+</TD></TR>
+</TABLE>
+<BR>
+<A NAME="Parameters"></A>
+<TABLE CLASS="LIST_TABLE"><TR><TD CLASS="LIST_TITLE">
+Parameters
+</TD></TR></TABLE>
+<TABLE CLASS="LIST_TABLE">
+<TR><TD VALIGN="TOP" CLASS="LIST_ITEM" WIDTH=1%>
+</TD><TD VALIGN="TOP" CLASS="LIST_ITEM" WIDTH=1%>
+p_uttm_type&nbsp;&nbsp;
+</TD><TD CLASS="DESC_TEXT" WIDTH=95%>
+Type of the template<br>
+
+</TD></TR>
+<TR><TD VALIGN="TOP" CLASS="LIST_ITEM" WIDTH=1%>
+</TD><TD VALIGN="TOP" CLASS="LIST_ITEM" WIDTH=1%>
+p_uttm_name&nbsp;&nbsp;
+</TD><TD CLASS="DESC_TEXT" WIDTH=95%>
+Name of the template<br>
+
+</TD></TR>
+<TR><TD VALIGN="TOP" CLASS="LIST_ITEM" WIDTH=1%>
+</TD><TD VALIGN="TOP" CLASS="LIST_ITEM" WIDTH=1%>
+p_uttm_mode&nbsp;&nbsp;
+</TD><TD CLASS="DESC_TEXT" WIDTH=95%>
+Execution mode of the template<br>
+
+</TD></TR>
+</TABLE>
+<BR>
+<HR>
+<A NAME="REMOVE_TEMPLATES"></A>
+<P CLASS="TYPE_TITLE">
+remove_templates
+</P>
+<PRE CLASS="DECL_TEXT">
+Procedure remove_templates(p_uttm_type in varchar2)
+
+</PRE>
+<P CLASS="DESC_TEXT">
+Method to remove all templates of a template type<br>
+
+<BR>
+</P>
+<A NAME="Usage"></A>
+<TABLE CLASS="LIST_TABLE"><TR><TD CLASS="LIST_TITLE">
+Usage
+</TD></TR></TABLE>
+<TABLE CLASS="LIST_TABLE">
+<TR><TD VALIGN="TOP" CLASS="LIST_ITEM" WIDTH=1%>
+</TD><TD CLASS="DESC_TEXT" WIDTH=95%>
+Used to remove a template type<br>
+
+</TD></TR>
+</TABLE>
+<BR>
+<A NAME="Parameters"></A>
+<TABLE CLASS="LIST_TABLE"><TR><TD CLASS="LIST_TITLE">
+Parameters
+</TD></TR></TABLE>
+<TABLE CLASS="LIST_TABLE">
+<TR><TD VALIGN="TOP" CLASS="LIST_ITEM" WIDTH=1%>
+</TD><TD VALIGN="TOP" CLASS="LIST_ITEM" WIDTH=1%>
+p_uttm_type&nbsp;&nbsp;
+</TD><TD CLASS="DESC_TEXT" WIDTH=95%>
+Type of the template<br>
+
+</TD></TR>
+</TABLE>
+<BR>
+<HR>
+<A NAME="WRITE_TEMPLATE_FILE"></A>
+<P CLASS="TYPE_TITLE">
+write_template_file
+</P>
+<PRE CLASS="DECL_TEXT">
+Procedure write_template_file(p_uttm_type in char_table default null,
+                              p_directory in varchar2 := 'DATA_DIR')
+
+</PRE>
+<P CLASS="DESC_TEXT">
+method exports all templates<br>
+
+<BR>
+</P>
+<A NAME="Usage"></A>
+<TABLE CLASS="LIST_TABLE"><TR><TD CLASS="LIST_TITLE">
+Usage
+</TD></TR></TABLE>
+<TABLE CLASS="LIST_TABLE">
+<TR><TD VALIGN="TOP" CLASS="LIST_ITEM" WIDTH=1%>
+</TD><TD CLASS="DESC_TEXT" WIDTH=95%>
+Used to write a template export file to disc<br>
+
+</TD></TR>
+</TABLE>
+<BR>
+<A NAME="Parameters"></A>
+<TABLE CLASS="LIST_TABLE"><TR><TD CLASS="LIST_TITLE">
+Parameters
+</TD></TR></TABLE>
+<TABLE CLASS="LIST_TABLE">
+<TR><TD VALIGN="TOP" CLASS="LIST_ITEM" WIDTH=1%>
+</TD><TD VALIGN="TOP" CLASS="LIST_ITEM" WIDTH=1%>
+[p_uttm_type]&nbsp;&nbsp;
+</TD><TD CLASS="DESC_TEXT" WIDTH=95%>
+Type of template<br>
+
+</TD></TR>
+<TR><TD VALIGN="TOP" CLASS="LIST_ITEM" WIDTH=1%>
+</TD><TD VALIGN="TOP" CLASS="LIST_ITEM" WIDTH=1%>
+[p_directory]&nbsp;&nbsp;
+</TD><TD CLASS="DESC_TEXT" WIDTH=95%>
+Directory object in which the export file is to be written<br>
+
+</TD></TR>
+</TABLE>
+<BR>
+<HR>
+<A NAME="GET_TEMPLATES"></A>
+<P CLASS="TYPE_TITLE">
+get_templates
+</P>
+<PRE CLASS="DECL_TEXT">
+Function get_templates(p_uttm_type in char_table default null) return clob
+
+</PRE>
+<P CLASS="DESC_TEXT">
+method to output all templates as export<br>
+
+<BR>
+</P>
+<A NAME="Usage"></A>
+<TABLE CLASS="LIST_TABLE"><TR><TD CLASS="LIST_TITLE">
+Usage
+</TD></TR></TABLE>
+<TABLE CLASS="LIST_TABLE">
+<TR><TD VALIGN="TOP" CLASS="LIST_ITEM" WIDTH=1%>
+</TD><TD CLASS="DESC_TEXT" WIDTH=95%>
+Used to create a template export file in SQL<br>
+
+</TD></TR>
+</TABLE>
+<BR>
+<A NAME="Parameters"></A>
+<TABLE CLASS="LIST_TABLE"><TR><TD CLASS="LIST_TITLE">
+Parameters
+</TD></TR></TABLE>
+<TABLE CLASS="LIST_TABLE">
+<TR><TD VALIGN="TOP" CLASS="LIST_ITEM" WIDTH=1%>
+</TD><TD VALIGN="TOP" CLASS="LIST_ITEM" WIDTH=1%>
+[p_uttm_type]&nbsp;&nbsp;
+</TD><TD CLASS="DESC_TEXT" WIDTH=95%>
+Type of template<br>
+
+</TD></TR>
+</TABLE>
+<BR>
+<A NAME="Returns"></A>
+<TABLE CLASS="LIST_TABLE"><TR><TD CLASS="LIST_TITLE">
+Returns
+</TD></TR></TABLE>
+<TABLE CLASS="LIST_TABLE">
+<TR><TD VALIGN="TOP" CLASS="LIST_ITEM" WIDTH=1%>
+</TD><TD CLASS="DESC_TEXT" WIDTH=95%>
+SQL statement with Pacakge calls to generate the templates<br>
+
+</TD></TR>
+</TABLE>
+<BR>
+<HR>
+<A NAME="INITIALIZE"></A>
+<P CLASS="TYPE_TITLE">
+initialize
+</P>
+<PRE CLASS="DECL_TEXT">
+Procedure initialize
+
+</PRE>
+<P CLASS="DESC_TEXT">
+Initialization method<br>
+
+<BR>
+</P>
+<A NAME="Usage"></A>
+<TABLE CLASS="LIST_TABLE"><TR><TD CLASS="LIST_TITLE">
+Usage
+</TD></TR></TABLE>
+<TABLE CLASS="LIST_TABLE">
+<TR><TD VALIGN="TOP" CLASS="LIST_ITEM" WIDTH=1%>
+</TD><TD CLASS="DESC_TEXT" WIDTH=95%>
+Resets Package to default values<br>
+
+</TD></TR>
+</TABLE>
+<BR>
+<P>&nbsp;</P>
+<P>&nbsp;</P>
+</BODY>
+</HTML>
