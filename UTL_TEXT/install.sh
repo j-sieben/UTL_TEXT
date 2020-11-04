@@ -1,9 +1,9 @@
 #!/bin/bash
-echo -n "Enter Connect-String without 'as sysdba' for SYS account [ENTER] "
+echo -n "Enter Connect-String for DBA account [ENTER] "
 read SYSPWD
 echo ${SYSPWD}
 
-echo -n "Enter owner schema for CodeGenerator [ENTER] "
+echo -n "Enter owner schema for UTL_TEXT [ENTER] "
 read OWNER
 echo ${OWNER}
 
@@ -14,7 +14,7 @@ echo ${DEFAULT_LANGUAGE}
 NLS_LANG=GERMAN_GERMANY.AL32UTF8
 export NLS_LANG
 sqlplus /nolog<<EOF
-connect ${SYSPWD} as sysdba 
+connect ${SYSPWD}
 @utl_text_install ${OWNER} ${DEFAULT_LANGUAGE}
 pause
 EOF
