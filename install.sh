@@ -15,7 +15,7 @@ NLS_LANG=GERMAN_GERMANY.AL32UTF8
 export NLS_LANG
 sqlplus /nolog<<EOF
 connect ${SYSPWD}
-@utl_text_install ${OWNER} ${DEFAULT_LANGUAGE}
+@UTL_TEXT/utl_text_install.sql ${OWNER} ${DEFAULT_LANGUAGE}
 pause
 EOF
 

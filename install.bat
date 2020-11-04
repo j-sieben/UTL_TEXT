@@ -5,6 +5,6 @@ set /p DefLang=Enter default language (Oracle language name) for messages:
 
 set nls_lang=GERMAN_GERMANY.AL32UTF8
 
-sqlplus %Credentials% @utl_text_install.sql %InstallUser% %DefLang%
+sqlplus %Credentials% @utl_text/utl_text_install.sql %InstallUser% %DefLang%
 
 pause
