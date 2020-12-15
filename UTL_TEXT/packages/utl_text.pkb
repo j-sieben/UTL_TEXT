@@ -360,25 +360,25 @@ as
     $IF utl_text.C_WITH_PIT $THEN
     g_ignore_missing_anchors := param.get_boolean(
                                   p_par_id => 'IGNORE_MISSING_ANCHORS',
-                                  p_pgr_id => C_PARAM_GROUP);
+                                  p_par_pgr_id => C_PARAM_GROUP);
     g_default_delimiter_char := param.get_string(
                                   p_par_id => 'DEFAULT_DELIMITER_CHAR',
-                                  p_pgr_id => C_PARAM_GROUP);
+                                  p_par_pgr_id => C_PARAM_GROUP);
     g_default_date_format := param.get_string(
                                p_par_id => 'DEFAULT_DATE_FORMAT',
-                               p_pgr_id => C_PARAM_GROUP);
+                               p_par_pgr_id => C_PARAM_GROUP);
     g_main_anchor_char := param.get_string(
                             p_par_id => 'MAIN_ANCHOR_CHAR',
-                            p_pgr_id => C_PARAM_GROUP);
+                            p_par_pgr_id => C_PARAM_GROUP);
     g_secondary_anchor_char := param.get_string(
                                  p_par_id => 'SECONDARY_ANCHOR_CHAR',
-                                 p_pgr_id => C_PARAM_GROUP);
+                                 p_par_pgr_id => C_PARAM_GROUP);
     g_main_separator_char := param.get_string(
                                p_par_id => 'MAIN_SEPARATOR_CHAR',
-                               p_pgr_id => C_PARAM_GROUP);
+                               p_par_pgr_id => C_PARAM_GROUP);
     g_secondary_separator_char := param.get_string(
                                     p_par_id => 'SECONDARY_SEPARATOR_CHAR',
-                                    p_pgr_id => C_PARAM_GROUP);
+                                    p_par_pgr_id => C_PARAM_GROUP);
     $ELSE
     g_ignore_missing_anchors := true;
     g_default_delimiter_char := chr(10);
