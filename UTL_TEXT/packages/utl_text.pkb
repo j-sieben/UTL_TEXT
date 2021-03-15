@@ -810,6 +810,7 @@ as
       -- TODO: Klären, was mit CLOB > 32K passieren soll
       null;
     end if;
+    l_text := coalesce(l_text, l_prefix || l_postfix);    
     return l_text;
   end wrap_string;
 
@@ -837,8 +838,8 @@ as
     return clob
   as
     l_result clob;
-    l_before max_char;
-    l_after max_char;
+    l_before clob;
+    l_after clob;
     l_idx binary_integer;
   begin
     l_idx := instr(p_text, p_what);
