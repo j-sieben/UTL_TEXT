@@ -10,6 +10,8 @@ prompt &h3.  Remove existing installation
 prompt &h3.  Create UTL_TEXT types
 prompt &s1.   Type CLOB_TABLE
 @&type_dir.clob_table.tps
+prompt &s1.   Type CHAR_TABLE
+@&type_dir.char_table.tps
 
 prompt &h3.  Create UTL_TEXT parameters
 @&tool_dir.check_pit_exists.sql "&script_dir.ParameterGroup_UTL_TEXT.sql"

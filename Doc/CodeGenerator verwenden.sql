@@ -30,16 +30,16 @@ select *
 
 declare
   c_template constant varchar2(32767) := q'^Hallo #SALUTATION# #TITLE|| |##LAST_NAME#,^';
-  l_row_tab code_generator.row_tab;
+  l_row_tab utl_text.row_tab;
   l_result varchar2(32767);
 begin
 
-  code_generator.copy_table_to_row_tab(
+  utl_text.copy_table_to_row_tab(
     p_stmt => 'select * from addressees', 
     p_row_tab => l_row_tab, 
     p_first_column_is_template => false);
     
-  code_generator.bulk_replace(
+  utl_text.bulk_replace(
     p_template => c_template,
     p_delimiter => chr(13),
     p_row_tab => l_row_tab,
@@ -102,7 +102,7 @@ select t.text_template, a.salutation, a.title, a.first_name, a.last_name
  
  
 declare
-  l_row_tab code_generator.row_tab;
+  l_row_tab utl_text.row_tab;
   l_result varchar2(32767);
   c_stmt constant varchar2(1000) := q'^select t.text_template, a.salutation, a.title, a.first_name, a.last_name
   from addressees a
@@ -111,7 +111,7 @@ declare
  where t.template_mode = 'SALUTATION'^';
 begin
     
-  code_generator.generate_text(
+  utl_text.generate_text(
     p_stmt => c_stmt,
     p_delimiter => chr(13),
     p_result => l_result);
@@ -122,7 +122,7 @@ end;
 
 -- Zweistufige Ersetzung:
 declare
-  l_key_value_tab code_generator.key_value_tab;
+  l_key_value_tab utl_text.key_value_tab;
   l_result varchar2(32767);
   c_list_template constant varchar2(100) := q'^Anredeliste vom #DATUM#
 #LISTE#
@@ -138,7 +138,7 @@ declare
 begin
  
   -- Step 1: Detaildatensaetze bearbeiten
-  code_generator.generate_text(
+  utl_text.generate_text(
     p_stmt => c_stmt,
     p_delimiter => chr(13),
     p_result => l_result);
@@ -146,7 +146,7 @@ begin
   -- Step 2: Uebergeordnetes Template bearbeiten und Detail als Variable uebergeben
   open l_cursor for c_list_stmt using c_list_template, l_result;
   
-  code_generator.generate_text(
+  utl_text.generate_text(
     p_cursor => l_cursor,
     p_result => l_result);
   
