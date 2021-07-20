@@ -1323,21 +1323,29 @@ as
 
 
   function get_templates(
-    p_uttm_type in char_table default null)
+    p_uttm_type in char_table default null,
+    p_enclosing_chars in varchar2 default '{}')
     return clob
   as
     c_uttm_name constant varchar2(30) := 'EXPORT';
     c_uttm_type constant varchar2(30) := 'INTERNAL';
     l_script clob;
+    
+    l_prefix varchar2(20);
+    l_postfix varchar2(20);
   begin
+    
+    l_prefix := 'q''' || coalesce(substr(p_enclosing_chars, 1, 1), '{'); 
+    l_postfix := coalesce(substr(p_enclosing_chars, 2, 1), substr(p_enclosing_chars, 1, 1),'}') || ''''; 
+    
     select utl_text.generate_text(cursor(
              select uttm_text template,
                     g_newline_char cr,
                     utl_text.generate_text(cursor(
                       select t.uttm_text template,
                              d.uttm_name, d.uttm_type, d.uttm_mode,
-                             utl_text.wrap_string(d.uttm_text) uttm_text,
-                             utl_text.wrap_string(d.uttm_log_text) uttm_log_text,
+                             utl_text.wrap_string(d.uttm_text, l_prefix, l_postfix) uttm_text,
+                             utl_text.wrap_string(d.uttm_log_text, l_prefix, l_postfix) uttm_log_text,
                              d.uttm_log_severity
                         from utl_text_templates d
                         join (select column_value uttm_type

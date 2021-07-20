@@ -513,12 +513,14 @@ as
     
   
   /** method to output all templates as export
-   * %param [p_uttm_type] Type of template
+   * %param [p_uttm_type]      Type of template
+   * %param [p_enclosing_char] Optional chars that control the enclosing of the quote operator when wrapping
    * %return SQL statement with Pacakge calls to generate the templates
    * %usage  Used to create a template export file in SQL
    */
   function get_templates(
-    p_uttm_type in char_table default null)
+    p_uttm_type in char_table default null,
+    p_enclosing_chars in varchar2 default '{}')
     return clob;
     
   /** Initialization method
