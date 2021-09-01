@@ -303,6 +303,8 @@ As stated already, `UTL_TEXT` assumes that `PIT` is installed. `UTL_TEXT` uses `
 - Code errors are raised using `PIT.ERROR` methods
 - Logging of `UTL_TEXT` conversions are done with `PIT`, so any output module may benefit from the logging
 
+It is recommended to install `UTL_TEXT` into the same user that owns `PIT`, though this is not mandatory. If you decide to install `UTL_TEXT` into a new user or install it without `PIT`, you may want to control where the table `UTL_TEXT` creates is installed. Normal behaviour is to use the default tablespace of the (existing) user you install `UTL_TEXT` into. If the user exists but has not tablespace quota on any tablespace, the script will grant quota unlimited on the database default tablespace. If you want to control the tablespace yourself, change the name of the tablespace in file `UTL_TEXT/UTL_TEXT/init.sql`.
+
 `UTL_TEXT` is parameterizable by setting initializiation parameters which are called upon initialization of the package. To reset the package to its initial status, simply call method `UTL_TEXT.INITIALIZE`.
 
 Any parameter that is preset is changeable during operation using getter and setter methods. Calling them before a conversion takes place will set the conversion accordingly, initializing the package afterwards will reset it to its initial state. Here's a list of the parameters provided with `UTL_TEXT`:
