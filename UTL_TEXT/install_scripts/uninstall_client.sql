@@ -6,9 +6,6 @@
 
 prompt &h1.Revoking access to UTL_TEXT from &REMOTE_USER.
 
-prompt &h2.grant user rights
-@set_grants.sql
-
 alter session set current_schema=&INSTALL_USER.;
 prompt &h3.Revoke user rights
 

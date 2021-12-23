@@ -21,11 +21,6 @@ declare
              and object_type not like '%BODY'
              and owner = upper('&INSTALL_USER.')
            order by object_type, object_name;
-  cursor message_cur is
-    select pms_name
-      from pit_message
-     where pms_name like 'UTL_TEXT%'
-       and pms_id is not null;
 begin
   for obj in delete_object_cur loop
     begin
@@ -43,13 +38,26 @@ begin
         raise;
     end;
   end loop;
-  
+end;
+/
+
+declare
+  $IF &PIT_INSTALLED. $THEN
+  cursor message_cur is
+    select pms_name
+      from pit_message
+     where pms_name like 'UTL_TEXT%'
+       and pms_id is not null;
+  $END
+begin
+  $IF &PIT_INSTALLED. $THEN  
   for msg in message_cur loop
     pit_admin.delete_message(msg.pms_name, 'GERMAN');
     dbms_output.put_line('&s1.Message ' || msg.pms_name || ' deleted.');
   end loop;
   commit;
-  dbms_session.reset_package;
   pit_admin.create_message_package;
+  $END
+  null;
 end;
 /

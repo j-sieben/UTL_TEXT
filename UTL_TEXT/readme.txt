@@ -1,6 +1,5 @@
-To install UTL_TEXT, 
-
-- move to this folder from within a command line
-- set NLS_LANG to GERMAN_GERMANY.AL32UTF8 to avoid problems with umlaute and Unicode characters
-- call utl_text_install.sql with the name of the owner of the tool wihtin your database and the default language
-
+To install UTL_TEXT, run install.bat in this folder.
+The script will ask for the required parameter values. It is recommended to install
+the utility in a dedicated utility owner and run install_client.bat to grant
+access to any schema you require. This way, you won't double the code in several
+schemas.
