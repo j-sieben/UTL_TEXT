@@ -11,10 +11,10 @@ as
   g_ignore_missing_anchors boolean;
   g_default_date_format varchar2(200);
   g_default_delimiter_char varchar2(100);
-  g_main_anchor_char flag_type;
-  g_secondary_anchor_char flag_type;
-  g_main_separator_char flag_type;
-  g_secondary_separator_char flag_type;
+  g_main_anchor_char char_type;
+  g_secondary_anchor_char char_type;
+  g_main_separator_char char_type;
+  g_secondary_separator_char char_type;
   g_newline_char varchar2(2 byte);
 
   /** DATENTYPEN */

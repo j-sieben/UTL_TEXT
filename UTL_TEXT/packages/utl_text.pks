@@ -1,11 +1,12 @@
 create or replace package utl_text
-  authid definer
+  authid current_user
 as
 
   /** String utilities including a code generator */ 
   
   subtype ora_name_type is &ORA_NAME_TYPE.;
   subtype flag_type is &FLAG_TYPE.;
+  subtype char_type is char(1 char);
   subtype max_char is varchar2(32767 byte);
   type clob_tab is table of clob index by ora_name_type;
   
