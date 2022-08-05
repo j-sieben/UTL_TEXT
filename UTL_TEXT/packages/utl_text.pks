@@ -68,10 +68,10 @@ as
    *                      Defaults to parameter MAIN_ANCHOR_CHAR
    */
   procedure set_main_anchor_char(
-    p_char in varchar2);
+    p_char in char_type);
   
   function get_main_anchor_char 
-    return varchar2;
+    return char_type;
     
 
   /** Sets secondary anchor char for bulk replaces and text generation
@@ -79,10 +79,10 @@ as
    *                      Defaults to parameter SECONDARY_ANCHOR_CHAR
    */
   procedure set_secondary_anchor_char(
-    p_char in varchar2);
+    p_char in char_type);
   
   function get_secondary_anchor_char 
-    return varchar2;
+    return char_type;
   
   
   /** Sets primary separator char for bulk replaces and text generation
@@ -90,10 +90,10 @@ as
    *                      Defaults to parameter MAIN_SEPARATOR_CHAR
    */
   procedure set_main_separator_char(
-    p_char in varchar2);
+    p_char in char_type);
   
   function get_main_separator_char 
-    return varchar2;
+    return char_type;
   
   
   /** Sets secondary separator char for bulk replaces and text generation
@@ -101,10 +101,10 @@ as
    *                      Defaults to parameter SECONDARY_SEPARATOR_CHAR
    */
   procedure set_secondary_separator_char(
-    p_char in varchar2);
+    p_char in char_type);
   
   function get_secondary_separator_char 
-    return varchar2;
+    return char_type;
                                
                                
   /** Method to split a multi line string into concatenated strings with a quote operator per line

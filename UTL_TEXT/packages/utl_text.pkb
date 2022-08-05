@@ -433,37 +433,37 @@ as
 
 
 
-  procedure set_main_anchor_char(p_char in varchar2) as
+  procedure set_main_anchor_char(p_char in char_type) as
   begin
     g_main_anchor_char := p_char;
   end set_main_anchor_char;
 
-  function get_main_anchor_char return varchar2 as
+  function get_main_anchor_char return char_type as
   begin
     return g_main_anchor_char;
   end get_main_anchor_char;
 
 
-  procedure set_secondary_anchor_char(p_char in varchar2) as
+  procedure set_secondary_anchor_char(p_char in char_type) as
   begin
     g_secondary_anchor_char := p_char;
   end set_secondary_anchor_char;
 
-  function get_secondary_anchor_char return varchar2 as
+  function get_secondary_anchor_char return char_type as
   begin
     return g_secondary_anchor_char;
   end get_secondary_anchor_char;
 
 
   procedure set_main_separator_char(
-    p_char in varchar2)
+    p_char in char_type)
   as
   begin
     g_main_separator_char := p_char;
   end set_main_separator_char;
 
   function get_main_separator_char
-    return varchar2
+    return char_type
   as
   begin
     return g_main_separator_char;
@@ -471,14 +471,14 @@ as
 
 
   procedure set_secondary_separator_char(
-    p_char in varchar2)
+    p_char in char_type)
   as
   begin
     g_secondary_separator_char := p_char;
   end set_secondary_separator_char;
 
   function get_secondary_separator_char
-    return varchar2
+    return char_type
   as
   begin
     return g_secondary_separator_char;
@@ -1335,6 +1335,7 @@ as
     l_postfix varchar2(20);
   begin
     
+    set_secondary_anchor_char('°');
     l_prefix := 'q''' || coalesce(substr(p_enclosing_chars, 1, 1), '{'); 
     l_postfix := coalesce(substr(p_enclosing_chars, 2, 1), substr(p_enclosing_chars, 1, 1),'}') || ''''; 
     
@@ -1369,6 +1370,7 @@ as
       into l_script
       from dual;
 
+    initialize;
     return l_script;
   end get_templates;
 
