@@ -12,7 +12,7 @@ declare
             from all_objects
            where object_name in (
                  'KEY_VALUE_TAB', 'KEY_VALUE_TYPE', -- Typen
-                 'UTL_TEXT', -- Packages
+                 'UTL_TEXT', 'UTL_TEXT_ADMIN', -- Packages
                  '', -- Views
                  'UTL_TEXT_TEMPLATES',   -- Tabellen
                  '',  -- Synonyme

@@ -36,8 +36,16 @@ prompt &h3.Create table UTL_TEXT_TEMPLATES
 @&table_dir.utl_text_templates.tbl
 
 prompt &h3.Create packages
+prompt &s1.Create package UTL_TEXT_ADMIN
+@&package_dir.utl_text_admin.pks
+show errors
+
 prompt &s1.Create package UTL_TEXT
 @&package_dir.utl_text.pks
+show errors
+
+prompt &s1.Create package Body UTL_TEXT_ADMIN
+@&package_dir.utl_text_admin.pkb
 show errors
 
 prompt &s1.Create package Body UTL_TEXT

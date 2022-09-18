@@ -16,7 +16,7 @@ begin
     p_uttm_name => 'EXPORT',
     p_uttm_type => 'INTERNAL',
     p_uttm_mode => 'METHODS',
-    p_uttm_text => q'^  utl_text.merge_template(
+    p_uttm_text => q'^  utl_text_admin.merge_template(
     p_uttm_name => '#UTTM_NAME#',
     p_uttm_type => '#UTTM_TYPE#',
     p_uttm_mode => '#UTTM_MODE#',

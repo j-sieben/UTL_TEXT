@@ -5,7 +5,6 @@ as
   C_LOG_TEMPLATE constant ora_name_type := 'LOG_TEMPLATE';
   C_DATE_TYPE constant binary_integer := 12;
   C_PARAM_GROUP constant ora_name_type := 'UTL_TEXT';
-  -- characters used to mask a CR in export files
   C_CR_CHAR constant varchar2(10) := '\CR\';
 
   g_ignore_missing_anchors boolean;
@@ -17,7 +16,6 @@ as
   g_secondary_separator_char char_type;
   g_newline_char varchar2(2 byte);
 
-  /** DATENTYPEN */
   type row_tab is table of clob_tab index by binary_integer;
 
   type ref_rec_type is record(
@@ -27,11 +25,16 @@ as
   g_ref_rec ref_rec_type;
 
 
-  /* HELPER */
-  /** Method to open a cursor
-   * %param  p_cur     Cursor ID
-   * %param  p_cursor  SYS_REFCURSOR
-   * %usage  Overload is used if a sys_refcursor needs to be converted to a DBMS_SQL cursor
+  /**
+    Group: Helper methods
+   */
+  /** 
+    Procedure: open_cursor
+      Method to open a cursor
+      
+    Parameters:
+      p_cur - Cursor ID
+      p_cursor - SYS_REFCURSOR
    */
   procedure open_cursor(
     p_cur out nocopy binary_integer,
@@ -42,36 +45,19 @@ as
   end open_cursor;
 
 
-  /** Method to open a cursor
-   * %param  p_cur   Cursor ID
-   * %param  p_stmt  SELECT statement
-   * %usage  Overload is used if a select statment needs to be parsed and opened by DBMS_SQL
-   */
-  procedure open_cursor(
-    p_cur out nocopy binary_integer,
-    p_stmt in varchar2)
-  as
-    -- wrapper is necessary to avoid direct execution of DDL statements
-    c_stmt constant max_char := 'select * from (#STMT#)';
-    l_stmt max_char;
-    l_dummy binary_integer;
-  begin
-    l_stmt := replace(c_stmt, '#STMT#', p_stmt);
-    p_cur := dbms_sql.open_cursor;
-    dbms_sql.parse(p_cur, l_stmt, dbms_sql.NATIVE);
-    l_dummy := dbms_sql.execute(p_cur);
-  end open_cursor;
-
-
-  /** Method to analyze a cursor
-   * %param  p_cur       Cursor ID
-   * %param  p_cur_desc  DBMS_SQL.DESC_TAB2 with details to the actual cursor
-   * %param  p_clob_tab  PL/SQL table with column_name (KEY) and initial NULL value for each column
-   * %param [p_template] Optional template. If present, no template is expected to be part of the cursor
-   * %usage  Is used to describe cursor columns. The following functionality is implemented:
-   *         - analyze cursor
-   *         - initialize PL/SQL with column_name as key an NULL as payload
-   *         - register out variables for each column with cursor
+  /** 
+    Procedure: describe_columns
+      Method to analyze a cursor. The following functionality is implemented:
+   
+      - analyze cursor
+      - initialize PL/SQL with column_name as key an NULL as payload
+      - register out variables for each column with cursor
+      
+    Parameters:
+      p_cur - Cursor ID
+      p_cur_desc - DBMS_SQL.DESC_TAB2 with details to the actual cursor
+      p_clob_tab - PL/SQL table with column_name (KEY) and initial NULL value for each column
+      p_template - Optional template. If present, no template is expected to be part of the cursor
    */
   procedure describe_columns(
     p_cur in binary_integer,
@@ -124,11 +110,14 @@ as
   end describe_columns;
 
 
-  /** Method to copy row values in prepared PL/SQL table
-   * %param  p_cur       Cursor ID
-   * %param  p_cur_desc  DBMS_SQL.DESC_TAB2 with details to the actual cursor
-   * %param  p_clob_tab  PL/SQL table with column_name (KEY) and initial NULL value for each column
-   * %usage  Is used to copy column values as payload into the prepared PL/SQL table
+  /** 
+    Procedure: copy_row_values
+      Method to copy row values in prepared PL/SQL table
+      
+    Parameters:
+      p_cur - Cursor ID
+      p_cur_desc - DBMS_SQL.DESC_TAB2 with details to the actual cursor
+      p_clob_tab - PL/SQL table with column_name (KEY) and initial NULL value for each column
    */
   procedure copy_row_values(
     p_cur in binary_integer,
@@ -151,14 +140,19 @@ as
   end copy_row_values;
 
 
-  /** Method to copy multiple row values into a nested PL/SQL table
-   * (one entry per row in the outer table, on entry per column in the inner table)
-   * %param  p_cur       Cursor ID
-   * %param  p_cur_desc  DBMS_SQL.DESC_TAB2 with details to the actual cursor
-   * %param  p_clob_tab  PL/SQL table with one entry per column
-   * %param  p_row_tab   PL/SQL with one entry of type P_CLOB_TAB per row
-   * %usage  Is used to copy all rows of a cursor including their column values into a nested PL/SQL table
-   *         Parameter P_CLOB_TAB is necessary as it has been prepared upfront and must be passed all the way through the layers
+  /** 
+    Procedure copy_table_values
+      Method to copy multiple row values into a nested PL/SQL table 
+      (one entry per row in the outer table, on entry per column in the inner table).
+      
+      Copies all rows of a cursor including their column values into a nested PL/SQL table.
+      Parameter P_CLOB_TAB is necessary as it has been prepared upfront and must be passed all the way through the layers
+      
+    Paramteres:
+      p_cur - Cursor ID
+      p_cur_desc - DBMS_SQL.DESC_TAB2 with details to the actual cursor
+      p_clob_tab - PL/SQL table with one entry per column
+      p_row_tab - PL/SQL with one entry of type P_CLOB_TAB per row
    */
   procedure copy_table_values(
     p_cur in binary_integer,
@@ -178,11 +172,14 @@ as
   end copy_table_values;
 
 
-  /** Method to copy a table into a nested PL/SQL table. Helper method as it is called three times
-   * %param  p_cur       Cursor ID des Cursor that is allowed to contain multiple rows
-   * %param  p_row_tab   PL/SQL table with the rows and column values
-   * %param [p_template] Optiona template. If present, no template is expected to be part of the cursor
-   * %usage Is used to copy a table into a nested PL/SQL table.
+  /** 
+    Procedure: copy_table_to_row_tab
+      Method to copy a table into a nested PL/SQL table. Helper method as it is called three times
+      
+    Parameters:
+      p_cur - Cursor ID of a cursor that is allowed to contain multiple rows
+      p_row_tab - PL/SQL table with the rows and column values
+      p_template - Optional template. If present, no template is expected to be part of the cursor
    */
   procedure copy_table_to_row_tab(
     p_cur in out nocopy binary_integer,
@@ -208,9 +205,15 @@ as
   end copy_table_to_row_tab;
 
 
-  /** Method to calculate the actual delimiter sign. Allows to switch delimiter off by passing in C_NO_DELIMITER
-   * %param  p_delimiter  Delimiter char. If NULL, G_DEFAULT_DELIMITER is used
-   * %return Delimiter character
+  /** 
+    Function: get_delimiter
+      Method to calculate the actual delimiter sign. Allows to switch delimiter off by passing in <C_NO_DELIMITER>
+      
+    Parameter:
+      p_delimiter - Delimiter char. If NULL, <G_DEFAULT_DELIMITER> is used
+      
+    Returns:
+      Delimiter character
    */
   function get_delimiter(
     p_delimiter in varchar2)
@@ -231,11 +234,15 @@ as
   end get_delimiter;
 
 
-  /** Method to replace all anchors with respective values from P_ROW_TAB
-   * %param  p_row_tab    Nested PL/SQL table, created by COPY_TABLE_TO_ROW_TAB
-   * %param  p_delimiter  Delimiter char to separate optional compponents within an anchor
-   * %param  p_indent     Optional amount of blanks to indent each resulting row
-   * %param  p_result     CLOB instance with the converted result
+  /** 
+    Procedure: bulk_replace
+      Method to replace all anchors with respective values from P_ROW_TAB
+      
+    Parameters:
+      p_row_tab - Nested PL/SQL table, created by <COPY_TABLE_TO_ROW_TAB>
+      p_delimiter - Delimiter char to separate optional compponents within an anchor
+      p_indent - Optional amount of blanks to indent each resulting row
+      p_result - CLOB instance with the converted result
    */
   procedure bulk_replace(
     p_row_tab in row_tab,
@@ -299,10 +306,14 @@ as
   end bulk_replace;
 
 
-  /** Method to replace all anchors with respective values from P_ROW_TAB
-   * %param  p_row_tab    Nested PL/SQL table, created by COPY_TABLE_TO_ROW_TAB
-   * %param  p_delimiter  Delimiter char to separate optional compponents within an anchor
-   * %param  p_result     CLOB_TABLE instance with the converted result (one CLOB instance per row)
+  /** 
+    Procedure: bulk_replace
+      Method to replace all anchors with respective values from P_ROW_TAB
+    
+    Paramters:
+      p_row_tab - Nested PL/SQL table, created by <COPY_TABLE_TO_ROW_TAB>
+      p_delimiter - Delimiter char to separate optional compponents within an anchor
+      p_result - <CLOB_TABLE> instance with the converted result (one CLOB instance per row)
    */
   procedure bulk_replace(
     p_row_tab in row_tab,
@@ -353,7 +364,10 @@ as
   end bulk_replace;
 
 
-  /** PACKAGE INITIALIZATION */
+  /** 
+    Procedure: initialize
+      Initializes the package and reads parameter values
+   */
   procedure initialize
   as
   begin
@@ -400,118 +414,193 @@ as
   end initialize;
 
 
-  /** INTERFACE*/
-  /** GETTER/SETTER */
+  /** 
+    Group: INTERFACE
+   */
+  /** 
+    Procedure: set_default_delimiter_char
+      see: <UTL_TEXT.set_default_delimiter_char>
+   */
   procedure set_ignore_missing_anchors(
     p_flag in boolean)
   as
   begin
     g_ignore_missing_anchors := p_flag;
   end set_ignore_missing_anchors;
-
+    
+  
+  /** 
+    Function: get_ignore_missing_anchors
+      see: <UTL_TEXT.get_ignore_missing_anchors>
+   */
   function get_ignore_missing_anchors
     return boolean
   as
   begin
     return g_ignore_missing_anchors;
   end get_ignore_missing_anchors;
-
-
+    
+  
+  /** 
+    Procedure: set_default_delimiter_char
+      see: <UTL_TEXT.set_default_delimiter_char>
+   */
   procedure set_default_delimiter_char(
     p_delimiter in varchar2)
   as
   begin
     g_default_delimiter_char := p_delimiter;
   end set_default_delimiter_char;
-
+    
+  
+  /** 
+    Function: get_default_delimiter_char
+      see: <UTL_TEXT.get_default_delimiter_char>
+   */
   function get_default_delimiter_char
     return varchar2
   as
   begin
     return g_default_delimiter_char;
   end get_default_delimiter_char;
-
-
-
+    
+  
+  /** 
+    Procedure: set_main_anchor_char
+      see: <UTL_TEXT.set_main_anchor_char>
+   */
   procedure set_main_anchor_char(p_char in char_type) as
   begin
     g_main_anchor_char := p_char;
   end set_main_anchor_char;
-
+    
+  
+  /** 
+    Function: get_main_anchor_char
+      see: <UTL_TEXT.get_main_anchor_char>
+   */
   function get_main_anchor_char return char_type as
   begin
     return g_main_anchor_char;
   end get_main_anchor_char;
-
-
+    
+  
+  /** 
+    Procedure: set_secondary_anchor_char
+      see: <UTL_TEXT.set_secondary_anchor_char>
+   */
   procedure set_secondary_anchor_char(p_char in char_type) as
   begin
     g_secondary_anchor_char := p_char;
   end set_secondary_anchor_char;
-
+    
+  
+  /** 
+    Function: get_secondary_anchor_char
+      see: <UTL_TEXT.get_secondary_anchor_char>
+   */
   function get_secondary_anchor_char return char_type as
   begin
     return g_secondary_anchor_char;
   end get_secondary_anchor_char;
-
-
+    
+  
+  /** 
+    Procedure: set_main_separator_char
+      see: <UTL_TEXT.set_main_separator_char>
+   */
   procedure set_main_separator_char(
     p_char in char_type)
   as
   begin
     g_main_separator_char := p_char;
   end set_main_separator_char;
-
+    
+  
+  /** 
+    Function: get_main_separator_char
+      see: <UTL_TEXT.get_main_separator_char>
+   */
   function get_main_separator_char
     return char_type
   as
   begin
     return g_main_separator_char;
   end get_main_separator_char;
-
-
+    
+  
+  /** 
+    Procedure: set_secondary_separator_char
+      see: <UTL_TEXT.set_secondary_separator_char>
+   */
   procedure set_secondary_separator_char(
     p_char in char_type)
   as
   begin
     g_secondary_separator_char := p_char;
   end set_secondary_separator_char;
-
+    
+  
+  /** 
+    Function: get_secondary_separator_char
+      see: <UTL_TEXT.get_secondary_separator_char>
+   */
   function get_secondary_separator_char
     return char_type
   as
   begin
     return g_secondary_separator_char;
   end get_secondary_separator_char;
-
-
+    
+  
+  /** 
+    Procedure: set_default_date_format
+      see: <UTL_TEXT.set_default_date_format>
+   */
   procedure set_default_date_format(p_format in varchar2) as
   begin
     g_default_date_format := p_format;
   end set_default_date_format;
-
+    
+  
+  /** 
+    Function: get_default_date_format
+      see: <UTL_TEXT.get_default_date_format>
+   */
   function get_default_date_format return varchar2 as
   begin
     return g_default_date_format;
   end get_default_date_format;
-
-
+    
+  
+  /** 
+    Procedure: set_newline_char
+      see: <UTL_TEXT.set_newline_char>
+   */
   procedure set_newline_char(
     p_char in varchar2)
   as
   begin
     g_newline_char := p_char;
   end set_newline_char;
-
-
+    
+  
+  /** 
+    Function: get_newline_char
+      see: <UTL_TEXT.get_newline_char>
+   */
   function get_newline_char
     return varchar2
   as
   begin
     return g_newline_char;
   end get_newline_char;
-
-  /** TEXT UTILS */
+    
+  
+  /** 
+    Function: not_empty
+      see: <UTL_TEXT.not_empty>
+   */
   function not_empty(
     p_text in varchar2)
     return boolean
@@ -519,8 +608,12 @@ as
   begin
     return length(trim(p_text)) > 0;
   end not_empty;
-
-
+    
+  
+  /** 
+    Function: append
+      see: <UTL_TEXT.append>
+   */
   function append(
     p_text in varchar2,
     p_chunk in varchar2,
@@ -539,8 +632,12 @@ as
     end if;
     return l_result;
   end append;
-
-
+    
+  
+  /** 
+    Procedure: append
+      see: <UTL_TEXT.append>
+   */
   procedure append(
     p_text in out nocopy varchar2,
     p_chunk in varchar2,
@@ -554,8 +651,12 @@ as
     end if;
     p_text := append(p_text, p_chunk, p_delimiter, l_before);
   end append;
-
-
+    
+  
+  /** 
+    Function: append_clob
+      see: <UTL_TEXT.append_clob>
+   */
   function append_clob(
     p_clob in clob,
     p_chunk in clob)
@@ -574,8 +675,12 @@ as
     end if;
     return l_clob;
   end append_clob;
-
-
+    
+  
+  /** 
+    Procedure: append_clob
+      see: <UTL_TEXT.append_clob>
+   */
   procedure append_clob(
     p_clob in out nocopy clob,
     p_chunk in clob)
@@ -583,8 +688,45 @@ as
   begin
      p_clob := append_clob(p_clob, p_chunk);
   end append_clob;
+    
+  
+  /** 
+    Function: blob_to_clob
+      see: <UTL_TEXT.blob_to_clob>
+   */
+  function blob_to_clob(
+    p_data in blob)
+    return clob
+  as
+    l_clob clob;
+    l_dest_offset  PLS_INTEGER := 1;
+    l_src_offset   PLS_INTEGER := 1;
+    l_lang_context PLS_INTEGER := DBMS_LOB.default_lang_ctx;
+    l_warning      PLS_INTEGER;
+  begin
+    dbms_lob.createtemporary(
+      lob_loc => l_clob,
+      cache   => FALSE,
+      dur     => dbms_lob.call);
 
-
+    dbms_lob.converttoclob(
+     dest_lob      => l_clob,
+     src_blob      => p_data,
+     amount        => dbms_lob.lobmaxsize,
+     dest_offset   => l_dest_offset,
+     src_offset    => l_src_offset, 
+     blob_csid     => dbms_lob.default_csid,
+     lang_context  => l_lang_context,
+     warning       => l_warning);
+    dbms_lob.append(l_clob, sqlerrm);
+    return l_clob;
+  end blob_to_clob;
+    
+  
+  /** 
+    Function: concatenate
+      see: <UTL_TEXT.concatenate>
+   */
   function concatenate(
     p_chunks in char_table,
     p_delimiter in varchar2 default C_DEL,
@@ -604,8 +746,12 @@ as
     end loop;
     return trim(p_delimiter from l_result);
   end concatenate;
-
-
+    
+  
+  /** 
+    Procedure: concatenate
+      see: <UTL_TEXT.concatenate>
+   */
   procedure concatenate(
     p_text in out nocopy varchar2,
     p_chunks in char_table,
@@ -621,8 +767,12 @@ as
     end if;
     p_text := concatenate(p_chunks, p_delimiter, l_ignore_nulls);
   end concatenate;
-
-
+    
+  
+  /** 
+    Function: string_to_table
+      see: <UTL_TEXT.string_to_table>
+   */
   function string_to_table(
     p_string in varchar2,
     p_delimiter in varchar2 default C_DEL,
@@ -638,8 +788,12 @@ as
     end loop;
     return;
   end string_to_table;
-
-
+    
+  
+  /** 
+    Procedure: string_to_table
+      see: <UTL_TEXT.string_to_table>
+   */
   procedure string_to_table(
     p_string in varchar2,
     p_table out nocopy char_table,
@@ -661,8 +815,12 @@ as
       end loop;
     end if;
   end string_to_table;
+    
   
-  
+  /** 
+    Function: table_to_string
+      see: <UTL_TEXT.table_to_string>
+   */
   function table_to_string(
     p_table in char_table,
     p_delimiter in varchar2 default C_DEL,
@@ -676,7 +834,11 @@ as
     return l_result;
   end table_to_string;
     
-    
+  
+  /** 
+    Procedure: table_to_string
+      see: <UTL_TEXT.table_to_string>
+   */
   procedure table_to_string(
     p_table in char_table,
     p_string out nocopy varchar2,
@@ -694,8 +856,12 @@ as
       p_string := p_string || p_table(i);
     end loop;
   end table_to_string;
-
-
+    
+  
+  /** 
+    Function: clob_to_blob
+      see: <UTL_TEXT.clob_to_blob>
+   */
   function clob_to_blob(
     p_clob in clob)
     return blob
@@ -731,8 +897,12 @@ as
       return null;
   $END
   end clob_to_blob;
-
-
+    
+  
+  /** 
+    Function: contains
+      see: <UTL_TEXT.contains>
+   */
   function contains(
     p_text in varchar2,
     p_pattern in varchar2,
@@ -746,8 +916,12 @@ as
     end if;
     return l_result;
   end contains;
-
-
+    
+  
+  /** 
+    Function: merge_string
+      see: <UTL_TEXT.merge_string>
+   */
   function merge_string(
     p_text in varchar2,
     p_pattern in varchar2,
@@ -779,8 +953,12 @@ as
     l_result := concatenate(l_strings, p_delimiter);
     return l_result;
   end merge_string;
-
-
+    
+  
+  /** 
+    Procedure: merge_string
+      see: <UTL_TEXT.merge_string>
+   */
   procedure merge_string(
     p_text in out nocopy varchar2,
     p_pattern in varchar2,
@@ -789,9 +967,12 @@ as
   begin
     p_text := merge_string(p_text, p_pattern, p_delimiter);
   end merge_string;
-
-
-  /** WRAP_STRING */
+    
+  
+  /** 
+    Function: wrap_string
+      see: <UTL_TEXT.wrap_string>
+   */
   function wrap_string(
     p_text in clob,
     p_prefix in varchar2 default null,
@@ -813,8 +994,12 @@ as
     l_text := coalesce(l_text, l_prefix || l_postfix);    
     return l_text;
   end wrap_string;
-
-
+    
+  
+  /** 
+    Function: unwrap_string
+      see: <UTL_TEXT.unwrap_string>
+   */
   function unwrap_string(
     p_text in clob)
     return clob
@@ -852,9 +1037,12 @@ as
       return p_text;
     end if;
   end clob_replace;
-
-
-  /** BULK_REPLACE */
+    
+  
+  /** 
+    Procedure: bulk_replace
+      see: <UTL_TEXT.bulk_replace>
+   */
   procedure bulk_replace(
     p_template in clob,
     p_clob_tab in clob_tab,
@@ -955,8 +1143,12 @@ as
       end if;
     end if;
   end bulk_replace;
-
-
+    
+  
+  /** 
+    Procedure: bulk_replace
+      see: <UTL_TEXT.bulk_replace>
+   */
   procedure bulk_replace(
     p_template in out nocopy clob,
     p_chunks in char_table
@@ -992,8 +1184,12 @@ as
       p_chunks => p_chunks);
     return l_result;
   end bulk_replace;
-
-  /** GENERATE_TEXT */
+    
+  
+  /** 
+    Procedure: generate_text
+      see: <UTL_TEXT.generate_text>
+   */
   procedure generate_text(
     p_cursor in out nocopy sys_refcursor,
     p_result out nocopy clob,
@@ -1027,8 +1223,12 @@ as
       p_result => p_result,
       p_indent => p_indent);
   end generate_text;
-
-
+    
+  
+  /** 
+    Function: generate_text
+      see: <UTL_TEXT.generate_text>
+   */
   function generate_text(
     p_cursor in sys_refcursor,
     p_delimiter in varchar2 default null,
@@ -1045,107 +1245,12 @@ as
       p_indent => p_indent);
     return l_clob;
   end generate_text;
-
-
-  procedure generate_text(
-    p_template in varchar2,
-    p_stmt in varchar2,
-    p_result out nocopy clob,
-    p_delimiter in varchar2 default null,
-    p_indent in number default 0)
-  as
-    l_cur binary_integer;
-    l_row_tab row_tab;
-  begin
-    open_cursor(
-      p_cur => l_cur,
-      p_stmt => p_stmt);
-
-    copy_table_to_row_tab(
-      p_cur => l_cur,
-      p_row_tab => l_row_tab,
-      p_template => p_template);
-
-    bulk_replace(
-      p_row_tab => l_row_tab,
-      p_delimiter => p_delimiter,
-      p_result => p_result,
-      p_indent => p_indent);
-  end generate_text;
-
-
-  function generate_text(
-    p_template in varchar2,
-    p_stmt in varchar2,
-    p_delimiter in varchar2 default null,
-    p_indent in number default 0)
-    return clob
-  as
-    l_clob clob;
-  begin
-    generate_text(
-      p_template => p_template,
-      p_stmt => p_stmt,
-      p_result => l_clob,
-      p_delimiter => p_delimiter,
-      p_indent => p_indent);
-    return l_clob;
-  end generate_text;
-
-
-  $IF dbms_db_version.ver_le_12 $THEN
-  -- Polymorphic table functions are not available on this database version
-  $ELSE
-  function describe (p_table in out nocopy dbms_tf.table_t)
-    return dbms_tf.describe_t
-  as
-  begin
-    -- make all columns readable and omit them from output
-    for i in 1 .. p_table.column.count loop
-      p_table.column(i).for_read := true;
-      p_table.column(i).pass_through := false;
-    end loop;
-
-    return dbms_tf.describe_t(
-             new_columns => dbms_tf.columns_new_t(
-                              1 => dbms_tf.column_metadata_t(
-                                     name => 'RESULT',
-                                     type => dbms_tf.type_clob))
-           );
-  end describe;
-
-  procedure fetch_rows is
-    l_rowset dbms_tf.row_set_t;
-    l_colcnt pls_integer;
-    l_rowcnt pls_integer;
-    l_result dbms_tf.tab_clob_t;
-    l_env dbms_tf.env_t;
-    l_anchor max_char;
-    l_value max_char;
-    l_template max_char;
-  begin
-    -- Initialization
-    l_env := dbms_tf.get_env();
-    dbms_tf.get_row_set(l_rowset, l_rowcnt, l_colcnt);
-
-    for r in 1 .. l_rowcnt loop
-      l_result(r) := '';
-      for c in 1 .. l_colcnt loop
-        if c = 1 then
-          l_template := dbms_tf.col_to_char(l_rowset(c), r);
-        else
-          l_anchor := '#' || l_env.get_columns(c).name || '#';
-          l_value := dbms_tf.col_to_char(l_rowset(c), r);
-          l_result(r) := replace(l_result(r), l_anchor, l_value);
-        end if;
-      end loop;
-    end loop;
-    dbms_tf.put_col(1, l_result);
-  end;
-  $END
-
-
-  /** GENERATE_TEXT_TABLE */
+    
+  
+  /** 
+    Procedure: generate_text_table
+      see: <UTL_TEXT.generate_text_table>
+   */
   procedure generate_text_table(
     p_cursor in out nocopy sys_refcursor,
     p_result out nocopy clob_table)
@@ -1166,9 +1271,12 @@ as
       p_delimiter => null,
       p_result => p_result);
   end generate_text_table;
-
-
-  -- overloaded version as function
+    
+  
+  /** 
+    Function: generate_text_table
+      see: <UTL_TEXT.generate_text_table>
+   */
   function generate_text_table(
     p_cursor in sys_refcursor)
     return clob_table
@@ -1188,20 +1296,12 @@ as
     end loop;
     return;
   end generate_text_table;
-
-
-  $IF dbms_db_version.ver_le_12 $THEN
-  -- Polymorphic table functions are not available on this database version
-  $ELSE
-  function gtt_describe (p_table in out nocopy dbms_tf.table_t)
-    return dbms_tf.describe_t
-  as
-  begin
-    return null;
-  end gtt_describe;
-  $END
-
-
+    
+  
+  /** 
+    Function: get_anchors
+      see: <UTL_TEXT.get_anchors>
+   */
   function get_anchors(
     p_uttm_type in varchar2,
     p_uttm_name in varchar2,
@@ -1252,127 +1352,6 @@ as
 
     return;
   end get_anchors;
-
-
-  /** ADMINISTRATION */
-  procedure merge_template(
-    p_uttm_type in varchar2,
-    p_uttm_name in varchar2,
-    p_uttm_mode in varchar2,
-    p_uttm_text in varchar2,
-    p_uttm_log_text in varchar2 default null,
-    p_uttm_log_severity in number default null)
-  as
-  begin
-    merge into utl_text_templates t
-    using (select p_uttm_name uttm_name,
-                  p_uttm_type uttm_type,
-                  p_uttm_mode uttm_mode,
-                  replace(p_uttm_text, C_CR_CHAR, g_newline_char) uttm_text,
-                  p_uttm_log_text uttm_log_text,
-                  p_uttm_log_severity uttm_log_severity
-             from dual) s
-       on (t.uttm_name = s.uttm_name
-       and t.uttm_type = s.uttm_type
-       and t.uttm_mode = s.uttm_mode)
-     when matched then update set
-            t.uttm_text = s.uttm_text,
-            t.uttm_log_text = s.uttm_log_text,
-            t.uttm_log_severity = s.uttm_log_severity
-     when not matched then insert(
-            t.uttm_name, t.uttm_type, t.uttm_mode, t.uttm_text, t.uttm_log_text, t.uttm_log_severity)
-          values(
-            s.uttm_name, s.uttm_type, s.uttm_mode, s.uttm_text, s.uttm_log_text, s.uttm_log_severity);
-  end merge_template;
-
-
-  procedure delete_template(
-    p_uttm_type in varchar2,
-    p_uttm_name in varchar2,
-    p_uttm_mode in varchar2)
-  as
-  begin
-    delete from utl_text_templates
-     where uttm_type = p_uttm_type
-       and uttm_name = p_uttm_name
-       and uttm_mode = p_uttm_mode;
-  end delete_template;
-
-
-  procedure remove_templates(
-    p_uttm_type in varchar2)
-  as
-  begin
-    delete from utl_text_templates
-     where uttm_type = p_uttm_type;
-  end remove_templates;
-
-
-  procedure write_template_file(
-    p_uttm_type in char_table default null,
-    p_directory in varchar2 := 'DATA_DIR')
-  as
-    c_file_name constant varchar2(30) := 'templates.sql';
-  begin
-    $IF dbms_db_version.ver_le_12_1 $THEN
-    dbms_xslprocessor.clob2file(get_templates(p_uttm_type), p_directory, c_file_name);
-    $ELSE
-    dbms_lob.clob2file(get_templates(p_uttm_type), p_directory, c_file_name);
-    $END
-  end write_template_file;
-
-
-  function get_templates(
-    p_uttm_type in char_table default null,
-    p_enclosing_chars in varchar2 default '{}')
-    return clob
-  as
-    c_uttm_name constant varchar2(30) := 'EXPORT';
-    c_uttm_type constant varchar2(30) := 'INTERNAL';
-    l_script clob;
-    
-    l_prefix varchar2(20);
-    l_postfix varchar2(20);
-  begin
-    
-    set_secondary_anchor_char('°');
-    l_prefix := 'q''' || coalesce(substr(p_enclosing_chars, 1, 1), '{'); 
-    l_postfix := coalesce(substr(p_enclosing_chars, 2, 1), substr(p_enclosing_chars, 1, 1),'}') || ''''; 
-    
-    select utl_text.generate_text(cursor(
-             select uttm_text template,
-                    g_newline_char cr,
-                    utl_text.generate_text(cursor(
-                      select t.uttm_text template,
-                             d.uttm_name, d.uttm_type, d.uttm_mode,
-                             utl_text.wrap_string(d.uttm_text, l_prefix, l_postfix) uttm_text,
-                             utl_text.wrap_string(d.uttm_log_text, l_prefix, l_postfix) uttm_log_text,
-                             d.uttm_log_severity
-                        from utl_text_templates d
-                        join (select column_value uttm_type
-                                from table(p_uttm_type)) p
-                          on d.uttm_type = p.uttm_type
-                          or p.uttm_type is null
-                       cross join (
-                             select uttm_text
-                               from utl_text_templates
-                              where uttm_name = c_uttm_name
-                                and uttm_type = c_uttm_type
-                                and uttm_mode = 'METHODS') t
-                       where d.uttm_type != c_uttm_type
-                    ), g_newline_char || g_newline_char) methods
-               from utl_text_templates d
-              where uttm_name = c_uttm_name
-                and uttm_type = c_uttm_type
-                and uttm_mode = 'FRAME'
-             )
-           ) resultat
-      into l_script
-      from dual;
-
-    initialize;
-    return l_script;
-  end get_templates;
 
 begin
   initialize;
