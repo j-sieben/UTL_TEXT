@@ -12,6 +12,26 @@ as
   C_CR_CHAR constant varchar2(10) := '\CR\';
   g_newline_char varchar2(2 byte);
    
+
+
+  /** 
+    Procedure: initialize
+      Initializes the package and reads parameter values
+   */
+  procedure initialize
+  as
+  begin
+     -- Derive delimiter from OS
+    case when regexp_like(dbms_utility.port_string, '(WIN|Windows)') then
+      g_newline_char := chr(10);
+    when regexp_like(dbms_utility.port_string, '(AIX)') then
+      g_newline_char := chr(21);
+    else
+      g_newline_char := chr(10);
+    end case;
+  end initialize;
+  
+  
   /**
     Procedure: merge_template
       see: <UTL_TEXT_ADMIN.merge_template>
@@ -119,5 +139,7 @@ as
     return l_script;
   end get_templates;
 
+begin
+  initialize;
 end utl_text_admin;
 /

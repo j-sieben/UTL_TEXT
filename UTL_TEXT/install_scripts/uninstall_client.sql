@@ -9,6 +9,7 @@ prompt &h1.Revoking access to UTL_TEXT from &REMOTE_USER.
 alter session set current_schema=&INSTALL_USER.;
 prompt &h3.Revoke user rights
 
+@tools/revoke_access execute UTL_TEXT_ADMIN
 @tools/revoke_access execute UTL_TEXT
 @tools/revoke_access select UTL_TEXT_TEMPLATES
 

@@ -3,7 +3,7 @@ set define off
 
 begin
 
-  utl_text.merge_template(
+  utl_text_admin.merge_template(
     p_uttm_name => 'EXPORT',
     p_uttm_type => 'INTERNAL',
     p_uttm_mode => 'FRAME',
@@ -12,7 +12,7 @@ begin
     p_uttm_log_severity => 70
   );
 
-  utl_text.merge_template(
+  utl_text_admin.merge_template(
     p_uttm_name => 'EXPORT',
     p_uttm_type => 'INTERNAL',
     p_uttm_mode => 'METHODS',
