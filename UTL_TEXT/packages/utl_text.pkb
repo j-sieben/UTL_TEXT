@@ -405,7 +405,7 @@ as
 
     -- Derive delimiter from OS
     case when regexp_like(dbms_utility.port_string, '(WIN|Windows)') then
-      g_newline_char := chr(10);
+      g_newline_char := chr(13) || chr(10);
     when regexp_like(dbms_utility.port_string, '(AIX)') then
       g_newline_char := chr(21);
     else
@@ -980,13 +980,23 @@ as
     return clob
   as
     l_text clob;
-    l_prefix varchar2(20) := coalesce(p_prefix, q'[q'{]');
-    l_postfix varchar2(20) := coalesce(p_postfix, q'[}']');
+    l_prefix varchar2(20) := coalesce(p_prefix, q'[q'°]');
+    l_postfix varchar2(20) := coalesce(p_postfix, q'[°']');
     C_REGEX_NEWLINE constant varchar2(30) := '(' || chr(13) || chr(10) || '|' || chr(10) || '|' || chr(13) || ' |' || chr(21) || ')';
     C_REPLACEMENT constant varchar2(100) := C_CR_CHAR || l_postfix || ' || ' || g_newline_char || l_prefix;
   begin
     if p_text is not null and dbms_lob.getlength(p_text) < 32767 then
-      l_text := l_prefix || regexp_replace(p_text, C_REGEX_NEWLINE, C_REPLACEMENT) || l_postfix;
+      -- l_text := l_prefix || regexp_replace(p_text, C_REGEX_NEWLINE, C_REPLACEMENT) || l_postfix; -- Buggy
+      if instr(p_text, chr(13) || chr(10)) > 0 then
+        l_text := replace(p_text, chr(13) || chr(10), C_REPLACEMENT);
+      end if;
+      if instr(p_text, chr(10)) > 0 then
+        l_text := replace(p_text, chr(10), C_REPLACEMENT);
+      end if;
+      if instr(p_text, chr(13)) > 0 then
+        l_text := replace(p_text, chr(13), C_REPLACEMENT);
+      end if;
+      l_text := l_prefix || coalesce(l_text, p_text) || l_postfix;
     else
       -- TODO: Klären, was mit CLOB > 32K passieren soll
       null;

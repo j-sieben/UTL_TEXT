@@ -7,7 +7,7 @@ begin
     p_uttm_name => 'EXPORT',
     p_uttm_type => 'INTERNAL',
     p_uttm_mode => 'FRAME',
-    p_uttm_text => q'^set define off#CR#set sqlprefix off#CR##CR#begin#CR##METHODS##CR#  commit;#CR#end;#CR#/#CR#set define on#CR#set sqlprefix on^',
+    p_uttm_text => q'^set define off#CR##CR#begin#CR##METHODS##CR#  commit;#CR#end;#CR#/#CR#set define on^',
     p_uttm_log_text => q'^^',
     p_uttm_log_severity => 70
   );

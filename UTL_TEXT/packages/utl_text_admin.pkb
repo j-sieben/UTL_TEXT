@@ -23,7 +23,7 @@ as
   begin
      -- Derive delimiter from OS
     case when regexp_like(dbms_utility.port_string, '(WIN|Windows)') then
-      g_newline_char := chr(10);
+      g_newline_char := chr(13) || chr(10);
     when regexp_like(dbms_utility.port_string, '(AIX)') then
       g_newline_char := chr(21);
     else
@@ -101,7 +101,7 @@ as
     l_postfix varchar2(20);
   begin
     
-    utl_text.set_secondary_anchor_char('°');
+    utl_text.set_secondary_anchor_char(null);
     l_prefix := 'q''' || coalesce(substr(p_enclosing_chars, 1, 1), '{'); 
     l_postfix := coalesce(substr(p_enclosing_chars, 2, 1), substr(p_enclosing_chars, 1, 1),'}') || ''''; 
     

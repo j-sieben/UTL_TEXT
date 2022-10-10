@@ -1,7 +1,8 @@
 -- Parameters:
+-- 1: Owner of UTL_TEXT
 -- 2: Remote user UTL_TEXT is granted to
 
-@install_scripts/init_client.sql &1.
+@install_scripts/init_client.sql &1. &2.
 
 prompt &h1.Granting access to UTL_TEXT to &REMOTE_USER.
 prompt &h3.Grant user rights
