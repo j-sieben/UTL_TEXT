@@ -29,7 +29,7 @@ prompt &s1.Type CHAR_TABLE
 prompt &h3.Create UTL_TEXT parameters
 @&tool_dir.check_pit_exists.sql "&script_dir.ParameterGroup_UTL_TEXT.sql"
 
-prompt &h3.Create UTL_TEXT messages
+prompt &h3.Create UTL_TEXT messages for &DEFAULT_LANGUAGE.
 @&tool_dir.check_pit_exists.sql "messages/&DEFAULT_LANGUAGE./MessageGroup_UTL_TEXT.sql"
 
 prompt &h3.Create table UTL_TEXT_TEMPLATES
@@ -55,7 +55,22 @@ show errors
 prompt &s1.Create internal templates
 @&script_dir.TemplateGroup_INTERNAL.sql
 
-
+prompt &h1.Recompiling invalid objects
+declare
+  l_invalid_objects binary_integer;
+begin
+  dbms_utility.compile_schema(
+    schema => user,
+    compile_all => false);
+    
+  select count(*)
+    into l_invalid_objects
+    from user_objects
+   where status = 'INVALID';
+   
+  dbms_output.put_line(l_invalid_objects || ' invalid objects found');
+end;
+/
 prompt &h1.Finished UTL_TEXT Installation
 
 exit

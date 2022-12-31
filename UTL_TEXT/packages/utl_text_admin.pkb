@@ -11,8 +11,6 @@ as
   -- characters used to mask a CR in export files
   C_CR_CHAR constant varchar2(10) := '\CR\';
   g_newline_char varchar2(2 byte);
-   
-
 
   /** 
     Procedure: initialize
@@ -88,7 +86,7 @@ as
     Function: get_templates
       see: <UTL_TEXT_ADMIN.get_templates>
    */
-  function get_templates(
+  function get_template_script(
     p_uttm_type in char_table default null,
     p_enclosing_chars in varchar2 default '{}')
     return clob
@@ -137,7 +135,61 @@ as
       from dual;
 
     return l_script;
+  end get_template_script;
+    
+  
+  /** 
+    Function: get_templates
+      see: <UTL_TEXT.get_templates>
+   */
+  function get_templates(
+    p_type in utl_text_templates.uttm_type%type,
+    p_name in utl_text_templates.uttm_name%type default null,
+    p_mode in utl_text_templates.uttm_mode%type default null)
+    return utl_text_template_table
+    pipelined
+  as
+    cursor template_cur(
+      p_type in utl_text_templates.uttm_type%type,
+      p_name in utl_text_templates.uttm_name%type)
+    is
+    select *
+      from utl_text_templates
+     where uttm_type = p_type
+       and (uttm_name = p_name or p_name is null)
+       and (uttm_mode = p_mode or p_mode is null);
+  begin
+    for tpl in template_cur(p_type, p_name) loop
+      pipe row(tpl);
+    end loop;
+    return;
+  exception
+    when NO_DATA_NEEDED then
+      null;
   end get_templates;
+    
+  
+  /** 
+    Function: get_templates
+      see: <UTL_TEXT.get_templates>
+   */
+  function get_template_types
+    return utl_text_template_type_table
+    pipelined
+  as
+    cursor uttm_cur is
+      select distinct uttm_type
+        from utl_text_templates
+       where uttm_type != 'INTERNAL';
+  begin
+    for t in uttm_cur loop
+      pipe row(t.uttm_type);
+    end loop;
+    return;
+  exception
+    when NO_DATA_NEEDED then
+      null;
+  end get_template_types;
 
 begin
   initialize;

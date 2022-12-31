@@ -10,6 +10,9 @@ as
     Author::
       Juergen Sieben, ConDeS GmbH
    */ 
+  
+  type utl_text_template_table is table of utl_text_templates%rowtype;
+  type utl_text_template_type_table is table of utl_text_templates.uttm_type%type;
     
   /**
     Procedure: merge_template
@@ -48,7 +51,7 @@ as
     
   
   /** 
-    Function: get_templates
+    Function: get_template_script
       Method to output all templates as export script
       
     Parameters:
@@ -58,10 +61,45 @@ as
     Returns:
       SQL script with package calls to generate the templates
    */
-  function get_templates(
+  function get_template_script(
     p_uttm_type in char_table default null,
     p_enclosing_chars in varchar2 default '{}')
     return clob;
+    
+  
+  /**
+    Function: get_templates
+      Method to retrieve all text templates for the given parameter selection
+    
+    Parameters:
+      p_type - Type of the templates to return
+      p_name - Optional Name of the templates
+      
+    Returns:
+      Row instance of table UTL_TEXT_TEMPLATES
+   */
+  function get_templates(
+    p_type in utl_text_templates.uttm_type%type,
+    p_name in utl_text_templates.uttm_name%type default null,
+    p_mode in utl_text_templates.uttm_mode%type default null)
+    return utl_text_template_table
+    pipelined;
+    
+  
+  /**
+    Function: get_template_types
+      Method to retrieve all text templates for the given parameter selection
+    
+    Parameters:
+      p_type - Type of the templates to return
+      p_name - Optional Name of the templates
+      
+    Returns:
+      Row instance of table UTL_TEXT_TEMPLATES
+   */
+  function get_template_types
+    return utl_text_template_type_table
+    pipelined;
     
 end utl_text_admin;
 /

@@ -283,7 +283,7 @@ as
             p_result => l_log_message);
 
           $IF utl_text.C_WITH_PIT $THEN
-          pit.log(msg.LOG_CONVERSION, msg_args(l_log_message));
+          pit.log(msg.UTL_TEXT_LOG_CONVERSION, msg_args(l_log_message));
           $ELSE
           dbms_output.put_line(l_log_message);
           $END
@@ -348,7 +348,7 @@ as
 
 
         $IF utl_text.C_WITH_PIT $THEN
-        pit.log(msg.LOG_CONVERSION, msg_args(l_log_message));
+        pit.log(msg.UTL_TEXT_LOG_CONVERSION, msg_args(l_log_message));
         $ELSE
         dbms_output.put_line(l_log_message);
         $END
@@ -893,7 +893,7 @@ as
     return l_blob;
   $IF utl_text.C_WITH_PIT $THEN   
   exception
-    when msg.ASSERT_IS_NOT_NULL_ERR then
+    when msg.PIT_ASSERT_IS_NOT_NULL_ERR then
       return null;
   $END
   end clob_to_blob;
@@ -1089,7 +1089,7 @@ as
     $IF utl_text.C_WITH_PIT $THEN
     pit.assert(
       p_condition => dbms_lob.getlength(p_template) > 0,
-      p_message_name => msg.NO_TEMPLATE);
+      p_message_name => msg.UTL_TEXT_NO_TEMPLATE);
     $ELSE
     if p_template is null then
       raise_application_error(-20000, 'Template must not be null');
@@ -1118,21 +1118,21 @@ as
       end case;
     end loop;
 
-    if l_invalid_anchors is not null and not g_ignore_missing_anchors then
+    /*if l_invalid_anchors is not null and not g_ignore_missing_anchors then
       $IF utl_text.C_WITH_PIT $THEN
       pit.error(
-        msg.INVALID_ANCHOR_NAMES,
+        msg.UTL_TEXT_INVALID_ANCHOR_NAMES,
         msg_args(l_invalid_anchors));
       $ELSE
       raise_application_error(-20001, 'The following anchors are not conforming to the naming rules: ' || l_invalid_anchors);
       $END
-    end if;
+    end if;*/
 
     if l_missing_anchors is not null and not g_ignore_missing_anchors then
       l_missing_anchors := ltrim(l_missing_anchors, g_main_anchor_char);
       $IF utl_text.C_WITH_PIT $THEN
       pit.error(
-        msg.MISSING_ANCHORS,
+        msg.UTL_TEXT_MISSING_ANCHORS,
         msg_args(l_missing_anchors));
       $ELSE
       raise_application_error(-20002, 'The following anchors are missing: ' || l_missing_anchors);
@@ -1212,7 +1212,7 @@ as
     $IF utl_text.C_WITH_PIT $THEN
     pit.assert(
       p_condition => (coalesce(p_delimiter, c_no_delimiter) = c_no_delimiter and p_indent = 0) or (p_delimiter != c_no_delimiter),
-      p_message_name => msg.INVALID_PARAMETER_COMBI);
+      p_message_name => msg.UTL_TEXT_INVALID_PARAMETER_COMBI);
     $ELSE
     if not((p_delimiter = c_no_delimiter and p_indent = 0) or (p_delimiter != c_no_delimiter)) then
       raise_application_error(-20003, 'Indenting is allowed only if a delimiter is present.');
@@ -1362,7 +1362,8 @@ as
 
     return;
   end get_anchors;
-
+    
+  
 begin
   initialize;
 end utl_text;
