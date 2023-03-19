@@ -13,7 +13,7 @@ echo ${SERVICE}
 NLS_LANG=GERMAN_GERMANY.AL32UTF8
 export NLS_LANG
 
-echo @UTL_TEXT/utl_text_install.sql | sqlplus ${OWNER}/${PWD}@${SERVICE}
+echo @UTL_TEXT/utl_text_install.sql | sqlplus ${OWNER}/"${PWD}"@${SERVICE}
 
 pause
 EOF

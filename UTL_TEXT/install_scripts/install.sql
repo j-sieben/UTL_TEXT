@@ -30,7 +30,7 @@ prompt &h3.Create UTL_TEXT messages for &DEFAULT_LANGUAGE.
 @&tool_dir.check_pit_exists.sql "messages/&DEFAULT_LANGUAGE./MessageGroup_UTL_TEXT.sql"
 
 prompt &h3.Create tables
-@&std_dir.create_table utl_text_templates
+@&tool_dir.create_table utl_text_templates
 
 prompt &h3.Create packages
 prompt &s1.Create package UTL_TEXT_ADMIN

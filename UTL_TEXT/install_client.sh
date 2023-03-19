@@ -22,9 +22,9 @@ read REMOTE_PWD
 
 echo @tools/check_client_user.sql ${REMOTE_OWNER} | sqlplus ${REMOTE_OWNER}/${REMOTE_PWD}@${SERVICE}
 
-echo @install_scripts/grant_client_access.sql ${REMOTE_OWNER} | sqlplus ${OWNER}/${PWD}@${SERVICE}
+echo @install_scripts/grant_client_access.sql ${REMOTE_OWNER} | sqlplus ${OWNER}/"${PWD}"@${SERVICE}
 
-echo @install_scripts/create_client_synonyms.sql | sqlplus ${REMOTE_OWNER}/${REMOTE_PWD}@${SERVICE}
+echo @install_scripts/create_client_synonyms.sql | sqlplus ${REMOTE_OWNER}/"${REMOTE_PWD}"@${SERVICE}
 
 pause
 EOF
