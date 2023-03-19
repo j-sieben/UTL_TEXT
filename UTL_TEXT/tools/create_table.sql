@@ -1,4 +1,4 @@
-set termout on
+set termout off
 column SCRIPT new_value SCRIPT format a100
 column MSG new_value MSG format a30
 
