@@ -17,9 +17,6 @@ prompt
 prompt &section.
 prompt &h1.State UTL_TEXT Installation at user &INSTALL_USER.
 
-prompt &h3.Remove existing installation
-@&install_scripts.clean_up_install.sql
-
 prompt &h3.Create UTL_TEXT types
 prompt &s1.Type CLOB_TABLE
 @&type_dir.clob_table.tps
@@ -32,8 +29,8 @@ prompt &h3.Create UTL_TEXT parameters
 prompt &h3.Create UTL_TEXT messages for &DEFAULT_LANGUAGE.
 @&tool_dir.check_pit_exists.sql "messages/&DEFAULT_LANGUAGE./MessageGroup_UTL_TEXT.sql"
 
-prompt &h3.Create table UTL_TEXT_TEMPLATES
-@&table_dir.utl_text_templates.tbl
+prompt &h3.Create tables
+@&std_dir.create_table utl_text_templates
 
 prompt &h3.Create packages
 prompt &s1.Create package UTL_TEXT_ADMIN
