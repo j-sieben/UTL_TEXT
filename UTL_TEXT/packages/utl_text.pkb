@@ -174,7 +174,7 @@ as
 
   /** 
     Procedure: copy_table_to_row_tab
-      Method to copy a table into a nested PL/SQL table. Helper method as it is called three times
+      Method to copy a table into a nested PL/SQL table. Designed as a helper method as it is called three times
       
     Parameters:
       p_cur - Cursor ID of a cursor that is allowed to contain multiple rows
@@ -259,43 +259,43 @@ as
   begin
     l_delimiter := get_delimiter(p_delimiter);
 
-    if p_row_tab.count > 0 then
+    if p_row_tab.count > 0 and p_result is null then
       dbms_lob.createtemporary(p_result, false, dbms_lob.call);
-
-      for i in 1 .. p_row_tab.count loop
-        l_clob_tab := p_row_tab(i);
-        if l_clob_tab.exists(C_ROW_TEMPLATE) then
-          l_template := l_clob_tab(C_ROW_TEMPLATE);
-        else
-          l_template := l_clob_tab(l_clob_tab.first);
-        end if;
-
-        bulk_replace(
-          p_template => l_template,
-          p_clob_tab => l_clob_tab,
-          p_result => l_result);
-
-        -- If column C_LOG_TEMPLATE is present, use it for logging
-        if l_clob_tab.exists(C_LOG_TEMPLATE) and l_clob_tab(C_LOG_TEMPLATE) is not null then
-          bulk_replace(
-            p_template => l_clob_tab(C_LOG_TEMPLATE),
-            p_clob_tab => l_clob_tab,
-            p_result => l_log_message);
-
-          $IF utl_text.C_WITH_PIT $THEN
-          pit.log(msg.UTL_TEXT_LOG_CONVERSION, msg_args(l_log_message));
-          $ELSE
-          dbms_output.put_line(l_log_message);
-          $END
-        end if;
-
-        if i < p_row_tab.last then
-          l_result := l_result || l_delimiter;
-        end if;
-
-        dbms_lob.append(p_result, l_result);
-      end loop;
     end if;
+
+    for i in 1 .. p_row_tab.count loop
+      l_clob_tab := p_row_tab(i);
+      if l_clob_tab.exists(C_ROW_TEMPLATE) then
+        l_template := l_clob_tab(C_ROW_TEMPLATE);
+      else
+        l_template := l_clob_tab(l_clob_tab.first);
+      end if;
+
+      bulk_replace(
+        p_template => l_template,
+        p_clob_tab => l_clob_tab,
+        p_result => l_result);
+
+      -- If column C_LOG_TEMPLATE is present, use it for logging
+      if l_clob_tab.exists(C_LOG_TEMPLATE) and l_clob_tab(C_LOG_TEMPLATE) is not null then
+        bulk_replace(
+          p_template => l_clob_tab(C_LOG_TEMPLATE),
+          p_clob_tab => l_clob_tab,
+          p_result => l_log_message);
+
+        $IF utl_text.C_WITH_PIT $THEN
+        pit.log(msg.UTL_TEXT_LOG_CONVERSION, msg_args(l_log_message));
+        $ELSE
+        dbms_output.put_line(l_log_message);
+        $END
+      end if;
+
+      if i < p_row_tab.last then
+        l_result := l_result || l_delimiter;
+      end if;
+
+      p_result := p_result || l_result;
+    end loop;
 
     -- indent complete result by P_INDENT
     if p_indent > 0 then
@@ -554,6 +554,29 @@ as
     
   
   /** 
+    Function: get_text_template
+      see: <UTL_TEXT.get_text_template>
+   */
+  function get_text_template(
+    p_type in utl_text_templates.uttm_type%type,
+    p_name in utl_text_templates.uttm_name%type,
+    p_mode in utl_text_templates.uttm_mode%type)
+    return utl_text_templates.uttm_text%type
+    result_cache
+  as
+    l_template utl_text_templates.uttm_text%type;
+  begin
+    select uttm_text
+      into l_template
+      from utl_text_templates
+     where uttm_type = p_type
+       and uttm_name = p_name
+       and uttm_mode = p_mode;
+    return l_template;
+  end get_text_template;
+    
+  
+  /** 
     Procedure: set_default_date_format
       see: <UTL_TEXT.set_default_date_format>
    */
@@ -662,16 +685,14 @@ as
     p_chunk in clob)
     return clob
   as
-    l_length number;
     l_clob clob;
   begin
-    l_length := dbms_lob.getlength(p_chunk);
-    if l_length > 0 then
+    if length(p_chunk) > 0 then
       l_clob := p_clob;
       if l_clob is null then
         dbms_lob.createtemporary(l_clob, false, dbms_lob.call);
       end if;
-      dbms_lob.writeappend(l_clob, l_length, p_chunk);
+      l_clob := l_clob || p_chunk;
     end if;
     return l_clob;
   end append_clob;
@@ -985,8 +1006,7 @@ as
     C_REGEX_NEWLINE constant varchar2(30) := '(' || chr(13) || chr(10) || '|' || chr(10) || '|' || chr(13) || ' |' || chr(21) || ')';
     C_REPLACEMENT constant varchar2(100) := C_CR_CHAR || l_postfix || ' || ' || g_newline_char || l_prefix;
   begin
-    if p_text is not null and dbms_lob.getlength(p_text) < 32767 then
-      -- l_text := l_prefix || regexp_replace(p_text, C_REGEX_NEWLINE, C_REPLACEMENT) || l_postfix; -- Buggy
+    if p_text is not null then
       if instr(p_text, chr(13) || chr(10)) > 0 then
         l_text := replace(p_text, chr(13) || chr(10), C_REPLACEMENT);
       end if;
@@ -997,9 +1017,6 @@ as
         l_text := replace(p_text, chr(13), C_REPLACEMENT);
       end if;
       l_text := l_prefix || coalesce(l_text, p_text) || l_postfix;
-    else
-      -- TODO: Klären, was mit CLOB > 32K passieren soll
-      null;
     end if;
     l_text := coalesce(l_text, l_prefix || l_postfix);    
     return l_text;
@@ -1016,11 +1033,8 @@ as
   as
     l_text clob;
   begin
-    if p_text is not null and dbms_lob.getlength(p_text) <= 32767 then
+    if p_text is not null then
       l_text := replace(p_text, C_CR_CHAR, g_newline_char);
-    else
-      -- TODO: Klären, was mit CLOB > 32K passieren soll
-      null;
     end if;
     return l_text;
   end unwrap_string;
@@ -1088,7 +1102,7 @@ as
   begin
     $IF utl_text.C_WITH_PIT $THEN
     pit.assert(
-      p_condition => dbms_lob.getlength(p_template) > 0,
+      p_condition => length(p_template) > 0,
       p_message_name => msg.UTL_TEXT_NO_TEMPLATE);
     $ELSE
     if p_template is null then
@@ -1145,7 +1159,7 @@ as
       l_template := replace(replace(p_result,
                         g_secondary_anchor_char, g_main_anchor_char),
                         g_secondary_separator_char, g_main_separator_char);
-      if dbms_lob.getlength(l_template) > 0 then
+      if length(l_template) > 0 then
         bulk_replace(
           p_template => l_template,
           p_clob_tab => p_clob_tab,
@@ -1300,7 +1314,7 @@ as
         p_result    => l_clob_table);
 
     for i in 1 .. l_clob_table.count loop
-      if dbms_lob.getlength(l_clob_table(i)) > 0 then
+      if length(l_clob_table(i)) > 0 then
         pipe row (l_clob_table(i));
       end if;
     end loop;
