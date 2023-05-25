@@ -370,7 +370,6 @@ as
    */
   procedure initialize
   as
-    l_port_string varchar2(50 byte);
   begin
     $IF utl_text.C_WITH_PIT $THEN
     g_ignore_missing_anchors := param.get_boolean(
@@ -405,10 +404,9 @@ as
     $END
 
     -- Derive delimiter from OS
-    l_port_string := dbms_utility.port_string;
-    case when instr(l_port_string, 'WIN') > 0 or instr(l_port_string, 'Windows') > 0 then
+    case when regexp_like(dbms_utility.port_string, '(WIN|Windows)') then
       g_newline_char := chr(13) || chr(10);
-    when instr(l_port_string, 'AIX') > 0 then
+    when regexp_like(dbms_utility.port_string, '(AIX)') then
       g_newline_char := chr(21);
     else
       g_newline_char := chr(10);
@@ -824,14 +822,12 @@ as
     p_omit_empty in flag_type default C_FALSE)
   as
     l_chunk max_char;
-    l_count binary_integer;
   begin
     if p_table is null then
       p_table := char_table();
     end if;
     if p_string is not null then
-      l_count := coalesce(length(p_string) - length(replace(p_string, p_delimiter)), length(p_string), 0);
-      for i in 1 .. l_count + 1 loop
+      for i in 1 .. regexp_count(p_string, '\' || p_delimiter) + 1 loop
         l_chunk := regexp_substr(p_string, '[^\' || p_delimiter || ']+', 1, i);
         if p_omit_empty = C_FALSE or l_chunk is not null then
           p_table.extend;
@@ -1077,6 +1073,8 @@ as
     p_result out nocopy clob)
   as
     C_REGEX varchar2(20) := replace('\#A#[A-Z0-9].*?\#A#', '#A#', g_main_anchor_char);
+    C_REGEX_ANCHOR varchar2(20) := '[^\' || g_main_anchor_char || ']+';
+    C_REGEX_SEPARATOR varchar2(20) := '(.*?)(\' || g_main_separator_char || '|$)';
     C_REGEX_ANCHOR_NAME constant varchar2(50) := q'^(^[0-9]+$|^[A-Z][A-Z0-9_\$#]*$)^';
 
     /** Cursor detects all replacement anchors within a template and extracts any substructure */
@@ -1084,19 +1082,13 @@ as
         with anchors as (
                 select trim(g_main_anchor_char from regexp_substr(p_template, C_REGEX, 1, level)) replacement_string
                   from dual
-               connect by level <= (length(p_template) - length(replace(p_template, g_main_anchor_char))) / 2),
+               connect by level <= regexp_count(p_template, '\' || g_main_anchor_char) / 2),
              parts as(
              select g_main_anchor_char || replacement_string || g_main_anchor_char as replacement_string,
-                    upper(case when instr(replacement_string, g_main_separator_char) > 0 then 
-                            substr(replacement_string, 1, instr(replacement_string, g_main_separator_char) - 1) 
-                          else replacement_string end) anchor,
-                    substr(replacement_string, 
-                      instr(replacement_string, g_main_separator_char) + 1, 
-                      instr(replacement_string, g_main_separator_char, 1, 2) - instr(replacement_string, g_main_separator_char) -1) prefix,
-                    substr(replacement_string, 
-                      instr(replacement_string, g_main_separator_char, 1, 2) + 1, 
-                      instr(replacement_string, g_main_separator_char, 2, 3) - instr(replacement_string, g_main_separator_char, 1, 2) -1) postfix,
-                    substr(replacement_string, instr(replacement_string, g_main_separator_char, 2, 3) + 1) null_value
+                    upper(regexp_substr(replacement_string, C_REGEX_SEPARATOR, 1, 1, null, 1)) anchor,
+                    regexp_substr(replacement_string, C_REGEX_SEPARATOR, 1, 2, null, 1) prefix,
+                    regexp_substr(replacement_string, C_REGEX_SEPARATOR, 1, 3, null, 1) postfix,
+                    regexp_substr(replacement_string, C_REGEX_SEPARATOR, 1, 4, null, 1) null_value
                from anchors)
       select replacement_string, anchor, prefix, postfix, null_value,
              case when regexp_instr(anchor, C_REGEX_ANCHOR_NAME) > 0 then 1 else 0 end valid_anchor_name
@@ -1139,6 +1131,16 @@ as
         null;
       end case;
     end loop;
+
+    /*if l_invalid_anchors is not null and not g_ignore_missing_anchors then
+      $IF utl_text.C_WITH_PIT $THEN
+      pit.error(
+        msg.UTL_TEXT_INVALID_ANCHOR_NAMES,
+        msg_args(l_invalid_anchors));
+      $ELSE
+      raise_application_error(-20001, 'The following anchors are not conforming to the naming rules: ' || l_invalid_anchors);
+      $END
+    end if;*/
 
     if l_missing_anchors is not null and not g_ignore_missing_anchors then
       l_missing_anchors := ltrim(l_missing_anchors, g_main_anchor_char);
@@ -1332,9 +1334,9 @@ as
   ) return char_table
     pipelined
   as
-    C_REGEX_ANCHOR_COMPLETE constant varchar2(100) :=
+    C_REGEX_ANCHOR_complete constant varchar2(100) :=
       '\' || g_main_anchor_char || '[A-Z0-9_\$\' || g_main_separator_char || '].*?\' || g_main_anchor_char || '';
-    C_REGEX_ANCHOR_ONLY constant varchar2(100) :=
+    C_REGEX_ANCHOR_only constant varchar2(100) :=
       '\' || g_main_anchor_char || '[A-Z0-9_\$].*?(\' || g_main_separator_char || '|\' || g_main_anchor_char || ')';
 
     l_regex varchar2(200);
