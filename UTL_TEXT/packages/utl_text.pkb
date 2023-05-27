@@ -28,10 +28,10 @@ as
   /**
     Group: Helper methods
    */
-  /** 
+  /**
     Procedure: open_cursor
       Method to open a cursor
-      
+
     Parameters:
       p_cur - Cursor ID
       p_cursor - SYS_REFCURSOR
@@ -45,14 +45,14 @@ as
   end open_cursor;
 
 
-  /** 
+  /**
     Procedure: describe_columns
       Method to analyze a cursor. The following functionality is implemented:
-   
+
       - analyze cursor
       - initialize PL/SQL with column_name as key an NULL as payload
       - register out variables for each column with cursor
-      
+
     Parameters:
       p_cur - Cursor ID
       p_cur_desc - DBMS_SQL.DESC_TAB2 with details to the actual cursor
@@ -110,10 +110,10 @@ as
   end describe_columns;
 
 
-  /** 
+  /**
     Procedure: copy_row_values
       Method to copy row values in prepared PL/SQL table
-      
+
     Parameters:
       p_cur - Cursor ID
       p_cur_desc - DBMS_SQL.DESC_TAB2 with details to the actual cursor
@@ -140,14 +140,14 @@ as
   end copy_row_values;
 
 
-  /** 
+  /**
     Procedure copy_table_values
-      Method to copy multiple row values into a nested PL/SQL table 
+      Method to copy multiple row values into a nested PL/SQL table
       (one entry per row in the outer table, on entry per column in the inner table).
-      
+
       Copies all rows of a cursor including their column values into a nested PL/SQL table.
       Parameter P_CLOB_TAB is necessary as it has been prepared upfront and must be passed all the way through the layers
-      
+
     Paramteres:
       p_cur - Cursor ID
       p_cur_desc - DBMS_SQL.DESC_TAB2 with details to the actual cursor
@@ -172,10 +172,10 @@ as
   end copy_table_values;
 
 
-  /** 
+  /**
     Procedure: copy_table_to_row_tab
       Method to copy a table into a nested PL/SQL table. Designed as a helper method as it is called three times
-      
+
     Parameters:
       p_cur - Cursor ID of a cursor that is allowed to contain multiple rows
       p_row_tab - PL/SQL table with the rows and column values
@@ -205,13 +205,13 @@ as
   end copy_table_to_row_tab;
 
 
-  /** 
+  /**
     Function: get_delimiter
       Method to calculate the actual delimiter sign. Allows to switch delimiter off by passing in <C_NO_DELIMITER>
-      
+
     Parameter:
       p_delimiter - Delimiter char. If NULL, <G_DEFAULT_DELIMITER> is used
-      
+
     Returns:
       Delimiter character
    */
@@ -234,10 +234,10 @@ as
   end get_delimiter;
 
 
-  /** 
+  /**
     Procedure: bulk_replace
       Method to replace all anchors with respective values from P_ROW_TAB
-      
+
     Parameters:
       p_row_tab - Nested PL/SQL table, created by <COPY_TABLE_TO_ROW_TAB>
       p_delimiter - Delimiter char to separate optional compponents within an anchor
@@ -306,10 +306,10 @@ as
   end bulk_replace;
 
 
-  /** 
+  /**
     Procedure: bulk_replace
       Method to replace all anchors with respective values from P_ROW_TAB
-    
+
     Paramters:
       p_row_tab - Nested PL/SQL table, created by <COPY_TABLE_TO_ROW_TAB>
       p_delimiter - Delimiter char to separate optional compponents within an anchor
@@ -364,7 +364,7 @@ as
   end bulk_replace;
 
 
-  /** 
+  /**
     Procedure: initialize
       Initializes the package and reads parameter values
    */
@@ -416,10 +416,10 @@ as
   end initialize;
 
 
-  /** 
+  /**
     Group: INTERFACE
    */
-  /** 
+  /**
     Procedure: set_default_delimiter_char
       see: <UTL_TEXT.set_default_delimiter_char>
    */
@@ -429,9 +429,9 @@ as
   begin
     g_ignore_missing_anchors := p_flag;
   end set_ignore_missing_anchors;
-    
-  
-  /** 
+
+
+  /**
     Function: get_ignore_missing_anchors
       see: <UTL_TEXT.get_ignore_missing_anchors>
    */
@@ -441,9 +441,9 @@ as
   begin
     return g_ignore_missing_anchors;
   end get_ignore_missing_anchors;
-    
-  
-  /** 
+
+
+  /**
     Procedure: set_default_delimiter_char
       see: <UTL_TEXT.set_default_delimiter_char>
    */
@@ -453,9 +453,9 @@ as
   begin
     g_default_delimiter_char := p_delimiter;
   end set_default_delimiter_char;
-    
-  
-  /** 
+
+
+  /**
     Function: get_default_delimiter_char
       see: <UTL_TEXT.get_default_delimiter_char>
    */
@@ -465,9 +465,9 @@ as
   begin
     return g_default_delimiter_char;
   end get_default_delimiter_char;
-    
-  
-  /** 
+
+
+  /**
     Procedure: set_main_anchor_char
       see: <UTL_TEXT.set_main_anchor_char>
    */
@@ -475,9 +475,9 @@ as
   begin
     g_main_anchor_char := p_char;
   end set_main_anchor_char;
-    
-  
-  /** 
+
+
+  /**
     Function: get_main_anchor_char
       see: <UTL_TEXT.get_main_anchor_char>
    */
@@ -485,9 +485,9 @@ as
   begin
     return g_main_anchor_char;
   end get_main_anchor_char;
-    
-  
-  /** 
+
+
+  /**
     Procedure: set_secondary_anchor_char
       see: <UTL_TEXT.set_secondary_anchor_char>
    */
@@ -495,9 +495,9 @@ as
   begin
     g_secondary_anchor_char := p_char;
   end set_secondary_anchor_char;
-    
-  
-  /** 
+
+
+  /**
     Function: get_secondary_anchor_char
       see: <UTL_TEXT.get_secondary_anchor_char>
    */
@@ -505,9 +505,9 @@ as
   begin
     return g_secondary_anchor_char;
   end get_secondary_anchor_char;
-    
-  
-  /** 
+
+
+  /**
     Procedure: set_main_separator_char
       see: <UTL_TEXT.set_main_separator_char>
    */
@@ -517,9 +517,9 @@ as
   begin
     g_main_separator_char := p_char;
   end set_main_separator_char;
-    
-  
-  /** 
+
+
+  /**
     Function: get_main_separator_char
       see: <UTL_TEXT.get_main_separator_char>
    */
@@ -529,9 +529,9 @@ as
   begin
     return g_main_separator_char;
   end get_main_separator_char;
-    
-  
-  /** 
+
+
+  /**
     Procedure: set_secondary_separator_char
       see: <UTL_TEXT.set_secondary_separator_char>
    */
@@ -541,9 +541,9 @@ as
   begin
     g_secondary_separator_char := p_char;
   end set_secondary_separator_char;
-    
-  
-  /** 
+
+
+  /**
     Function: get_secondary_separator_char
       see: <UTL_TEXT.get_secondary_separator_char>
    */
@@ -553,9 +553,9 @@ as
   begin
     return g_secondary_separator_char;
   end get_secondary_separator_char;
-    
-  
-  /** 
+
+
+  /**
     Function: get_text_template
       see: <UTL_TEXT.get_text_template>
    */
@@ -576,9 +576,9 @@ as
        and uttm_mode = p_mode;
     return l_template;
   end get_text_template;
-    
-  
-  /** 
+
+
+  /**
     Procedure: set_default_date_format
       see: <UTL_TEXT.set_default_date_format>
    */
@@ -586,9 +586,9 @@ as
   begin
     g_default_date_format := p_format;
   end set_default_date_format;
-    
-  
-  /** 
+
+
+  /**
     Function: get_default_date_format
       see: <UTL_TEXT.get_default_date_format>
    */
@@ -596,9 +596,9 @@ as
   begin
     return g_default_date_format;
   end get_default_date_format;
-    
-  
-  /** 
+
+
+  /**
     Procedure: set_newline_char
       see: <UTL_TEXT.set_newline_char>
    */
@@ -608,9 +608,9 @@ as
   begin
     g_newline_char := p_char;
   end set_newline_char;
-    
-  
-  /** 
+
+
+  /**
     Function: get_newline_char
       see: <UTL_TEXT.get_newline_char>
    */
@@ -620,9 +620,9 @@ as
   begin
     return g_newline_char;
   end get_newline_char;
-    
-  
-  /** 
+
+
+  /**
     Function: not_empty
       see: <UTL_TEXT.not_empty>
    */
@@ -633,9 +633,9 @@ as
   begin
     return length(trim(p_text)) > 0;
   end not_empty;
-    
-  
-  /** 
+
+
+  /**
     Function: append
       see: <UTL_TEXT.append>
    */
@@ -657,9 +657,9 @@ as
     end if;
     return l_result;
   end append;
-    
-  
-  /** 
+
+
+  /**
     Procedure: append
       see: <UTL_TEXT.append>
    */
@@ -676,9 +676,9 @@ as
     end if;
     p_text := append(p_text, p_chunk, p_delimiter, l_before);
   end append;
-    
-  
-  /** 
+
+
+  /**
     Function: append_clob
       see: <UTL_TEXT.append_clob>
    */
@@ -698,9 +698,9 @@ as
     end if;
     return l_clob;
   end append_clob;
-    
-  
-  /** 
+
+
+  /**
     Procedure: append_clob
       see: <UTL_TEXT.append_clob>
    */
@@ -711,9 +711,9 @@ as
   begin
      p_clob := append_clob(p_clob, p_chunk);
   end append_clob;
-    
-  
-  /** 
+
+
+  /**
     Function: blob_to_clob
       see: <UTL_TEXT.blob_to_clob>
    */
@@ -737,16 +737,16 @@ as
      src_blob      => p_data,
      amount        => dbms_lob.lobmaxsize,
      dest_offset   => l_dest_offset,
-     src_offset    => l_src_offset, 
+     src_offset    => l_src_offset,
      blob_csid     => dbms_lob.default_csid,
      lang_context  => l_lang_context,
      warning       => l_warning);
     dbms_lob.append(l_clob, sqlerrm);
     return l_clob;
   end blob_to_clob;
-    
-  
-  /** 
+
+
+  /**
     Function: concatenate
       see: <UTL_TEXT.concatenate>
    */
@@ -769,9 +769,9 @@ as
     end loop;
     return trim(p_delimiter from l_result);
   end concatenate;
-    
-  
-  /** 
+
+
+  /**
     Procedure: concatenate
       see: <UTL_TEXT.concatenate>
    */
@@ -790,9 +790,9 @@ as
     end if;
     p_text := concatenate(p_chunks, p_delimiter, l_ignore_nulls);
   end concatenate;
-    
-  
-  /** 
+
+
+  /**
     Function: string_to_table
       see: <UTL_TEXT.string_to_table>
    */
@@ -811,9 +811,9 @@ as
     end loop;
     return;
   end string_to_table;
-    
-  
-  /** 
+
+
+  /**
     Procedure: string_to_table
       see: <UTL_TEXT.string_to_table>
    */
@@ -840,9 +840,9 @@ as
       end loop;
     end if;
   end string_to_table;
-    
-  
-  /** 
+
+
+  /**
     Function: table_to_string
       see: <UTL_TEXT.table_to_string>
    */
@@ -855,12 +855,12 @@ as
     l_result max_char;
   begin
     table_to_string(p_table, l_result, p_delimiter, p_max_length);
-    
+
     return l_result;
   end table_to_string;
-    
-  
-  /** 
+
+
+  /**
     Procedure: table_to_string
       see: <UTL_TEXT.table_to_string>
    */
@@ -881,9 +881,9 @@ as
       p_string := p_string || p_table(i);
     end loop;
   end table_to_string;
-    
-  
-  /** 
+
+
+  /**
     Function: clob_to_blob
       see: <UTL_TEXT.clob_to_blob>
    */
@@ -897,12 +897,12 @@ as
     l_dest_offset   integer := 1;
     l_source_offset integer := 1;
   begin
-    $IF utl_text.C_WITH_PIT $THEN   
+    $IF utl_text.C_WITH_PIT $THEN
     pit.assert(dbms_lob.getlength(p_clob) > 0);
     $ELSE
     return null;
     $END
-    
+
     dbms_lob.createtemporary(l_blob, true, dbms_lob.call);
     dbms_lob.converttoblob (
       dest_lob => l_blob,
@@ -916,15 +916,15 @@ as
     );
 
     return l_blob;
-  $IF utl_text.C_WITH_PIT $THEN   
+  $IF utl_text.C_WITH_PIT $THEN
   exception
     when msg.PIT_ASSERT_IS_NOT_NULL_ERR then
       return null;
   $END
   end clob_to_blob;
-    
-  
-  /** 
+
+
+  /**
     Function: contains
       see: <UTL_TEXT.contains>
    */
@@ -941,9 +941,9 @@ as
     end if;
     return l_result;
   end contains;
-    
-  
-  /** 
+
+
+  /**
     Function: merge_string
       see: <UTL_TEXT.merge_string>
    */
@@ -978,9 +978,9 @@ as
     l_result := concatenate(l_strings, p_delimiter);
     return l_result;
   end merge_string;
-    
-  
-  /** 
+
+
+  /**
     Procedure: merge_string
       see: <UTL_TEXT.merge_string>
    */
@@ -992,9 +992,9 @@ as
   begin
     p_text := merge_string(p_text, p_pattern, p_delimiter);
   end merge_string;
-    
-  
-  /** 
+
+
+  /**
     Function: wrap_string
       see: <UTL_TEXT.wrap_string>
    */
@@ -1022,12 +1022,12 @@ as
       end if;
       l_text := l_prefix || coalesce(l_text, p_text) || l_postfix;
     end if;
-    l_text := coalesce(l_text, l_prefix || l_postfix);    
+    l_text := coalesce(l_text, l_prefix || l_postfix);
     return l_text;
   end wrap_string;
-    
-  
-  /** 
+
+
+  /**
     Function: unwrap_string
       see: <UTL_TEXT.unwrap_string>
    */
@@ -1065,9 +1065,9 @@ as
       return p_text;
     end if;
   end clob_replace;
-    
-  
-  /** 
+
+
+  /**
     Procedure: bulk_replace
       see: <UTL_TEXT.bulk_replace>
    */
@@ -1087,16 +1087,18 @@ as
                connect by level <= (length(p_template) - length(replace(p_template, g_main_anchor_char))) / 2),
              parts as(
              select g_main_anchor_char || replacement_string || g_main_anchor_char as replacement_string,
-                    upper(case when instr(replacement_string, g_main_separator_char) > 0 then 
-                            substr(replacement_string, 1, instr(replacement_string, g_main_separator_char) - 1) 
+                    upper(case when instr(replacement_string, g_main_separator_char) > 0 then
+                            substr(replacement_string, 1, instr(replacement_string, g_main_separator_char) - 1)
                           else replacement_string end) anchor,
-                    substr(replacement_string, 
-                      instr(replacement_string, g_main_separator_char) + 1, 
+                    substr(replacement_string,
+                      instr(replacement_string, g_main_separator_char) + 1,
                       instr(replacement_string, g_main_separator_char, 1, 2) - instr(replacement_string, g_main_separator_char) -1) prefix,
-                    substr(replacement_string, 
-                      instr(replacement_string, g_main_separator_char, 1, 2) + 1, 
+                    substr(replacement_string,
+                      instr(replacement_string, g_main_separator_char, 1, 2) + 1,
                       instr(replacement_string, g_main_separator_char, 2, 3) - instr(replacement_string, g_main_separator_char, 1, 2) -1) postfix,
-                    substr(replacement_string, instr(replacement_string, g_main_separator_char, 2, 3) + 1) null_value
+                    case when instr(replacement_string, g_main_separator_char) > 0 then 
+                      substr(replacement_string, instr(replacement_string, g_main_separator_char, 2, 3) + 1) 
+                    end null_value
                from anchors)
       select replacement_string, anchor, prefix, postfix, null_value,
              case when regexp_instr(anchor, C_REGEX_ANCHOR_NAME) > 0 then 1 else 0 end valid_anchor_name
@@ -1165,9 +1167,9 @@ as
       end if;
     end if;
   end bulk_replace;
-    
-  
-  /** 
+
+
+  /**
     Procedure: bulk_replace
       see: <UTL_TEXT.bulk_replace>
    */
@@ -1206,9 +1208,9 @@ as
       p_chunks => p_chunks);
     return l_result;
   end bulk_replace;
-    
-  
-  /** 
+
+
+  /**
     Procedure: generate_text
       see: <UTL_TEXT.generate_text>
    */
@@ -1245,9 +1247,9 @@ as
       p_result => p_result,
       p_indent => p_indent);
   end generate_text;
-    
-  
-  /** 
+
+
+  /**
     Function: generate_text
       see: <UTL_TEXT.generate_text>
    */
@@ -1267,9 +1269,9 @@ as
       p_indent => p_indent);
     return l_clob;
   end generate_text;
-    
-  
-  /** 
+
+
+  /**
     Procedure: generate_text_table
       see: <UTL_TEXT.generate_text_table>
    */
@@ -1293,9 +1295,9 @@ as
       p_delimiter => null,
       p_result => p_result);
   end generate_text_table;
-    
-  
-  /** 
+
+
+  /**
     Function: generate_text_table
       see: <UTL_TEXT.generate_text_table>
    */
@@ -1318,9 +1320,9 @@ as
     end loop;
     return;
   end generate_text_table;
-    
-  
-  /** 
+
+
+  /**
     Function: get_anchors
       see: <UTL_TEXT.get_anchors>
    */
@@ -1374,8 +1376,8 @@ as
 
     return;
   end get_anchors;
-    
-  
+
+
 begin
   initialize;
 end utl_text;
