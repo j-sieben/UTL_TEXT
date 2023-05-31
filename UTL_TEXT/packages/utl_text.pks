@@ -532,11 +532,15 @@ as
                    Example: #FIRENAME||, |# => If available, a comma is inserted after the first name
       p_clob_tab - Table of KEY-VALUE pairs
       p_result - Result of the conversion
+      p_enable_second_level - Flag to determine whether the seconde replacement level has to be taken into consideration.
+                              As this is a rare requirement and as it causes problems with unwanted replacments sometimes, 
+                              this option is deactivated as per default.
    */
   procedure bulk_replace(
     p_template in clob,
     p_clob_tab in clob_tab,
-    p_result out nocopy clob);
+    p_result out nocopy clob,
+    p_enable_second_level in flag_type default C_FALSE);
     
     
   /**
@@ -552,12 +556,16 @@ as
                    Example: #FIRENAME||, |# => If available, a comma is inserted after the first name
       p_clob_tab - Table of KEY-VALUE pairs
       p_chunks - List of alternating anchors and replacement characters
+      p_enable_second_level - Flag to determine whether the seconde replacement level has to be taken into consideration.
+                              As this is a rare requirement and as it causes problems with unwanted replacments sometimes, 
+                              this option is deactivated as per default.
       
     Returns: converted CLOB
    */
   function bulk_replace(
     p_template in clob,
-    p_chunks in char_table
+    p_chunks in char_table,
+    p_enable_second_level in flag_type default C_FALSE
   ) return clob;   
     
     
@@ -567,41 +575,46 @@ as
    */
   procedure bulk_replace(
     p_template in out nocopy clob,
-    p_chunks in char_table
+    p_chunks in char_table,
+    p_enable_second_level in flag_type default C_FALSE
   );
-                         
 
-  /** 
+
+  /**
     Function: generate_text
       Method for generating texts based on a dynamic template.
       Is used to generate a result text directly from an SQL statement containing a template.
-      If the SQL statement contains multiple rows, an optional P_DELIMITER parameter can be used as a separator 
+      If the SQL statement contains multiple rows, an optional P_DELIMITER parameter can be used as a separator
       between the lines.
-      Since no template is passed as a separate parameter, this overload expects the template as column 
+      Since no template is passed as a separate parameter, this overload expects the template as column
       TEMPLATE of the SQL statement. The SQL statement must contain all replacement anchors in all transferred templates can fill.
       If the cursor contains a LOG_TEMPLATE column, this template is filled in parallel to the template of the TEMPLATE column
-      
+
     Parameters:
       p_cursor - Opened cursor with one or more result rows.
                  Convention:
-                 
+
                  - TEMPLATE column: Template in which the anchors are to be inserted
                  - LOG_TEMPLATE column: log template used to output a message
                  - additional column labels correspond to the names of the replacement anchors in the templates
-                 
+
       p_result - Result of the conversion
-      p_delimiter -Optional terminating character, which is placed between the individual instances of the prepared templates
-      
+      p_delimiter - Optional terminating character, which is placed between the individual instances of the prepared templates
+      p_enable_second_level - Flag to determine whether the seconde replacement level has to be taken into consideration.
+                              As this is a rare requirement and as it causes problems with unwanted replacments sometimes, 
+                              this option is deactivated as per default.
+
     Returns:
       Converted CLOB
   */
   function generate_text(
     p_cursor in sys_refcursor,
     p_delimiter in varchar2 default null,
-    p_indent in number default 0
+    p_indent in number default 0,
+    p_enable_second_level in flag_type default C_FALSE
   ) return clob;
-  
-    
+
+
   /**
     Procedure: generate_text
       Procedure overload.
@@ -610,26 +623,29 @@ as
     p_cursor in out nocopy sys_refcursor,
     p_result out nocopy clob,
     p_delimiter in varchar2 default null,
-    p_indent in number default 0);
-                         
-                        
+    p_indent in number default 0,
+    p_enable_second_level in flag_type default C_FALSE);
+
+
   /**
     Function: generate_text_table
       see <generate_text>, but the result is a table of CLOB for each row of the cursor
    */
   function generate_text_table(
-    p_cursor in sys_refcursor
+    p_cursor in sys_refcursor,
+    p_enable_second_level in flag_type default C_FALSE
   ) return clob_table
     pipelined;
-  
-    
+
+
   /**
     Procedure: generate_text_table
       Procedure overload.
    */
   procedure generate_text_table(
     p_cursor in out nocopy sys_refcursor,
-    p_result out nocopy clob_table
+    p_result out nocopy clob_table,
+    p_enable_second_level in flag_type default C_FALSE
   );
   
                                

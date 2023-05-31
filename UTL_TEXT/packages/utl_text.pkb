@@ -243,12 +243,16 @@ as
       p_delimiter - Delimiter char to separate optional compponents within an anchor
       p_indent - Optional amount of blanks to indent each resulting row
       p_result - CLOB instance with the converted result
+      p_enable_second_level - Flag to determine whether the seconde replacement level has to be taken into consideration.
+                              As this is a rare requirement and as it causes problems with unwanted replacments sometimes, 
+                              this option is deactivated as per default.
    */
   procedure bulk_replace(
     p_row_tab in row_tab,
     p_delimiter in varchar2,
     p_indent in number,
-    p_result out nocopy clob)
+    p_result out nocopy clob,
+    p_enable_second_level in flag_type default C_FALSE)
   as
     l_result clob;
     l_template clob;
@@ -274,14 +278,16 @@ as
       bulk_replace(
         p_template => l_template,
         p_clob_tab => l_clob_tab,
-        p_result => l_result);
+        p_result => l_result,
+          p_enable_second_level => p_enable_second_level);
 
       -- If column C_LOG_TEMPLATE is present, use it for logging
       if l_clob_tab.exists(C_LOG_TEMPLATE) and l_clob_tab(C_LOG_TEMPLATE) is not null then
         bulk_replace(
           p_template => l_clob_tab(C_LOG_TEMPLATE),
           p_clob_tab => l_clob_tab,
-          p_result => l_log_message);
+          p_result => l_log_message,
+          p_enable_second_level => p_enable_second_level);
 
         $IF utl_text.C_WITH_PIT $THEN
         pit.log(msg.UTL_TEXT_LOG_CONVERSION, msg_args(l_log_message));
@@ -1074,7 +1080,8 @@ as
   procedure bulk_replace(
     p_template in clob,
     p_clob_tab in clob_tab,
-    p_result out nocopy clob)
+    p_result out nocopy clob,
+    p_enable_second_level in flag_type default C_FALSE)
   as
     C_REGEX varchar2(20) := replace('\#A#[A-Z0-9].*?\#A#', '#A#', g_main_anchor_char);
     C_REGEX_ANCHOR_NAME constant varchar2(50) := q'^(^[0-9]+$|^[A-Z][A-Z0-9_\$#]*$)^';
@@ -1156,15 +1163,17 @@ as
     -- Call recursively to replace newly entered replacement anchors.
     -- To make this possible, replace secondary anchor chars with their primary pendants before recursion
     if p_template != p_result then
-      l_template := replace(replace(p_result,
-                        g_secondary_anchor_char, g_main_anchor_char),
-                        g_secondary_separator_char, g_main_separator_char);
-      if length(l_template) > 0 then
-        bulk_replace(
-          p_template => l_template,
-          p_clob_tab => p_clob_tab,
-          p_result => p_result);
-      end if;
+      if p_enable_second_level = C_TRUE then
+        l_template := replace(replace(p_result,
+                          g_secondary_anchor_char, g_main_anchor_char),
+                          g_secondary_separator_char, g_main_separator_char);
+        if length(l_template) > 0 then
+          bulk_replace(
+            p_template => l_template,
+            p_clob_tab => p_clob_tab,
+            p_result => p_result);
+        end if;
+      END IF,
     end if;
   end bulk_replace;
 
@@ -1175,8 +1184,8 @@ as
    */
   procedure bulk_replace(
     p_template in out nocopy clob,
-    p_chunks in char_table
-  )
+    p_chunks in char_table,
+    p_enable_second_level in flag_type default C_FALSE)
   as
     l_clob_tab clob_tab;
     l_result clob;
@@ -1190,14 +1199,16 @@ as
     bulk_replace(
       p_template => p_template,
       p_clob_tab => l_clob_tab,
-      p_result => l_result);
+      p_result => l_result,
+      p_enable_second_level => p_enable_second_level);
     p_template := l_result;
   end bulk_replace;
 
 
   function bulk_replace(
     p_template in clob,
-    p_chunks in char_table
+    p_chunks in char_table,
+    p_enable_second_level in flag_type default C_FALSE
   ) return clob
   as
     l_result clob;
@@ -1205,7 +1216,8 @@ as
     l_result := p_template;
     bulk_replace(
       p_template => l_result,
-      p_chunks => p_chunks);
+      p_chunks => p_chunks,
+      p_enable_second_level => p_enable_second_level);
     return l_result;
   end bulk_replace;
 
@@ -1218,7 +1230,8 @@ as
     p_cursor in out nocopy sys_refcursor,
     p_result out nocopy clob,
     p_delimiter in varchar2 default null,
-    p_indent in number default 0)
+    p_indent in number default 0,
+    p_enable_second_level in flag_type default C_FALSE)
   as
     l_row_tab row_tab;
     l_cur binary_integer;
@@ -1245,7 +1258,8 @@ as
       p_row_tab => l_row_tab,
       p_delimiter => p_delimiter,
       p_result => p_result,
-      p_indent => p_indent);
+      p_indent => p_indent,
+      p_enable_second_level => p_enable_second_level);
   end generate_text;
 
 
@@ -1256,7 +1270,8 @@ as
   function generate_text(
     p_cursor in sys_refcursor,
     p_delimiter in varchar2 default null,
-    p_indent in number default 0)
+    p_indent in number default 0,
+    p_enable_second_level in flag_type default C_FALSE)
     return clob
   as
     l_clob clob;
@@ -1266,7 +1281,8 @@ as
       p_cursor => l_cur,
       p_result => l_clob,
       p_delimiter => p_delimiter,
-      p_indent => p_indent);
+      p_indent => p_indent,
+      p_enable_second_level => p_enable_second_level);
     return l_clob;
   end generate_text;
 
@@ -1277,7 +1293,8 @@ as
    */
   procedure generate_text_table(
     p_cursor in out nocopy sys_refcursor,
-    p_result out nocopy clob_table)
+    p_result out nocopy clob_table,
+    p_enable_second_level in flag_type default C_FALSE)
   as
     l_cur binary_integer;
     l_row_tab row_tab;
@@ -1302,7 +1319,8 @@ as
       see: <UTL_TEXT.generate_text_table>
    */
   function generate_text_table(
-    p_cursor in sys_refcursor)
+    p_cursor in sys_refcursor,
+    p_enable_second_level in flag_type default C_FALSE)
     return clob_table
     pipelined
   as
@@ -1310,11 +1328,12 @@ as
     l_cur sys_refcursor := p_cursor;
   begin
     generate_text_table(
-        p_cursor    => l_cur,
-        p_result    => l_clob_table);
+      p_cursor    => l_cur,
+      p_result    => l_clob_table,
+      p_enable_second_level => p_enable_second_level);
 
     for i in 1 .. l_clob_table.count loop
-      if length(l_clob_table(i)) > 0 then
+      if dbms_lob.getlength(l_clob_table(i)) > 0 then
         pipe row (l_clob_table(i));
       end if;
     end loop;
