@@ -11,7 +11,7 @@ prompt &h3.Grant user rights
 @tools/register_client UTL_TEXT_ADMIN
 @tools/register_client CLOB_TABLE
 @tools/register_client CHAR_TABLE
-@tools/register_client UTL_TEXT_TEMPLATES
+@tools/register_client UTL_TEXT_TEMPLATES_V
 
 prompt &h1.UTL_TEXT granted to &REMOTE_USER.
 

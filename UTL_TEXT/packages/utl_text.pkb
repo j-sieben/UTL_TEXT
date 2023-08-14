@@ -652,6 +652,8 @@ as
       else
         l_result := p_text || p_chunk || p_delimiter;
       end if;
+    else
+      l_result := p_text;
     end if;
     return l_result;
   end append;
@@ -1070,7 +1072,8 @@ as
   procedure bulk_replace(
     p_template in clob,
     p_clob_tab in clob_tab,
-    p_result out nocopy clob)
+    p_result out nocopy clob,
+    p_enable_second_level in flag_type default C_TRUE)
   as
     C_REGEX varchar2(20) := replace('\#A#[A-Z0-9].*?\#A#', '#A#', g_main_anchor_char);
     C_REGEX_ANCHOR varchar2(20) := '[^\' || g_main_anchor_char || ']+';
@@ -1156,9 +1159,11 @@ as
     -- Call recursively to replace newly entered replacement anchors.
     -- To make this possible, replace secondary anchor chars with their primary pendants before recursion
     if p_template != p_result then
-      l_template := replace(replace(p_result,
-                        g_secondary_anchor_char, g_main_anchor_char),
-                        g_secondary_separator_char, g_main_separator_char);
+      if p_enable_second_level = C_TRUE then
+        l_template := replace(replace(p_result,
+                          g_secondary_anchor_char, g_main_anchor_char),
+                          g_secondary_separator_char, g_main_separator_char);
+      end if;
       if length(l_template) > 0 then
         bulk_replace(
           p_template => l_template,
@@ -1218,7 +1223,8 @@ as
     p_cursor in out nocopy sys_refcursor,
     p_result out nocopy clob,
     p_delimiter in varchar2 default null,
-    p_indent in number default 0)
+    p_indent in number default 0,
+    p_enable_second_level in flag_type default C_TRUE)
   as
     l_row_tab row_tab;
     l_cur binary_integer;
@@ -1256,7 +1262,8 @@ as
   function generate_text(
     p_cursor in sys_refcursor,
     p_delimiter in varchar2 default null,
-    p_indent in number default 0)
+    p_indent in number default 0,
+    p_enable_second_level in flag_type default C_TRUE)
     return clob
   as
     l_clob clob;
@@ -1266,7 +1273,8 @@ as
       p_cursor => l_cur,
       p_result => l_clob,
       p_delimiter => p_delimiter,
-      p_indent => p_indent);
+      p_indent => p_indent,
+      p_enable_second_level => p_enable_second_level);
     return l_clob;
   end generate_text;
     

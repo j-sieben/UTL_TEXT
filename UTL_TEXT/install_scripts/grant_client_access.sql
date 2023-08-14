@@ -11,7 +11,7 @@ prompt &h3.Grant user rights
 @tools/grant_access execute UTL_TEXT_ADMIN
 @tools/grant_access execute CLOB_TABLE
 @tools/grant_access execute CHAR_TABLE
-@tools/grant_access read UTL_TEXT_TEMPLATES
+@tools/grant_access read UTL_TEXT_TEMPLATES_V
 
 prompt &h1.UTL_TEXT granted to &REMOTE_USER.
 

@@ -32,6 +32,9 @@ prompt &h3.Create UTL_TEXT messages for &DEFAULT_LANGUAGE.
 prompt &h3.Create tables
 @&tool_dir.create_table utl_text_templates
 
+prompt &h3.Create views
+@&tool_dir.create_view utl_text_templates_v
+
 prompt &h3.Create packages
 prompt &s1.Create package UTL_TEXT_ADMIN
 @&package_dir.utl_text_admin.pks
