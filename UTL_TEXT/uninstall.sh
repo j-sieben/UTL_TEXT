@@ -13,7 +13,8 @@ echo ${SERVICE}
 NLS_LANG=GERMAN_GERMANY.AL32UTF8
 export NLS_LANG
 
-sqlplus ${OWNER}/"${PWD}"@${SERVICE} @install_scripts/install.sql
+sqlplus ${OWNER}/"${PWD}"@${SERVICE} @install_scripts/uninstall.sql
+sqlplus ${OWNER}/"${PWD}"@${SERVICE} @install_scripts/uninstall_unit_test.sql
 
 pause
 EOF
