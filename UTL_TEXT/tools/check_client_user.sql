@@ -10,6 +10,8 @@ select max(user) UTL_TEXT_OWNER
   from user_objects
  where object_name = 'PIT_ADMIN'
    and object_type = 'PACKAGE';
+   
+set termout on
          
 begin
   if '&UTL_TEXT_OWNER.' is not null then
@@ -18,4 +20,5 @@ begin
   dbms_output.put_line('&s1.Test passed.');
 end;
 /
-set termout on
+
+exit

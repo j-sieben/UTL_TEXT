@@ -7,7 +7,7 @@ define table_dir=tables/
 define package_dir=packages/
 define tool_dir=tools/
 define type_dir=types/
-define script_dir=scripts
+define script_dir=scripts/
 define view_dir=views/
 
 @&install_scripts.init.sql

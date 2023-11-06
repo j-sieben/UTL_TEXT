@@ -4,7 +4,7 @@ read OWNER
 echo ${OWNER}
 
 echo -n "Enter password for ${OWNER} [ENTER] "
-read PWD
+read -s PWD
 
 echo -n "Enter service name for the database or PDB [ENTER] "
 read SERVICE
@@ -18,14 +18,10 @@ read REMOTE_OWNER
 echo ${REMOTE_OWNER}
 
 echo -n "Enter password for ${REMOTE_OWNER} [ENTER] "
-read REMOTE_PWD
+read -s REMOTE_PWD
 
-echo @tools/check_client_user.sql ${REMOTE_OWNER} | sqlplus ${REMOTE_OWNER}/${REMOTE_PWD}@${SERVICE}
+sqlplus ${REMOTE_OWNER}/${REMOTE_PWD}@${SERVICE} @tools/check_client_user.sql ${OWNER} ${REMOTE_OWNER}
 
-echo @install_scripts/grant_client_access.sql ${REMOTE_OWNER} | sqlplus ${OWNER}/"${PWD}"@${SERVICE}
+sqlplus ${OWNER}/"${PWD}"@${SERVICE} @install_scripts/grant_client_access.sql ${OWNER} ${REMOTE_OWNER}
 
-echo @install_scripts/create_client_synonyms.sql | sqlplus ${REMOTE_OWNER}/"${REMOTE_PWD}"@${SERVICE}
-
-pause
-EOF
-
+sqlplus ${REMOTE_OWNER}/"${REMOTE_PWD}"@${SERVICE} @install_scripts/create_client_synonyms.sql ${OWNER} ${REMOTE_OWNER}

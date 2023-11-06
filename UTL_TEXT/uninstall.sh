@@ -15,7 +15,3 @@ export NLS_LANG
 
 sqlplus ${OWNER}/"${PWD}"@${SERVICE} @install_scripts/uninstall.sql
 sqlplus ${OWNER}/"${PWD}"@${SERVICE} @install_scripts/uninstall_unit_test.sql
-
-pause
-EOF
-

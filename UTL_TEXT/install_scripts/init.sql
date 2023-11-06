@@ -4,6 +4,10 @@ set echo off
 set feedback off
 set lines 120
 set pages 9999
+
+whenever sqlerror continue
+alter session set plsql_implicit_conversion_bool = true;
+
 whenever sqlerror exit
 
 set termout off
@@ -37,10 +41,10 @@ begin
   execute immediate 'begin :x := pit_util.C_TRUE; end;' using out :true_var;
   execute immediate 'begin :x := pit_util.C_FALSE; end;' using out :false_var;
   execute immediate 'begin :x := pit.get_default_language; end;' using out :default_lang_var;
-  select lower(data_type) || '(' ||     
-           case when data_type in ('CHAR', 'VARCHAR2') then data_length || case char_used when 'B' then ' byte)' else ' char)' end
-           else data_precision || ', ' || data_scale || ')'
-         end,
+  select lower(data_type) ||   
+         case when data_type in ('CHAR', 'VARCHAR2') then '(' || data_length || case char_used when 'B' then ' byte)' else ' char)' end
+         when data_type in ('NUMBER') then '(' || data_precision || ', ' || data_scale || ')'
+         else null end,
          case when data_type in ('CHAR', 'VARCHAR2') then dbms_assert.enquote_literal(:true_var) else to_char(:true_var) end, 
          case when data_type in ('CHAR', 'VARCHAR2') then dbms_assert.enquote_literal(:false_var) else to_char(:false_var) end
     into :flag_type_var, :true_var, :false_var

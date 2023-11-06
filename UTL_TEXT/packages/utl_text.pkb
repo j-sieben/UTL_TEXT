@@ -647,13 +647,13 @@ as
     p_text in varchar2,
     p_chunk in varchar2,
     p_delimiter in varchar2 default null,
-    p_before in varchar2 default C_FALSE)
+    p_before in flag_type default C_FALSE)
     return varchar2
   as
     l_result max_char;
   begin
     if not_empty(p_chunk) then
-      if upper(p_before) != c_false then
+      if p_before != c_false then
         l_result := p_text || case when p_text is not null then p_delimiter end || p_chunk;
       else
         l_result := p_text || p_chunk || p_delimiter;
@@ -759,7 +759,7 @@ as
   function concatenate(
     p_chunks in char_table,
     p_delimiter in varchar2 default C_DEL,
-    p_ignore_nulls varchar2 default C_FALSE)
+    p_ignore_nulls flag_type default C_FALSE)
     return varchar2
   as
     l_result max_char;
@@ -787,7 +787,7 @@ as
     p_delimiter in varchar2 default C_DEL,
     p_ignore_nulls in boolean default true)
   as
-    l_ignore_nulls char(1 byte);
+    l_ignore_nulls flag_type;
   begin
     if p_ignore_nulls then
       l_ignore_nulls := c_true;
@@ -938,7 +938,7 @@ as
     p_delimiter in varchar2 default C_DEL)
     return varchar2
   as
-    l_result char(1 byte) := c_false;
+    l_result flag_type := c_false;
   begin
     if instr(p_delimiter || p_text || p_delimiter, p_delimiter || p_pattern || p_delimiter) > 0 then
       l_result := c_true;

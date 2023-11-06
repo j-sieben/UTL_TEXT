@@ -307,7 +307,7 @@ as
     p_text in varchar2,
     p_chunk in varchar2,
     p_delimiter in varchar2 default null,
-    p_before in varchar2 default C_FALSE)
+    p_before in flag_type default C_FALSE)
     return varchar2;
 
   /**
@@ -365,7 +365,7 @@ as
   function concatenate(
     p_chunks in char_table,
     p_delimiter in varchar2 default C_DEL,
-    p_ignore_nulls varchar2 default C_FALSE)
+    p_ignore_nulls flag_type default C_FALSE)
     return varchar2;
 
 
