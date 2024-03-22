@@ -27,6 +27,7 @@ as
   subtype flag_type is &FLAG_TYPE.;
   subtype char_type is char(1 char);
   subtype max_char is varchar2(32767 byte);
+  subtype max_raw is raw(32767 byte);
   type clob_tab is table of clob index by ora_name_type;
   
   /**
@@ -42,7 +43,10 @@ as
   C_WITH_PIT constant boolean := &PIT_INSTALLED.;
   C_TRUE constant flag_type := &C_TRUE.;
   C_FALSE constant flag_type := &C_FALSE.;
-  C_DEL constant varchar2(10) := ':';
+  C_DEL constant varchar2(10) := ':';  
+  C_CR constant varchar2(1) := unistr('\000d');
+  C_LF constant varchar2(1) := unistr('\000a');
+  C_CRLF constant varchar2(2) := unistr('\000d\000a');
 
   /** 
     Group: Setter and getter methods for package configuration 
@@ -246,6 +250,42 @@ as
   function blob_to_clob(
     p_data in blob)
     return clob;
+  
+  
+  /**
+    Procedure: blob_to_bas64
+      Method converts P_BLOB to a CLOB in Base64 encoding
+      
+    Parameters:
+      p_blob - BLOB to convert
+      p_newlines - Flag to indicate whether the resulting Base64 should be separated
+                   by linefeeds every 66 characters. Defaults to pit_util.C_FALSE
+      p_padding - Flag to indicate whether the resulting CLOB should be finalized
+                  by equal signs depending on their length. Defaults to pit_util.C_FALSE
+                  
+    Returns:
+      CLOB instance with the converted BLOB data
+   */
+  function blob_to_bas64(
+    p_blob in blob,
+    p_newlines in pit_util.flag_type default pit_util.C_FALSE,
+    p_padding in pit_util.flag_type default pit_util.C_FALSE)
+    return clob;
+
+
+  /**
+    Function: base64_to_blob
+      Method to convert a Base 64 encoded CLOB instance to a BLOB instance
+      
+    Parameter:
+      p_base64_content - Instance of the Base 64 encoded CLOB
+      
+    Returns:
+      BLOB instance with the decoded data
+   */
+  function base64_to_blob(
+    p_base64_content in clob) 
+    return blob;
     
   
   /** 

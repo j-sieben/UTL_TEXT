@@ -28,6 +28,23 @@ as
   /**
     Group: Helper methods
    */
+  /**
+    Procedure: push
+      Method pushes P_STR to the resulting CLOB
+   */
+  procedure push(
+    p_str in varchar2,
+    p_base64_content in out nocopy clob)
+  is
+    l_buffer pit_util.max_char;
+    l_raw max_raw;
+  begin
+    l_buffer := replace(p_str, C_LF, C_CRLF);
+    l_raw := utl_encode.base64_decode(utl_raw.cast_to_raw(l_buffer));
+    dbms_lob.writeappend(p_base64_content, utl_raw.length(l_raw), l_raw);
+  end push;
+  
+  
   /** 
     Procedure: open_cursor
       Method to open a cursor
@@ -926,6 +943,137 @@ as
       return null;
   $END
   end clob_to_blob;
+  
+  
+  /**
+    Procedure: blob_to_bas64
+      Method converts P_BLOB to a CLOB in Base64 encoding
+      
+    Parameters:
+      p_blob - BLOB to convert
+      p_newlines - Flag to indicate whether the resulting Base64 should be separated
+                   by linefeeds every 66 characters. Defaults to pit_util.C_FALSE
+      p_padding - Flag to indicate whether the resulting CLOB should be finalized
+                  by equal signs depending on their length. Defaults to pit_util.C_FALSE
+                  
+    Returns:
+      CLOB instance with the converted BLOB data
+   */
+  function blob_to_bas64(
+    p_blob in blob,
+    p_newlines in pit_util.flag_type default pit_util.C_FALSE,
+    p_padding in pit_util.flag_type default pit_util.C_FALSE)
+    return clob
+  as
+    C_PADDING constant boolean := p_padding = pit_util.C_TRUE;
+    C_NEWLINES constant boolean := p_newlines = pit_util.C_TRUE;
+    C_ENCODED_LINE_LENGTH constant pls_integer := 66;   
+
+    l_encoded_result clob;
+    l_total_length pls_integer;
+    l_position pls_integer := 1;
+    l_chunk_length pls_integer := 4800; 
+    l_chunk max_raw;
+    l_buffer pit_utl.max_char;
+    l_buffer_length pls_integer;
+  begin
+    pit.enter_mandatory;
+    
+    if p_blob is null then
+      return null;
+    end  if;
+
+    dbms_lob.createtemporary(l_encoded_result, true);
+    l_total_length := dbms_lob.getlength(p_blob);
+
+    while l_position <= l_total_length loop
+      dbms_lob.read(p_blob, l_chunk_length, l_position, l_chunk);
+      
+      l_position := l_position + l_chunk_length;
+      l_buffer := utl_raw.cast_to_varchar2(
+                    utl_encode.base64_encode(l_chunk));
+                    
+      if not C_NEWLINES then
+        l_buffer := replace(replace(l_buffer, C_LF), wwv_flow.cr);
+      end if;
+      l_buffer_length := length(l_buffer);
+      
+      if C_NEWLINES
+        and l_buffer_length > C_ENCODED_LINE_LENGTH
+        and l_position <= l_total_length
+        and mod(l_buffer_length, C_ENCODED_LINE_LENGTH) >  0
+      then
+        l_buffer := l_buffer || C_CRLF;
+        l_buffer_length := l_buffer_length + 2;
+      end if;
+      
+      dbms_lob.writeappend(l_encoded_result, l_buffer_length, l_buffer);
+    end loop;
+
+    if C_PADDING then
+      case abs(remainder(dbms_lob.getlength(l_encoded_result), 4))
+        when 1 then dbms_lob.writeappend(l_encoded_result, 3, '===');
+        when 2 then dbms_lob.writeappend(l_encoded_result, 2, '==');
+        when 3 then dbms_lob.writeappend(l_encoded_result, 1, '=');
+        else null;
+      end case;
+    end if;
+
+    pit.leave_mandatory;
+    return l_encoded_result;
+  end blob_to_bas64;
+
+
+  /**
+    Function: base64_to_blob
+      see: <UTL_TEXT.base64_to_blob>
+   */
+  function base64_to_blob(
+    p_base64_content in clob) 
+    return blob
+  as
+    l_decoded_result blob;
+    l_total_length pls_integer;
+    l_position pls_integer := 1;
+    l_chunk_length pls_integer := 8000;
+    l_chunk pit_util.max_char;
+    l_last_lf_position pls_integer;
+    l_overflow pit_util.max_char;
+  begin
+    pit.enter_mandatory;
+    
+    if p_base64_content is null then
+        return null;
+    end if;
+
+    dbms_lob.createtemporary(l_decoded_result, true);
+    l_total_length := dbms_lob.getlength(p_base64_content);
+
+    while l_position <= l_total_length loop
+      dbms_lob.read(p_base64_content, l_chunk_length, l_position, l_chunk);
+      
+      l_chunk := replace(l_chunk, wwv_flow.cr, null);
+      l_position := l_position + l_chunk_length;
+      l_last_lf_position := instr(l_chunk, C_LF, -1);
+      if l_last_lf_position > 0 then
+        push(
+          p_str => l_overflow || substr(l_chunk, 1, l_last_lf_position - 1));
+        l_overflow := substr(l_chunk, l_last_lf_position+1);
+      else
+        push(
+          p_str => l_overflow || l_chunk);
+        l_overflow := null;
+      end if;
+    end loop;
+    
+    if length(l_overflow) > 0 then
+      push(
+        p_str => l_overflow);
+    end if;
+
+    pit.leave_mandatory;
+    return l_decoded_result;
+  end base64_to_blob;
     
   
   /** 
