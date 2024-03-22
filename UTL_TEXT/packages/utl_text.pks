@@ -27,7 +27,7 @@ as
   subtype flag_type is &FLAG_TYPE.;
   subtype char_type is char(1 char);
   subtype max_char is varchar2(32767 byte);
-  subtype max_raw is raw(32767 byte);
+  subtype max_raw is raw(32767);
   type clob_tab is table of clob index by ora_name_type;
   
   /**
@@ -259,17 +259,17 @@ as
     Parameters:
       p_blob - BLOB to convert
       p_newlines - Flag to indicate whether the resulting Base64 should be separated
-                   by linefeeds every 66 characters. Defaults to pit_util.C_FALSE
+                   by linefeeds every 66 characters. Defaults to C_FALSE
       p_padding - Flag to indicate whether the resulting CLOB should be finalized
-                  by equal signs depending on their length. Defaults to pit_util.C_FALSE
+                  by equal signs depending on their length. Defaults to C_FALSE
                   
     Returns:
       CLOB instance with the converted BLOB data
    */
   function blob_to_bas64(
     p_blob in blob,
-    p_newlines in pit_util.flag_type default pit_util.C_FALSE,
-    p_padding in pit_util.flag_type default pit_util.C_FALSE)
+    p_newlines in flag_type default C_FALSE,
+    p_padding in flag_type default C_FALSE)
     return clob;
 
 

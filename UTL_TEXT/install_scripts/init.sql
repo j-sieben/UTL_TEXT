@@ -6,11 +6,18 @@ set lines 120
 set pages 9999
 
 whenever sqlerror continue
-alter session set plsql_implicit_conversion_bool = true;
 
 whenever sqlerror exit
 
 set termout off
+begin
+  $IF dbms_db_version.ver_le_21 $THEN
+  null;
+  $ELSE
+  execute immediate 'alter session set plsql_implicit_conversion_bool = true';
+  $END
+end;
+/
 
 variable with_pit_var varchar2(10 byte);
 variable flag_type_var varchar2(100);

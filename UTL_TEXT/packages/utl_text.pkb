@@ -34,9 +34,9 @@ as
    */
   procedure push(
     p_str in varchar2,
-    p_base64_content in out nocopy clob)
+    p_base64_content in out nocopy blob)
   is
-    l_buffer pit_util.max_char;
+    l_buffer max_char;
     l_raw max_raw;
   begin
     l_buffer := replace(p_str, C_LF, C_CRLF);
@@ -952,21 +952,21 @@ as
     Parameters:
       p_blob - BLOB to convert
       p_newlines - Flag to indicate whether the resulting Base64 should be separated
-                   by linefeeds every 66 characters. Defaults to pit_util.C_FALSE
+                   by linefeeds every 66 characters. Defaults to C_FALSE
       p_padding - Flag to indicate whether the resulting CLOB should be finalized
-                  by equal signs depending on their length. Defaults to pit_util.C_FALSE
+                  by equal signs depending on their length. Defaults to C_FALSE
                   
     Returns:
       CLOB instance with the converted BLOB data
    */
   function blob_to_bas64(
     p_blob in blob,
-    p_newlines in pit_util.flag_type default pit_util.C_FALSE,
-    p_padding in pit_util.flag_type default pit_util.C_FALSE)
+    p_newlines in flag_type default C_FALSE,
+    p_padding in flag_type default C_FALSE)
     return clob
   as
-    C_PADDING constant boolean := p_padding = pit_util.C_TRUE;
-    C_NEWLINES constant boolean := p_newlines = pit_util.C_TRUE;
+    C_PADDING constant boolean := p_padding = C_TRUE;
+    C_NEWLINES constant boolean := p_newlines = C_TRUE;
     C_ENCODED_LINE_LENGTH constant pls_integer := 66;   
 
     l_encoded_result clob;
@@ -974,7 +974,7 @@ as
     l_position pls_integer := 1;
     l_chunk_length pls_integer := 4800; 
     l_chunk max_raw;
-    l_buffer pit_utl.max_char;
+    l_buffer max_char;
     l_buffer_length pls_integer;
   begin
     pit.enter_mandatory;
@@ -1036,9 +1036,9 @@ as
     l_total_length pls_integer;
     l_position pls_integer := 1;
     l_chunk_length pls_integer := 8000;
-    l_chunk pit_util.max_char;
+    l_chunk max_char;
     l_last_lf_position pls_integer;
-    l_overflow pit_util.max_char;
+    l_overflow max_char;
   begin
     pit.enter_mandatory;
     
@@ -1057,18 +1057,21 @@ as
       l_last_lf_position := instr(l_chunk, C_LF, -1);
       if l_last_lf_position > 0 then
         push(
-          p_str => l_overflow || substr(l_chunk, 1, l_last_lf_position - 1));
+          p_str => l_overflow || substr(l_chunk, 1, l_last_lf_position - 1),
+          p_base64_content => l_decoded_result);
         l_overflow := substr(l_chunk, l_last_lf_position+1);
       else
         push(
-          p_str => l_overflow || l_chunk);
+          p_str => l_overflow || l_chunk,
+          p_base64_content => l_decoded_result);
         l_overflow := null;
       end if;
     end loop;
     
     if length(l_overflow) > 0 then
       push(
-        p_str => l_overflow);
+        p_str => l_overflow,
+        p_base64_content => l_decoded_result);
     end if;
 
     pit.leave_mandatory;
