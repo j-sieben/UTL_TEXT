@@ -977,8 +977,6 @@ as
     l_buffer max_char;
     l_buffer_length pls_integer;
   begin
-    pit.enter_mandatory;
-    
     if p_blob is null then
       return null;
     end  if;
@@ -1019,7 +1017,6 @@ as
       end case;
     end if;
 
-    pit.leave_mandatory;
     return l_encoded_result;
   end blob_to_bas64;
 
@@ -1040,8 +1037,6 @@ as
     l_last_lf_position pls_integer;
     l_overflow max_char;
   begin
-    pit.enter_mandatory;
-    
     if p_base64_content is null then
         return null;
     end if;
@@ -1074,7 +1069,6 @@ as
         p_base64_content => l_decoded_result);
     end if;
 
-    pit.leave_mandatory;
     return l_decoded_result;
   end base64_to_blob;
     
@@ -1295,7 +1289,7 @@ as
     if l_missing_anchors is not null and not g_ignore_missing_anchors then
       l_missing_anchors := ltrim(l_missing_anchors, g_main_anchor_char);
       $IF utl_text.C_WITH_PIT $THEN
-      pit.error(
+      pit.raise_error(
         msg.UTL_TEXT_MISSING_ANCHORS,
         msg_args(l_missing_anchors));
       $ELSE
