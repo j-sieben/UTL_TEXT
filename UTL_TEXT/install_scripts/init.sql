@@ -11,10 +11,14 @@ whenever sqlerror exit
 
 set termout off
 begin
+  $IF dbms_db_version.ver_le_19 $THEN
+  null;
+  $ELSE
   $IF dbms_db_version.ver_le_21 $THEN
   null;
   $ELSE
   execute immediate 'alter session set plsql_implicit_conversion_bool = true';
+  $END
   $END
 end;
 /
@@ -24,7 +28,7 @@ declare
   x_old_Version exception;
 begin
   -- Dynamic PL/SQL to avoid compilation errors
-  execute immediate 'begin :x := pit.version; end' using out l_version;
+  execute immediate 'begin :x := pit.version; end;' using out l_version;
   if l_version < 1.2 then
    raise x_old_version;
   end if;

@@ -20,9 +20,9 @@ prompt &h1.State UTL_TEXT Installation at user &INSTALL_USER.
 
 prompt &h3.Create UTL_TEXT types
 prompt &s1.Type CLOB_TABLE
-@&type_dir.clob_table.tps
+@&tool_dir.check_has_type clob_table
 prompt &s1.Type CHAR_TABLE
-@&type_dir.char_table.tps
+@&tool_dir.check_has_type char_table
 
 prompt &h3.Create UTL_TEXT parameters
 @&tool_dir.check_pit_exists.sql "&script_dir.ParameterGroup_UTL_TEXT.sql"
