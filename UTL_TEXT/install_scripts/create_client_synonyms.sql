@@ -3,9 +3,11 @@
 
 @install_scripts/init_client.sql &1. &2.
 
-prompt &h1.Granting access to UTL_TEXT to &REMOTE_USER.
+prompt &section.
+prompt &h1.Generating synonyms to UTL_TEXT at &REMOTE_USER.
+prompt &section.
 
-prompt &h3.Grant user rights
+prompt &h2.Create local synonyms for UTL_TEXT
 
 @tools/register_client UTL_TEXT
 @tools/register_client UTL_TEXT_ADMIN
@@ -13,6 +15,7 @@ prompt &h3.Grant user rights
 @tools/register_client CHAR_TABLE
 @tools/register_client UTL_TEXT_TEMPLATES_V
 
+prompt &section.
 prompt &h1.UTL_TEXT granted to &REMOTE_USER.
 
 exit

@@ -3,11 +3,15 @@
 -- 2: Default message language
 @init.sql
 
-prompt &h1.State UTL_TEXT Deinstallation
+prompt &section.
+prompt &h1.Start UTL_TEXT Deinstallation
+prompt &section.
 
 prompt &h2.Deinstall CORE Functionality
 @install_scripts/clean_up_install.sql
 
-prompt &h1.Finished UTL_TEXT Installation
+prompt &section.
+prompt &h1.Finished UTL_TEXT Deinstallation
+prompt &section.
 
 exit

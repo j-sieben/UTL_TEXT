@@ -4,8 +4,11 @@
 
 @install_scripts/init_client.sql &1. &2.
 
+prompt &section.
 prompt &h1.Granting access to UTL_TEXT to &REMOTE_USER.
-prompt &h3.Grant user rights
+prompt &section.
+
+prompt &h2.Grant user rights
 
 @tools/grant_access execute UTL_TEXT
 @tools/grant_access execute UTL_TEXT_ADMIN
@@ -14,5 +17,6 @@ prompt &h3.Grant user rights
 @tools/grant_access read UTL_TEXT_TEMPLATES_V
 
 prompt &h1.UTL_TEXT granted to &REMOTE_USER.
+prompt &section.
 
 exit
