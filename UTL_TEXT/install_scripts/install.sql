@@ -16,27 +16,28 @@ define view_dir=views/
 
 prompt
 prompt &section.
-prompt &h1.State UTL_TEXT Installation at user &INSTALL_USER.
-
-prompt &h3.Create UTL_TEXT types
+prompt &h1.Start UTL_TEXT Installation at user &INSTALL_USER.
+prompt &section.
+prompt
+prompt &h2.Create UTL_TEXT types
 prompt &s1.Type CLOB_TABLE
 @&tool_dir.check_has_type clob_table
 prompt &s1.Type CHAR_TABLE
 @&tool_dir.check_has_type char_table
 
-prompt &h3.Create UTL_TEXT parameters
+prompt &h2.Create UTL_TEXT parameters
 @&tool_dir.check_pit_exists.sql "&script_dir.ParameterGroup_UTL_TEXT.sql"
 
-prompt &h3.Create UTL_TEXT messages for &DEFAULT_LANGUAGE.
+prompt &h2.Create UTL_TEXT messages for &DEFAULT_LANGUAGE.
 @&tool_dir.check_pit_exists.sql "messages/&DEFAULT_LANGUAGE./MessageGroup_UTL_TEXT.sql"
 
-prompt &h3.Create tables
+prompt &h2.Create tables
 @&tool_dir.create_table utl_text_templates
 
-prompt &h3.Create views
+prompt &h2.Create views
 @&tool_dir.create_view utl_text_templates_v
 
-prompt &h3.Create packages
+prompt &h2.Create packages
 prompt &s1.Create package UTL_TEXT_ADMIN
 @&package_dir.utl_text_admin.pks
 show errors
@@ -72,6 +73,9 @@ begin
   dbms_output.put_line(l_invalid_objects || ' invalid objects found');
 end;
 /
+prompt
+prompt &section.
 prompt &h1.Finished UTL_TEXT Installation
+prompt &section.
 
 exit
