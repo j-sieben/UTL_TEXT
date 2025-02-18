@@ -184,10 +184,10 @@ as
       Template text of the requested template
    */
   function get_text_template(
-    p_type in utl_text_templates.uttm_type%type,
-    p_name in utl_text_templates.uttm_name%type,
-    p_mode in utl_text_templates.uttm_mode%type)
-    return utl_text_templates.uttm_text%type
+    p_type in utl_text_templates_v.uttm_type%type,
+    p_name in utl_text_templates_v.uttm_name%type,
+    p_mode in utl_text_templates_v.uttm_mode%type)
+    return utl_text_templates_v.uttm_text%type
     result_cache;
                                
                                

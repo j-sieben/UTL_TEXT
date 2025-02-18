@@ -581,17 +581,17 @@ as
       see: <UTL_TEXT.get_text_template>
    */
   function get_text_template(
-    p_type in utl_text_templates.uttm_type%type,
-    p_name in utl_text_templates.uttm_name%type,
-    p_mode in utl_text_templates.uttm_mode%type)
-    return utl_text_templates.uttm_text%type
+    p_type in utl_text_templates_v.uttm_type%type,
+    p_name in utl_text_templates_v.uttm_name%type,
+    p_mode in utl_text_templates_v.uttm_mode%type)
+    return utl_text_templates_v.uttm_text%type
     result_cache
   as
-    l_template utl_text_templates.uttm_text%type;
+    l_template utl_text_templates_v.uttm_text%type;
   begin
     select uttm_text
       into l_template
-      from utl_text_templates
+      from utl_text_templates_v
      where uttm_type = p_type
        and uttm_name = p_name
        and uttm_mode = p_mode;
@@ -1498,13 +1498,13 @@ as
 
     l_regex varchar2(200);
     l_retval char_table;
-    l_template utl_text_templates.uttm_text%type;
+    l_template utl_text_templates_v.uttm_text%type;
     l_str varchar2(50 char);
     l_cnt pls_integer := 1;
   begin
     select uttm_text
       into l_template
-      from utl_text_templates
+      from utl_text_templates_v
      where uttm_name = upper(p_uttm_name)
        and uttm_type = upper(p_uttm_type)
        and uttm_mode = upper(p_uttm_mode);
