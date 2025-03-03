@@ -764,7 +764,7 @@ as
      blob_csid     => dbms_lob.default_csid,
      lang_context  => l_lang_context,
      warning       => l_warning);
-    dbms_lob.append(l_clob, sqlerrm);
+    --dbms_lob.append(l_clob, sqlerrm);
     return l_clob;
   end blob_to_clob;
     
