@@ -239,7 +239,7 @@ as
     l_delimiter g_default_delimiter_char%type;
   begin
     case
-    when p_delimiter = c_no_delimiter then
+    when p_delimiter = C_NO_DELIMITER then
       l_delimiter := null;
     when p_delimiter is null then
       l_delimiter := g_default_delimiter_char;
@@ -670,7 +670,7 @@ as
     l_result max_char;
   begin
     if not_empty(p_chunk) then
-      if p_before != c_false then
+      if p_before != C_FALSE then
         l_result := p_text || case when p_text is not null then p_delimiter end || p_chunk;
       else
         l_result := p_text || p_chunk || p_delimiter;
@@ -809,7 +809,7 @@ as
     if p_ignore_nulls then
       l_ignore_nulls := c_true;
     else
-      l_ignore_nulls := c_false;
+      l_ignore_nulls := C_FALSE;
     end if;
     p_text := concatenate(p_chunks, p_delimiter, l_ignore_nulls);
   end concatenate;
@@ -1083,7 +1083,7 @@ as
     p_delimiter in varchar2 default C_DEL)
     return varchar2
   as
-    l_result flag_type := c_false;
+    l_result flag_type := C_FALSE;
   begin
     if instr(p_delimiter || p_text || p_delimiter, p_delimiter || p_pattern || p_delimiter) > 0 then
       l_result := c_true;
@@ -1245,7 +1245,7 @@ as
                     regexp_substr(replacement_string, C_REGEX_SEPARATOR, 1, 4, null, 1) null_value
                from anchors)
       select replacement_string, anchor, prefix, postfix, null_value,
-             case when regexp_instr(anchor, C_REGEX_ANCHOR_NAME) > 0 then 1 else 0 end valid_anchor_name
+             case when regexp_instr(anchor, C_REGEX_ANCHOR_NAME) > 0 then C_TRUE else C_FALSE end valid_anchor_name
         from parts
        where anchor is not null;
 
@@ -1270,7 +1270,7 @@ as
     -- Replace replacement anchors. Replacements may contain replacement anchors
     for rep in replacement_cur(p_template) loop
       case
-      when rep.valid_anchor_name = 0 then
+      when rep.valid_anchor_name = C_FALSE then
         l_invalid_anchors := l_invalid_anchors || g_main_anchor_char || rep.anchor;
       when p_clob_tab.exists(rep.anchor) then
         l_anchor_value := p_clob_tab(rep.anchor);
@@ -1375,10 +1375,10 @@ as
   begin
     $IF utl_text.C_WITH_PIT $THEN
     pit.assert(
-      p_condition => (coalesce(p_delimiter, c_no_delimiter) = c_no_delimiter and p_indent = 0) or (p_delimiter != c_no_delimiter),
+      p_condition => (coalesce(p_delimiter, C_NO_DELIMITER) = C_NO_DELIMITER and p_indent = 0) or (p_delimiter != C_NO_DELIMITER),
       p_message_name => msg.UTL_TEXT_INVALID_PARAMETER_COMBI);
     $ELSE
-    if not((p_delimiter = c_no_delimiter and p_indent = 0) or (p_delimiter != c_no_delimiter)) then
+    if not((p_delimiter = C_NO_DELIMITER and p_indent = 0) or (p_delimiter != C_NO_DELIMITER)) then
       raise_application_error(-20003, 'Indenting is allowed only if a delimiter is present.');
     end if;
     $END
@@ -1491,9 +1491,9 @@ as
   ) return char_table
     pipelined
   as
-    C_REGEX_ANCHOR_complete constant varchar2(100) :=
+    C_REGEX_ANCHOR_COMPLETE constant varchar2(100) :=
       '\' || g_main_anchor_char || '[A-Z0-9_\$\' || g_main_separator_char || '].*?\' || g_main_anchor_char || '';
-    C_REGEX_ANCHOR_only constant varchar2(100) :=
+    C_REGEX_ANCHOR_ONLY constant varchar2(100) :=
       '\' || g_main_anchor_char || '[A-Z0-9_\$].*?(\' || g_main_separator_char || '|\' || g_main_anchor_char || ')';
 
     l_regex varchar2(200);
@@ -1520,7 +1520,7 @@ as
     loop
       l_str := regexp_substr(l_template, l_regex, 1, l_cnt);
       if l_str is not null then
-        if p_with_replacements = 0 then
+        if p_with_replacements = C_FALSE then
           l_str := replace(replace(l_str, g_main_anchor_char), g_main_separator_char);
         end if;
         l_cnt := l_cnt + 1;
