@@ -218,7 +218,9 @@ as
       p_clob_tab => l_clob_tab,
       p_row_tab => p_row_tab);
 
-    dbms_sql.close_cursor(p_cur);
+    if dbms_sql.is_open(p_cur) then
+      dbms_sql.close_cursor(p_cur);
+    end if;
   end copy_table_to_row_tab;
 
 
