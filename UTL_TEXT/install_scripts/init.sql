@@ -87,6 +87,13 @@ exception
 end;
 /
 
+begin
+  if trim('&DEFAULT_LANGUAGE_OVERRIDE.') is not null then
+    :default_lang_var := upper(trim('&DEFAULT_LANGUAGE_OVERRIDE.'));
+  end if;
+end;
+/
+
 select :flag_type_var FLAG_TYPE, :true_var C_TRUE, :false_var C_FALSE, :default_lang_var DEFAULT_LANGUAGE, :with_pit_var PIT_INSTALLED
   from dual;
 

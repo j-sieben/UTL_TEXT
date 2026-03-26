@@ -253,7 +253,7 @@ as
   
   
   /**
-    Procedure: blob_to_bas64
+    Procedure: blob_to_base64
       Method converts P_BLOB to a CLOB in Base64 encoding
       
     Parameters:
@@ -266,7 +266,7 @@ as
     Returns:
       CLOB instance with the converted BLOB data
    */
-  function blob_to_bas64(
+  function blob_to_base64(
     p_blob in blob,
     p_newlines in flag_type default C_FALSE,
     p_padding in flag_type default C_FALSE)
@@ -494,6 +494,27 @@ as
   function clob_to_blob(
     p_clob in clob) 
     return blob;
+
+  
+  /**
+    Procedure: clob_to_base64
+      Method converts P_CLOB to a CLOB in Base64 encoding
+      
+    Parameters:
+      p_clob - BLOB to convert
+      p_newlines - Flag to indicate whether the resulting Base64 should be separated
+                   by linefeeds every 66 characters. Defaults to C_FALSE
+      p_padding - Flag to indicate whether the resulting CLOB should be finalized
+                  by equal signs depending on their length. Defaults to C_FALSE
+                  
+    Returns:
+      CLOB instance with the converted CLOB data
+   */
+  function clob_to_base64(
+    p_clob in clob,
+    p_newlines in flag_type default C_FALSE,
+    p_padding in flag_type default C_FALSE)
+    return clob;
     
 
   /** 

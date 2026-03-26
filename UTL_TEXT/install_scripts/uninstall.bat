@@ -1,4 +1,5 @@
 @echo off
+pushd "%~dp0.."
 set /p InstallUser=Enter owner schema for UTL_TEXT:
 
 set "PWD=powershell.exe -Command " ^
@@ -11,5 +12,8 @@ set /p SID=Enter service name for the database or PDB:
 
 set nls_lang=GERMAN_GERMANY.AL32UTF8
 
-sqlplus %InstallUser%/"%PWD%"@%SID% @install_scripts/install.sql
-
+sqlplus %InstallUser%/"%PWD%"@%SID% @install_scripts/uninstall.sql
+sqlplus %InstallUser%/"%PWD%"@%SID% @install_scripts/uninstall_unit_test.sql
+set RC=%errorlevel%
+popd
+exit /b %RC%

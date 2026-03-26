@@ -2,6 +2,38 @@
 
 Helper Package to collect String related utilities and support generating template based texts.
 
+## Installer usage
+
+For shell-based installations, use the central entrypoint at [utl_text.sh](/Users/j.sieben/Documents/GitHub/UTL_TEXT/utl_text.sh).
+
+Interactive owner installation:
+
+```bash
+./utl_text.sh install
+```
+
+Non-interactive owner installation:
+
+```bash
+export UTL_TEXT_OWNER=UTL_TEXT
+export UTL_TEXT_OWNER_PW=secret
+export UTL_TEXT_SERVICE=orclpdb
+./utl_text.sh install --default-language GERMAN
+```
+
+Non-interactive client installation:
+
+```bash
+export UTL_TEXT_OWNER=UTL_TEXT
+export UTL_TEXT_OWNER_PW=secret
+export UTL_TEXT_CLIENT=APP_USER
+export UTL_TEXT_CLIENT_PW=secret
+export UTL_TEXT_SERVICE=orclpdb
+./utl_text.sh install-client
+```
+
+Generated logs are written to `UTL_TEXT/logs/` by default and can be redirected with `UTL_TEXT_LOG_DIR` or `--log-dir`.
+
 ## What it is
 
 `UTL_TEXT` contains two earlier projects, `UTL_TEXT` and `CODE_GENERATOR`. `UTL_TEXT` contained some simple text related utilities, whereas `CODE_GERNERATOR` does some advanced things that need further explanation. As it turned out to be a nightmare to maintain two packages with partly overlapping functionality, I decided to combine both packages into one.

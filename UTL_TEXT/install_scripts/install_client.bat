@@ -1,5 +1,6 @@
 @echo off
 cls
+pushd "%~dp0.."
 set /p InstallUser=Enter owner schema for UTL_TEXT:
 
 set "PWD=powershell.exe -Command " ^
@@ -26,4 +27,7 @@ sqlplus %InstallUser%/"%PWD%"@%SID% @install_scripts/grant_client_access.sql %In
 
 sqlplus %RemoteUser%/"%RemotePWD%"@%SID% @install_scripts/create_client_synonyms.sql  %InstallUser% %RemoteUser%
 
+set RC=%errorlevel%
+popd
 pause
+exit /b %RC%
