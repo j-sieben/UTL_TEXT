@@ -431,8 +431,6 @@ as
     -- Derive delimiter from OS
     case when regexp_like(dbms_utility.port_string, '(WIN|Windows)') then
       g_newline_char := chr(13) || chr(10);
-    when regexp_like(dbms_utility.port_string, '(AIX)') then
-      g_newline_char := chr(21);
     else
       g_newline_char := chr(10);
     end case;
